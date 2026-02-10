@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 private let cssDir = wwwDir.appendingPathComponent("css")
 private let fcitxPrefix = "fcitx:///file/css/"
 
-struct CssOptionView: OptionView {
+struct CssOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: CssOption
 

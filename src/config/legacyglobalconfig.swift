@@ -1,6 +1,6 @@
 import SwiftUI
 
-class GlobalConfigController: ConfigWindowController {
+class LegacyGlobalConfigController: ConfigWindowController {
   var view = ListConfigView("config/global", key: "global")
 
   convenience init() {

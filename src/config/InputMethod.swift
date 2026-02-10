@@ -22,6 +22,26 @@ class InputMethodConfigController: ConfigWindowController {
   }
 
   override func refresh() {
+    // TODO: remove
+  }
+}
+
+class LegacyInputMethodConfigController: ConfigWindowController {
+  let view = LegacyInputMethodConfigView()
+  convenience init() {
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: configWindowWidth, height: configWindowHeight),
+      styleMask: styleMask,
+      backing: .buffered, defer: false)
+    window.title = NSLocalizedString("Input Methods", comment: "")
+    window.center()
+    self.init(window: window)
+    window.contentView = NSHostingView(rootView: view)
+    window.titlebarAppearsTransparent = true
+    attachToolbar(window)
+  }
+
+  override func refresh() {
     view.refresh()
   }
 }
@@ -43,7 +63,7 @@ private struct GroupItem: Identifiable, Codable {
   }
 }
 
-struct InputMethodConfigView: View {
+struct LegacyInputMethodConfigView: View {
   @ObservedObject private var viewModel = ViewModel()
   @StateObject var addGroupDialog = InputDialog(
     title: NSLocalizedString("Add an empty group", comment: "dialog title"),
@@ -148,7 +168,7 @@ struct InputMethodConfigView: View {
             } else {
               scrollView
             }
-            footer(
+            legacyfooter(
               reset: {
                 configModel.resetToDefault()
               },
@@ -156,7 +176,7 @@ struct InputMethodConfigView: View {
                 save(configModel)
               },
               close: {
-                FcitxInputController.closeWindow("im")
+                FcitxInputController.closeWindow("imLegacy")
               })
           }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
         } else if let errorMsg = viewModel.errorMsg {
@@ -321,6 +341,313 @@ struct InputMethodConfigView: View {
             }
           }
         }
+      }
+    }
+
+    func addGroup(_ name: String) {
+      if name == "" || groups.contains(where: { $0.name == name }) {
+        return
+      }
+      groups.append(Group(name: name, inputMethods: []))
+      save()
+    }
+
+    func removeGroup(_ name: String) {
+      if groups.count <= 1 {
+        return
+      }
+      self.groups = self.groups.filter({ $0.name != name })
+      self.save()
+    }
+
+    func renameGroup(_ group: Group, _ name: String) {
+      if name == "" || groups.contains(where: { $0.name == name }) {
+        return
+      }
+      for i in 0..<self.groups.count {
+        if self.groups[i].name == group.name {
+          self.groups[i].name = name
+          break
+        }
+      }
+      save()
+    }
+
+    func removeItem(_ groupName: String, _ uuid: UUID) {
+      for i in 0..<self.groups.count {
+        if self.groups[i].name == groupName {
+          self.groups[i].inputMethods.removeAll(where: { $0.id == uuid })
+          break
+        }
+      }
+      self.save()
+    }
+
+    func addItems(_ groupName: String, _ ims: Set<InputMethod>) {
+      for i in 0..<self.groups.count {
+        if self.groups[i].name == groupName {
+          for im in ims {
+            let item = GroupItem(name: im.uniqueName, displayName: im.displayName)
+            self.groups[i].inputMethods.append(item)
+            self.uuidToIM[item.id] = item.name
+          }
+        }
+      }
+      self.save()
+    }
+  }
+}
+
+struct InputMethodConfigView: View {
+  @ObservedObject private var viewModel = ViewModel()
+  @ObservedObject private var manager = ConfigManager()
+  @StateObject var addGroupDialog = InputDialog(
+    title: NSLocalizedString("Add an empty group", comment: "dialog title"),
+    prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
+  @StateObject var renameGroupDialog = InputDialog(
+    title: NSLocalizedString("Rename group", comment: "dialog title"),
+    prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
+
+  @State var addingInputMethod = false
+  @State var inputMethodsToAdd = Set<InputMethod>()
+  @State fileprivate var addToGroup: Group?
+  @State private var mouseHoverIMID: UUID?
+  @State private var selectedItem: UUID?
+
+  @State private var showImportTable = false
+  @State private var importTableErrorMsg = ""
+  @State private var showImportTableError = false
+
+  init() {
+    viewModel.load()
+    _selectedItem = State(initialValue: getCurrentIM())
+    setUri()
+  }
+
+  func setUri() {
+    if let selectedItem = selectedItem,
+      let name = viewModel.uuidToIM[selectedItem]
+    {
+      manager.uri = "fcitx://config/inputmethod/\(name)"
+    }
+  }
+
+  private func getCurrentIM() -> UUID? {
+    let groupName = String(Fcitx.imGetCurrentGroupName())
+    let imName = String(imGetCurrentIMName())
+    // Search for imName in groupName.
+    for group in viewModel.groups {
+      if group.name == groupName {
+        for item in group.inputMethods {
+          if item.name == imName {
+            return item.id
+          }
+        }
+      }
+    }
+    return nil
+  }
+
+  var body: some View {
+    NavigationSplitView {
+      List(selection: $selectedItem) {
+        ForEach($viewModel.groups, id: \.name) { $group in
+          Section {
+            HStack {
+              Text(group.name)
+
+              Button {
+                renameGroupDialog.show { input in
+                  viewModel.renameGroup(group, input)
+                }
+              } label: {
+                Image(systemName: "pencil")
+              }
+              .buttonStyle(BorderlessButtonStyle())
+              .foregroundColor(.secondary)  // As if it's in section header.
+              .help(NSLocalizedString("Rename", comment: "") + " '\(group.name)'")
+            }
+            // Make right-click available in the whole line.
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .contextMenu {
+              Button(NSLocalizedString("Remove", comment: "") + " '\(group.name)'") {
+                viewModel.removeGroup(group.name)
+              }
+            }
+
+            Button {
+              addToGroup = group
+              addingInputMethod = true
+            } label: {
+              Text("Add input methods")
+            }
+
+            ForEach($group.inputMethods) { $inputMethod in
+              HStack {
+                Text(inputMethod.displayName)
+                Spacer()
+                if mouseHoverIMID == inputMethod.id {
+                  Button {
+                    viewModel.removeItem(group.name, inputMethod.id)
+                  } label: {
+                    Image(systemName: "minus")
+                      // When system is dark and im is not selected, hover color is black by default which is hardly visible.
+                      .foregroundColor(.primary)
+                      .frame(maxHeight: .infinity)
+                      .contentShape(Rectangle())
+                  }
+                  .buttonStyle(BorderlessButtonStyle())
+                  .frame(alignment: .trailing)
+                }
+              }
+              .onHover { hovering in
+                mouseHoverIMID = hovering ? inputMethod.id : nil
+              }
+            }
+            .onMove { indices, newOffset in
+              group.inputMethods.move(fromOffsets: indices, toOffset: newOffset)
+              viewModel.save()
+            }
+          }
+        }
+      }
+      .frame(minWidth: 168)  // Enough to hold "Add input methods".
+      .contextMenu {
+        Button(NSLocalizedString("Add group", comment: "")) {
+          addGroupDialog.show { input in
+            viewModel.addGroup(input)
+          }
+        }
+        Button(NSLocalizedString("Refresh", comment: "")) {
+          viewModel.load()
+        }
+      }
+    } detail: {
+      if let selectedItem = selectedItem {
+        if let errorMsg = viewModel.errorMsg {
+          Text("Cannot show config for \(selectedItem): \(errorMsg)")
+        } else {
+          ScrollView {
+            BasicConfigView(
+              config: manager.config, value: manager.value, onUpdate: { manager.set($0) }
+            )
+            .padding()
+          }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
+          FooterView(
+            manager: manager,
+            onClose: {
+              FcitxInputController.closeWindow("im")
+            })
+        }
+      } else {
+        Text("Select an input method from the side bar.")
+      }
+    }
+    .sheet(isPresented: $addGroupDialog.presented) {
+      addGroupDialog.view()
+    }
+    .sheet(isPresented: $renameGroupDialog.presented) {
+      renameGroupDialog.view()
+    }
+    .sheet(isPresented: $addingInputMethod) {
+      VStack {
+        AvailableInputMethodView(
+          selection: $inputMethodsToAdd,
+          addToGroup: $addToGroup,
+          onDoubleClick: add
+        ).padding([.leading])
+        HStack {
+          Button {
+            addingInputMethod = false
+            inputMethodsToAdd = Set()
+          } label: {
+            Text("Cancel")
+          }
+
+          Spacer()
+
+          Button {
+            showImportTable = true
+          } label: {
+            Text("Import customized table")
+          }
+          Button {
+            add()
+            addingInputMethod = false
+          } label: {
+            Text("Add")
+          }.buttonStyle(.borderedProminent)
+            .disabled(inputMethodsToAdd.isEmpty)
+        }.padding()
+      }.padding([.top])
+        .sheet(isPresented: $showImportTable) {
+          ImportTableView().load(
+            onError: { msg in
+              importTableErrorMsg = msg
+              showImportTableError = true
+            },
+            finalize: {
+              viewModel.load()
+            })
+        }
+        .toast(isPresenting: $showImportTableError) {
+          AlertToast(
+            displayMode: .hud,
+            type: .error(Color.red), title: importTableErrorMsg)
+        }
+    }.onChange(of: selectedItem) { _ in
+      setUri()
+    }
+  }
+
+  private func add() {
+    if let groupName = addToGroup?.name {
+      viewModel.addItems(groupName, inputMethodsToAdd)
+    }
+    inputMethodsToAdd = Set()
+  }
+
+  private class ViewModel: ObservableObject {
+    @Published var groups = [Group]()
+    @Published var errorMsg: String?
+    var uuidToIM = [UUID: String]()
+
+    func load() {
+      groups = []
+      uuidToIM.removeAll(keepingCapacity: true)
+      do {
+        let jsonStr = String(Fcitx.imGetGroups())
+        if let jsonData = jsonStr.data(using: .utf8) {
+          groups = try JSONDecoder().decode([Group].self, from: jsonData)
+          for group in groups {
+            for im in group.inputMethods {
+              uuidToIM[im.id] = im.name
+            }
+          }
+        } else {
+          errorMsg = NSLocalizedString(
+            "Couldn't decode input method config: not UTF-8", comment: "")
+          FCITX_ERROR("Couldn't decode input method config: not UTF-8")
+        }
+      } catch {
+        errorMsg =
+          NSLocalizedString("Couldn't load input method config", comment: "") + ": \(error)"
+        FCITX_ERROR("Couldn't load input method config: \(error)")
+      }
+    }
+
+    func save() {
+      do {
+        let data = try JSONEncoder().encode(groups)
+        if let jsonStr = String(data: data, encoding: .utf8) {
+          Fcitx.imSetGroups(jsonStr)
+        } else {
+          FCITX_ERROR("Couldn't save input method groups: failed to encode data as UTF-8")
+        }
+        load()
+      } catch {
+        FCITX_ERROR("Couldn't save input method groups: \(error)")
       }
     }
 

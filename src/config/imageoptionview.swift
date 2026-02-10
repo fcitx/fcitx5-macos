@@ -7,7 +7,7 @@ private let modes = [
 
 private let imageDir = wwwDir.appendingPathComponent("img")
 
-struct ImageOptionView: OptionView {
+struct ImageOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: ImageOption
 

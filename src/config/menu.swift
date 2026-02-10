@@ -61,6 +61,26 @@ extension FcitxInputController {
   @objc func advanced(_: Any? = nil) {
     openWindow("advanced", AdvancedController.self)
   }
+
+  @MainActor
+  @objc func globalConfigLegacy(_: Any? = nil) {
+    openWindow("globalLegacy", LegacyGlobalConfigController.self)
+  }
+
+  @MainActor
+  @objc func inputMethodLegacy(_: Any? = nil) {
+    openWindow("imLegacy", LegacyInputMethodConfigController.self)
+  }
+
+  @MainActor
+  @objc func themeEditorLegacy(_: Any? = nil) {
+    openWindow("themeLegacy", LegacyThemeEditorController.self)
+  }
+
+  @MainActor
+  @objc func advancedLegacy(_: Any? = nil) {
+    openWindow("advancedLegacy", AdvancedController.self)
+  }
 }
 
 /// All config window controllers should subclass this.  It sets up

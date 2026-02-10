@@ -261,6 +261,19 @@ class FcitxInputController: IMKInputController {
     menu.addItem(
       withTitle: NSLocalizedString("About Fcitx5 macOS", comment: ""), action: #selector(about(_:)),
       keyEquivalent: "")
+    menu.addItem(
+      withTitle: NSLocalizedString("Input Methods", comment: ""),
+      action: #selector(inputMethodLegacy(_:)), keyEquivalent: "")
+    menu.addItem(
+      withTitle: NSLocalizedString("Global Config", comment: ""),
+      action: #selector(globalConfigLegacy(_:)), keyEquivalent: "")
+    menu.addItem(
+      withTitle: NSLocalizedString("Theme Editor", comment: ""),
+      action: #selector(themeEditorLegacy(_:)),
+      keyEquivalent: "")
+    menu.addItem(
+      withTitle: NSLocalizedString("Advanced", comment: ""), action: #selector(advancedLegacy(_:)),
+      keyEquivalent: "")
     return menu
   }
 

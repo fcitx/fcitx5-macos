@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct VimModeOptionView: OptionView {
+struct VimModeOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: VimModeOption
 

@@ -18,7 +18,7 @@ let genericFamilies = [
   "ui-serif",
 ]
 
-struct FontOptionView: OptionView {
+struct FontOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: FontOption
   @State private var selectorIsOpen = false

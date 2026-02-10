@@ -35,7 +35,7 @@ struct ListConfigView: View {
           buildView(config: config).padding()
         }
       }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
-      footer(
+      legacyfooter(
         reset: {
           // Reset only current page.
           viewModel.selectedConfig?.resetToDefault()

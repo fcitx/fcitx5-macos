@@ -87,7 +87,7 @@ std::string getConfig(const std::string &uri) {
 }
 
 bool setConfig(const char *uri_, const char *json_) {
-    FCITX_DEBUG() << "setConfig " << uri_;
+    FCITX_DEBUG() << "setConfig " << uri_ << " to " << json_;
     auto config = jsonToRawConfig(nlohmann::json::parse(json_));
     auto uri = std::string(uri_);
     if (uri == globalConfigPath) {

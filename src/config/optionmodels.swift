@@ -182,7 +182,7 @@ class ColorOption: Option, ObservableObject {
   }
 }
 
-private func stringToColor(_ hex: String) -> Color {
+func stringToColor(_ hex: String) -> Color {
   let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
   var rgbValue: UInt64 = 0
 
@@ -200,14 +200,13 @@ private func stringToColor(_ hex: String) -> Color {
   return Color(.sRGB, red: red, green: green, blue: blue, opacity: alpha)
 }
 
-private func colorToString(_ color: Color) -> String {
+func colorToString(_ color: Color) -> String {
   let resolved = NSColor(color)
-  if let string = nsColorToString(resolved) {
-    return string
-  } else {
+  guard let string = nsColorToString(resolved) else {
     FCITX_ERROR("Can't convert color \(color) to RGB")
     return "#000000FF"
   }
+  return string
 }
 
 extension Color: FcitxCodable {

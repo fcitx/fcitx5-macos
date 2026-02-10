@@ -3,11 +3,11 @@ import Logging
 import SwiftUI
 import SwiftyJSON
 
-protocol OptionView: View {
+protocol LegacyOptionView: View {
   var label: String { get }
 }
 
-struct BooleanOptionView: OptionView {
+struct BooleanOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: BooleanOption
   var body: some View {
@@ -17,16 +17,7 @@ struct BooleanOptionView: OptionView {
   }
 }
 
-func recordedKeyView(_ pair: (String, String?)) -> some View {
-  let (normalFont, smallerFont) = pair
-  if let smallerFont = smallerFont {
-    return Text(normalFont) + Text(smallerFont).font(.caption)
-  } else {
-    return Text(normalFont)
-  }
-}
-
-struct KeyOptionView: OptionView {
+struct KeyOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: KeyOption
   @State private var showRecorder = false
@@ -69,7 +60,7 @@ struct KeyOptionView: OptionView {
   }
 }
 
-struct StringOptionView: OptionView {
+struct StringOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: StringOption
   var body: some View {
@@ -85,7 +76,7 @@ let numberFormatter: NumberFormatter = {
   return formatter
 }()
 
-struct IntegerOptionView: OptionView {
+struct IntegerOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: IntegerOption
   @FocusState private var isFocused: Bool
@@ -142,7 +133,7 @@ struct IntegerOptionView: OptionView {
   }
 }
 
-struct ColorOptionView: OptionView {
+struct ColorOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: ColorOption
   var body: some View {
@@ -195,7 +186,7 @@ class ExternalConfigViewModel: ObservableObject {
   }
 }
 
-struct ExternalOptionView: OptionView {
+struct ExternalOptionView: LegacyOptionView {
   let label: String
   let model: ExternalOption
 
@@ -254,7 +245,7 @@ struct ExternalOptionView: OptionView {
         ScrollView([.vertical]) {
           buildView(config: viewModel.externalConfig!).padding()
         }
-        footer(
+        legacyfooter(
           reset: {
             viewModel.externalConfig?.resetToDefault()
           },
@@ -284,7 +275,7 @@ struct ExternalOptionView: OptionView {
   }
 }
 
-struct ListOptionView<T: Option & EmptyConstructible>: OptionView {
+struct ListOptionView<T: Option & EmptyConstructible>: LegacyOptionView {
   let label: String
   @ObservedObject var model: ListOption<T>
 
@@ -363,7 +354,7 @@ struct ListOptionView<T: Option & EmptyConstructible>: OptionView {
   }
 }
 
-struct PunctuationMapOptionView: OptionView {
+struct PunctuationMapOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: PunctuationMapOption
 
@@ -391,7 +382,7 @@ struct PunctuationMapOptionView: OptionView {
   }
 }
 
-struct GroupOptionView: OptionView {
+struct GroupOptionView: LegacyOptionView {
   let label: String
   let children: [Config]
 
@@ -445,7 +436,7 @@ struct GroupOptionView: OptionView {
   }
 }
 
-struct UnsupportedOptionView: OptionView {
+struct UnsupportedOptionView: LegacyOptionView {
   let label = ""
   let model: any Option
 
@@ -455,7 +446,7 @@ struct UnsupportedOptionView: OptionView {
 }
 
 @MainActor
-func buildViewImpl(label: String, option: any Option) -> any OptionView {
+func buildViewImpl(label: String, option: any Option) -> any LegacyOptionView {
   if let option = option as? BooleanOption {
     return BooleanOptionView(label: label, model: option)
   } else if let option = option as? FontOption {
@@ -508,7 +499,7 @@ func buildViewImpl(label: String, option: any Option) -> any OptionView {
 }
 
 @MainActor
-func buildViewImpl(config: Config) -> any OptionView {
+func buildViewImpl(config: Config) -> any LegacyOptionView {
   switch config.kind {
   case .group(let children):
     return GroupOptionView(label: config.path == "" ? "" : config.description, children: children)

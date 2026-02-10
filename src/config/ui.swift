@@ -26,7 +26,9 @@ extension View {
 }
 
 @MainActor
-func footer(reset: @escaping () -> Void, apply: @escaping () -> Void, close: @escaping () -> Void)
+func legacyfooter(
+  reset: @escaping () -> Void, apply: @escaping () -> Void, close: @escaping () -> Void
+)
   -> some View
 {
   return HStack {

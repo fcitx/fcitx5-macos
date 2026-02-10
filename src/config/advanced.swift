@@ -71,7 +71,7 @@ struct AdvancedView: View {
             ScrollView {
               buildView(config: config).padding([.leading, .trailing])
             }
-            footer(
+            legacyfooter(
               reset: {
                 config.resetToDefault()
               },

@@ -1,7 +1,7 @@
 import Logging
 import SwiftUI
 
-struct PluginOptionView: OptionView {
+struct PluginOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: PluginOption
   @State private var availablePlugins = [String]()

@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 private let themeDir = localDir.appendingPathComponent("theme")
 
-struct UserThemeOptionView: OptionView {
+struct UserThemeOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: UserThemeOption
 

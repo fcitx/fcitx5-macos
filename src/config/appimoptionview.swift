@@ -8,7 +8,7 @@ private let presetApps: [String] = [
   "/System/Library/Input Methods/CharacterPalette.app",  // emoji picker
 ]
 
-struct AppIMOptionView: OptionView {
+struct AppIMOptionView: LegacyOptionView {
   let label: String
   @ObservedObject var model: AppIMOption
   @State private var appIcon: NSImage? = nil
