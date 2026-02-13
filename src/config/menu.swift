@@ -79,7 +79,7 @@ extension FcitxInputController {
 
   @MainActor
   @objc func advancedLegacy(_: Any? = nil) {
-    openWindow("advancedLegacy", AdvancedController.self)
+    openWindow("advancedLegacy", LegacyAdvancedController.self)
   }
 }
 

@@ -73,7 +73,7 @@ struct LegacyInputMethodConfigView: View {
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
   @State var addingInputMethod = false
-  @State var inputMethodsToAdd = Set<InputMethod>()
+  @State fileprivate var inputMethodsToAdd = Set<InputMethod>()
   @State fileprivate var addToGroup: Group?
   @State var mouseHoverIMID: UUID?
 
@@ -409,7 +409,7 @@ struct InputMethodConfigView: View {
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
   @State var addingInputMethod = false
-  @State var inputMethodsToAdd = Set<InputMethod>()
+  @State fileprivate var inputMethodsToAdd = Set<InputMethod>()
   @State fileprivate var addToGroup: Group?
   @State private var mouseHoverIMID: UUID?
   @State private var selectedItem: UUID?
@@ -419,9 +419,13 @@ struct InputMethodConfigView: View {
   @State private var showImportTableError = false
 
   init() {
-    viewModel.load()
+    refresh()
     _selectedItem = State(initialValue: getCurrentIM())
     setUri()
+  }
+
+  func refresh() {
+    viewModel.load()
   }
 
   func setUri() {
@@ -705,7 +709,7 @@ struct InputMethodConfigView: View {
   }
 }
 
-struct InputMethod: Codable, Hashable {
+private struct InputMethod: Codable, Hashable {
   let name: String
   let nativeName: String
   let uniqueName: String
@@ -745,7 +749,7 @@ private func languageCodeMatch(_ code: String, _ languagesOfEnabledIMs: Set<Stri
 }
 
 struct AvailableInputMethodView: View {
-  @Binding var selection: Set<InputMethod>
+  @Binding fileprivate var selection: Set<InputMethod>
   @Binding fileprivate var addToGroup: Group?
   @StateObject private var viewModel = ViewModel()
   @State var enabledIMs = Set<String>()

@@ -20,25 +20,45 @@ func toOptionViewType(_ data: [String: Any])
   case "Key":
     return KeyView.self
   case "String":
-    //   if data["IsEnum"] as? String == "True" {
-    //     return EnumView.self
-    //   }
+    if data["AppIM"] as? String == "True" {
+      return AppIMView.self
+    }
+    if data["CSS"] as? String == "True" {
+      return CssView.self
+    }
+    if data["IsEnum"] as? String == "True" {
+      return EnumView.self
+    }
+    if data["Image"] as? String == "True" {
+      return ImageView.self
+    }
+    if data["Font"] as? String == "True" {
+      return FontView.self
+    }
+    if data["Plugin"] as? String == "True" {
+      return JsPluginView.self
+    }
+    if data["UserTheme"] as? String == "True" {
+      return UserThemeView.self
+    }
+    if data["VimMode"] as? String == "True" {
+      return VimModeView.self
+    }
     return StringView.self
-  // case "External":
-  //   return ExternalView.self
+  case "External":
+    return ExternalView.self
   default:
     if let type = type {
       if type.starts(with: "List|") {
         return ListView.self
       }
+      if type.starts(with: "Entries") {
+        return EntryView.self
+      }
     }
-    // if type.starts(with: "Entries") {
-    //   return EntryView.self
-    // }
-    // if data["Children"] != nil {
-    //   // Expand: global config, link: fuzzy pinyin.
-    //   return expandGroup ? GroupView.self : GroupLinkView.self
-    // }
+    if data["Children"] != nil {
+      return GroupView.self
+    }
     return UnknownView.self
   }
 }

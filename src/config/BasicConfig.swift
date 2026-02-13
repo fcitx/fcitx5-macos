@@ -17,39 +17,48 @@ struct BasicConfigView: View {
         ForEach(children.map { ("\(config["Option"] ?? "")/\($0["Option"] ?? "")", $0) }, id: \.0) {
           (_, child) in
           let option = child["Option"] as? String ?? ""
+          let description = child["Description"] as? String ?? ""
           let type = child["Type"] as? String ?? ""
-          // TODO: group case
-          // Otherwise, put the label in the left column and the
-          // content in the right column.
-          HStack(alignment: .firstTextBaseline, spacing: 16) {
-            let label = Text(child["Description"] as? String ?? "")
-              .frame(maxWidth: .infinity, alignment: .trailing)
-              .help(NSLocalizedString("Right click to reset this item", comment: ""))
-            if type == "External" {
-              label
-            } else {
-              label.contextMenu {
-                Button {
-                  onUpdate(mergeChild(value, option, extractValue(child, reset: true)))
-                } label: {
-                  Text("Reset to default")
-                }
+          let label =
+            type == "External"
+            ? Text(description) as any View
+            : Text(description).contextMenu {
+              Button {
+                onUpdate(mergeChild(value, option, extractValue(child, reset: true)))
+              } label: {
+                Text("Reset to default")
               }
             }
-            optionView(
-              data: child,
-              value: Binding(
-                get: { (value as? [String: Any])?[option] as? Any ?? "" },
-                set: {
-                  onUpdate(mergeChild(value, option, $0))
-                })
-            )
-            .frame(maxWidth: .infinity, alignment: .leading)
+          let view = optionView(
+            data: child,
+            value: Binding(
+              get: { (value as? [String: Any])?[option] as? Any ?? "" },
+              set: {
+                onUpdate(mergeChild(value, option, $0))
+              })
+          )
+          if toOptionViewType(child) == GroupView.self {
+            // For group, put it inside a box and let it span two columns.
+            VStack(alignment: .leading, spacing: 4) {
+              AnyView(label).font(.title3)
+                .help(NSLocalizedString("Right click to reset this group", comment: ""))
+              view
+            }
+          } else {
+            // For non-group, put the label in the left column and the
+            // content in the right column.
+            HStack(alignment: .firstTextBaseline, spacing: 16) {
+              if type != "List|Entries$PunctuationMapEntryConfig" {  // Hack: Punctuation map looks better without label.
+                AnyView(label).frame(maxWidth: .infinity, alignment: .trailing)
+                  .help(NSLocalizedString("Right click to reset this item", comment: ""))
+              }
+              view.frame(maxWidth: .infinity, alignment: .leading)
+            }
           }
         }
       }
     } else {
-      Text("Invalid config")
+      Text("Unsupported config")
     }
   }
 }

@@ -24,6 +24,12 @@ func setConfig(_ uri: String, _ option: String, _ value: Any) {
 }
 
 func extractValue(_ config: [String: Any], reset: Bool) -> Any {
+  if reset, let defaultValue = config["DefaultValue"] {
+    return defaultValue
+  }
+  if !reset, let value = config["Value"] {
+    return value
+  }
   if let children = config["Children"] as? [[String: Any]] {
     var value = [String: Any]()
     for child in children {
@@ -31,12 +37,6 @@ func extractValue(_ config: [String: Any], reset: Bool) -> Any {
         value[option] = extractValue(child, reset: reset)
       }
     }
-    return value
-  }
-  if reset, let defaultValue = config["DefaultValue"] {
-    return defaultValue
-  }
-  if !reset, let value = config["Value"] {
     return value
   }
   return ""

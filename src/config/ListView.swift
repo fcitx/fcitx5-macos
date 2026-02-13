@@ -47,8 +47,21 @@ struct ListView: OptionViewProtocol {
 
   var body: some View {
     let type = data["Type"] as? String ?? ""
-    let childData = mergeChild(data, "Type", String(type.suffix(type.count - "List|".count)))
+    let childType = String(type.suffix(type.count - "List|".count))
+    let childData = mergeChild(data, "Type", childType)
     VStack {
+      if childType.starts(with: "Entries") {
+        HStack {
+          ForEach(Array((data["Children"] as? [[String: String]] ?? []).enumerated()), id: \.0) {
+            _, child in
+            Text(child["Description"] ?? "").frame(maxWidth: .infinity)
+          }
+          // Take up spaces for buttons, so that Text aligns with TextField.
+          VStack {}.square()
+          VStack {}.square()
+          VStack {}.square()
+        }
+      }
       ForEach(Array(list.enumerated()), id: \.1.id) { i, item in
         HStack {
           Spacer()
@@ -93,8 +106,12 @@ struct ListView: OptionViewProtocol {
       .buttonStyle(BorderlessButtonStyle())
       .frame(maxWidth: .infinity, alignment: .trailing)
     }
-    // TODO: punctuation or more may not be [String: String], check all possible types in old impl.
+    // Most cases.
     .onChange(of: value as? [String: String]) { newValue in
+      list = deserialize(newValue ?? [:])
+    }
+    // Punctuation map.
+    .onChange(of: value as? [String: [String: String]]) { newValue in
       list = deserialize(newValue ?? [:])
     }
   }
