@@ -28,7 +28,7 @@ struct CssView: OptionViewProtocol {
       model: Binding(
         get: { value as? String ?? "" },
         set: { value = $0 }
-      )  // TODO: refactor SelectFileButton to accept Binding<Any>.
+      )
     )
   }
 }
