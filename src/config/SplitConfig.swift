@@ -27,7 +27,6 @@ struct SplitConfigView: View {
         TextField(NSLocalizedString("Type here to preview style", comment: ""), text: $dummyText)
           .padding([.top, .leading, .trailing])
       }
-      // TODO: could we combine scrollview and footer?
       ScrollView {
         BasicConfigView(config: manager.config, value: manager.value, onUpdate: { manager.set($0) })
           .padding()

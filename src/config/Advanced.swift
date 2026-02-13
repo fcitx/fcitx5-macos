@@ -19,7 +19,7 @@ class AdvancedController: ConfigWindowController {
   }
 
   override func refresh() {
-    // TODO
+    view.refresh()
   }
 }
 

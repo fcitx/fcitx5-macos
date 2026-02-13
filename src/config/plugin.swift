@@ -57,7 +57,7 @@ class PluginVM: ObservableObject {
   @Published var dataAvailable = [String]()
   @Published var upToDate = false
 
-  func refreshPlugins() {
+  func refresh() {
     installedPlugins = getInstalledPlugins()
     availablePlugins = officialPlugins.filter { !installedPlugins.contains($0) }
     for plugin in installedPlugins.filter({ !inMemoryPlugins.contains($0.id) }) {
@@ -135,8 +135,12 @@ struct PluginView: View {
 
   private let openPanel = NSOpenPanel()
 
+  init() {
+    refreshPlugins()
+  }
+
   func refreshPlugins() {
-    pluginVM.refreshPlugins()
+    pluginVM.refresh()
   }
 
   // Avoid downloading plugins that are incompatible with current main.
@@ -302,6 +306,7 @@ struct PluginView: View {
           Fcitx.imAddToCurrentGroup(im)
         }
       }
+      FcitxInputController.refreshAll()
       if needsRestart {
         if autoRestart {
           restart()
@@ -488,9 +493,5 @@ class PluginManager: ConfigWindowController {
     window.center()
     self.init(window: window)
     window.contentView = NSHostingView(rootView: view)
-  }
-
-  override func refresh() {
-    view.refreshPlugins()
   }
 }

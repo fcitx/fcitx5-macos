@@ -1,7 +1,7 @@
 import SwiftUI
 
 class ThemeEditorController: ConfigWindowController {
-  var view = SplitConfigView(uri: "fcitx://config/addon/webpanel", key: "theme")
+  let view = SplitConfigView(uri: "fcitx://config/addon/webpanel", key: "theme")
 
   convenience init() {
     let window = NSWindow(
@@ -14,10 +14,5 @@ class ThemeEditorController: ConfigWindowController {
     window.contentView = NSHostingView(rootView: view)
     window.titlebarAppearsTransparent = true
     attachToolbar(window)
-  }
-
-  override func refresh() {
-    // TODO
-    // view.refresh()
   }
 }

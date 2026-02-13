@@ -8,6 +8,7 @@ let popularIMs = ["keyboard-us", "pinyin", "shuangpin", "wbx", "rime", "mozc", "
 
 class InputMethodConfigController: ConfigWindowController {
   let view = InputMethodConfigView()
+
   convenience init() {
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: configWindowWidth, height: configWindowHeight),
@@ -22,7 +23,7 @@ class InputMethodConfigController: ConfigWindowController {
   }
 
   override func refresh() {
-    // TODO: remove
+    view.refresh()
   }
 }
 

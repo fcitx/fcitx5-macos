@@ -18,8 +18,15 @@ extension FcitxInputController {
       controller?.setKey(key)
       FcitxInputController.controllers[key] = controller
     }
-    controller?.refresh()
     controller?.showWindow(nil)
+  }
+
+  // Called when plugins are installed, so that the input methods and addons can be updated.
+  @MainActor
+  static func refreshAll() {
+    for controller in controllers.values {
+      controller.refresh()
+    }
   }
 
   @MainActor
