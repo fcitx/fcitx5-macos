@@ -48,7 +48,8 @@ struct BasicConfigView: View {
             // For non-group, put the label in the left column and the
             // content in the right column.
             HStack(alignment: .firstTextBaseline, spacing: 16) {
-              if type != "List|Entries$PunctuationMapEntryConfig" {  // Hack: Punctuation map looks better without label.
+              // Hack: Punctuation map looks better without label.
+              if type != "List|Entries$PunctuationMapEntryConfig" {
                 AnyView(label).frame(maxWidth: .infinity, alignment: .trailing)
                   .help(NSLocalizedString("Right click to reset this item", comment: ""))
               }
