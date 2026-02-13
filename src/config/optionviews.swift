@@ -449,28 +449,12 @@ struct UnsupportedOptionView: LegacyOptionView {
 func buildViewImpl(label: String, option: any Option) -> any LegacyOptionView {
   if let option = option as? BooleanOption {
     return BooleanOptionView(label: label, model: option)
-  } else if let option = option as? FontOption {
-    return FontOptionView(label: label, model: option)
-  } else if let option = option as? UserThemeOption {
-    return UserThemeOptionView(label: label, model: option)
-  } else if let option = option as? ImageOption {
-    return ImageOptionView(label: label, model: option)
-  } else if let option = option as? CssOption {
-    return CssOptionView(label: label, model: option)
-  } else if let option = option as? AppIMOption {
-    return AppIMOptionView(label: label, model: option)
-  } else if let option = option as? VimModeOption {
-    return VimModeOptionView(label: label, model: option)
-  } else if let option = option as? PluginOption {
-    return PluginOptionView(label: label, model: option)
   } else if let option = option as? KeyOption {
     return KeyOptionView(label: label, model: option)
   } else if let option = option as? StringOption {
     return StringOptionView(label: label, model: option)
   } else if let option = option as? ExternalOption {
     return ExternalOptionView(label: label, model: option)
-  } else if let option = option as? EnumOption {
-    return EnumOptionView(label: label, model: option)
   } else if let option = option as? IntegerOption {
     return IntegerOptionView(label: label, model: option)
   } else if let option = option as? ColorOption {
