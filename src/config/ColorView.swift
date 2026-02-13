@@ -1,8 +1,36 @@
 import Combine
+import Logging
 import SwiftUI
 
 private func getAlpha(_ color: Color) -> Int {
   return Int(round(color.cgColor!.components![3] * 255.0))
+}
+
+private func stringToColor(_ hex: String) -> Color {
+  let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+  var rgbValue: UInt64 = 0
+
+  Scanner(string: hex).scanHexInt64(&rgbValue)
+
+  let hasAlpha = hex.count > 6
+  let alpha = hasAlpha ? Double(rgbValue & 0xFF) / 255.0 : 1.0
+  if hasAlpha {
+    rgbValue >>= 8
+  }
+  let red = Double((rgbValue & 0xFF0000) >> 16) / 255.0
+  let green = Double((rgbValue & 0x00FF00) >> 8) / 255.0
+  let blue = Double(rgbValue & 0x0000FF) / 255.0
+
+  return Color(.sRGB, red: red, green: green, blue: blue, opacity: alpha)
+}
+
+private func colorToString(_ color: Color) -> String {
+  let resolved = NSColor(color)
+  guard let string = nsColorToString(resolved) else {
+    FCITX_ERROR("Can't convert color \(color) to RGB")
+    return "#000000FF"
+  }
+  return string
 }
 
 struct ColorView: OptionViewProtocol {
