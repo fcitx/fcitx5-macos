@@ -23,7 +23,7 @@ struct SplitConfigView: View {
         }
       }
     } detail: {
-      if manager.uri == "fcitx://config/addon/webpanel" {
+      if manager.uri == webpanelUri {
         TextField(NSLocalizedString("Type here to preview style", comment: ""), text: $dummyText)
           .padding([.top, .leading, .trailing])
       }

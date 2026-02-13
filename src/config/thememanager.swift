@@ -16,7 +16,7 @@ struct ExportThemeView: View {
         }
         Button {
           Fcitx.setConfig(
-            "fcitx://config/addon/webpanel/exportcurrenttheme", "\"\(quote(themeName))\"")
+            "\(webpanelUri)/exportcurrenttheme", "\"\(quote(themeName))\"")
           presentationMode.wrappedValue.dismiss()
         } label: {
           Text("OK")
