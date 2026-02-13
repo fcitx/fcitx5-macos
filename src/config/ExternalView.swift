@@ -9,6 +9,7 @@ struct ExternalView: OptionViewProtocol {
   @State private var showDictManager = false
   @State private var showQuickPhrase = false
   @State private var showDialog = false
+  @State private var showAlert = false
   @ObservedObject private var manager = ConfigManager()
 
   var body: some View {
@@ -84,9 +85,11 @@ struct ExternalView: OptionViewProtocol {
         }
       default:
         Button {
-          if let external = external {
+          if let external = external, external.starts(with: "fcitx://config/") {
             manager.uri = external
             showDialog = true
+          } else {
+            showAlert = true
           }
         } label: {
           Image(systemName: "gear")
@@ -104,6 +107,19 @@ struct ExternalView: OptionViewProtocol {
                 showDialog = false
               })
           }
+        }
+        .alert(
+          Text("Error"),
+          isPresented: $showAlert,
+          presenting: ()
+        ) { _ in
+          Button {
+            showAlert = false
+          } label: {
+            Text("OK")
+          }
+        } message: { _ in
+          Text("Unsupported config")
         }
       }
     }
