@@ -1,5 +1,13 @@
 import SwiftUI
 
+let numberFormatter: NumberFormatter = {
+  let formatter = NumberFormatter()
+  formatter.numberStyle = .decimal
+  formatter.allowsFloats = false
+  formatter.usesGroupingSeparator = false
+  return formatter
+}()
+
 struct IntegerView: OptionViewProtocol {
   let data: [String: Any]
   @Binding var value: Any
