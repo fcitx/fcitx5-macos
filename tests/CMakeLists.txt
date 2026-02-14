@@ -1,16 +1,4 @@
 # Config and Option
-add_executable(ConfigSwift testconfig.swift
-    ${PROJECT_SOURCE_DIR}/src/color.swift
-    ${PROJECT_SOURCE_DIR}/src/config/optionmodels.swift
-    ${PROJECT_SOURCE_DIR}/src/config/config.swift
-    ${PROJECT_SOURCE_DIR}/src/config/util.swift
-)
-target_compile_options(ConfigSwift PUBLIC
-    "$<$<COMPILE_LANGUAGE:Swift>:-cxx-interoperability-mode=default>"
-)
-target_link_libraries(ConfigSwift Fcitx5Objs Logging SwiftyJSON SwiftFrontend)
-add_test(NAME ConfigSwift COMMAND ConfigSwift)
-
 add_executable(config-cpp testconfig.cpp)
 target_link_libraries(config-cpp Fcitx5Objs SwiftFrontend)
 fcitx5_import_addons(config-cpp

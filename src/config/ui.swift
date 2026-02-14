@@ -15,48 +15,14 @@ extension View {
   func tooltip(_ text: String) -> some View {
     HStack {
       self
-      Image(systemName: "questionmark.circle.fill").help(text)
-    }
+      Image(systemName: "questionmark.circle.fill")
+    }.help(text)
   }
 
   // Enlarge clickable area for border-less icon button, especially minus.
   func square() -> some View {
     self.frame(width: 20, height: 20).background(Color.black.opacity(0.001))
   }
-}
-
-@MainActor
-func footer(reset: @escaping () -> Void, apply: @escaping () -> Void, close: @escaping () -> Void)
-  -> some View
-{
-  return HStack {
-    Button {
-      reset()
-    } label: {
-      Text("Reset to default").tooltip(
-        NSLocalizedString(
-          "Reset current page. To reset a single item/group, right click on its label.", comment: ""
-        ))
-    }
-    Button {
-      close()
-    } label: {
-      Text("Cancel")
-    }
-    Spacer()
-    Button {
-      apply()
-    } label: {
-      Text("Apply")
-    }
-    Button {
-      apply()
-      close()
-    } label: {
-      Text("OK")
-    }
-    .buttonStyle(.borderedProminent)
-  }.padding()
 }
 
 func urlButton(_ text: String, _ link: String) -> some View {

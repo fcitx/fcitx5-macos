@@ -4,26 +4,31 @@ import UniformTypeIdentifiers
 private let cssDir = wwwDir.appendingPathComponent("css")
 private let fcitxPrefix = "fcitx:///file/css/"
 
-struct CssOptionView: OptionView {
-  let label: String
-  @ObservedObject var model: CssOption
+struct CssView: OptionViewProtocol {
+  let data: [String: Any]
+  @Binding var value: Any
 
   var body: some View {
+    let strValue = value as? String ?? ""
     SelectFileButton(
       directory: cssDir,
       allowedContentTypes: [UTType.init(filenameExtension: "css")!],
       onFinish: { fileName in
         if !fileName.isEmpty {
-          model.value = fcitxPrefix + fileName
+          value = fcitxPrefix + fileName
         }
       },
       label: {
-        if !model.value.hasPrefix(fcitxPrefix) {
+        if !strValue.hasPrefix(fcitxPrefix) {
           Text("Select/Import CSS")
         } else {
-          Text(model.value.dropFirst(fcitxPrefix.count))
+          Text(strValue.dropFirst(fcitxPrefix.count))
         }
-      }, model: $model.value
+      },
+      model: Binding(
+        get: { value as? String ?? "" },
+        set: { value = $0 }
+      )
     )
   }
 }

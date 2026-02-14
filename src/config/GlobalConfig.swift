@@ -1,7 +1,7 @@
 import SwiftUI
 
 class GlobalConfigController: ConfigWindowController {
-  var view = ListConfigView("config/global", key: "global")
+  let view = SplitConfigView(uri: "fcitx://config/global", key: "global")
 
   convenience init() {
     let window = NSWindow(
@@ -14,9 +14,5 @@ class GlobalConfigController: ConfigWindowController {
     window.contentView = NSHostingView(rootView: view)
     window.titlebarAppearsTransparent = true
     attachToolbar(window)
-  }
-
-  override func refresh() {
-    view.refresh()
   }
 }

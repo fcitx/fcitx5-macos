@@ -8,6 +8,7 @@ let popularIMs = ["keyboard-us", "pinyin", "shuangpin", "wbx", "rime", "mozc", "
 
 class InputMethodConfigController: ConfigWindowController {
   let view = InputMethodConfigView()
+
   convenience init() {
     let window = NSWindow(
       contentRect: NSRect(x: 0, y: 0, width: configWindowWidth, height: configWindowHeight),
@@ -45,6 +46,7 @@ private struct GroupItem: Identifiable, Codable {
 
 struct InputMethodConfigView: View {
   @ObservedObject private var viewModel = ViewModel()
+  @ObservedObject private var manager = ConfigManager()
   @StateObject var addGroupDialog = InputDialog(
     title: NSLocalizedString("Add an empty group", comment: "dialog title"),
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
@@ -53,17 +55,52 @@ struct InputMethodConfigView: View {
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
   @State var addingInputMethod = false
-  @State var inputMethodsToAdd = Set<InputMethod>()
+  @State fileprivate var inputMethodsToAdd = Set<InputMethod>()
   @State fileprivate var addToGroup: Group?
-  @State var mouseHoverIMID: UUID?
+  @State private var mouseHoverIMID: UUID?
+  @State private var selectedItem: UUID?
 
   @State private var showImportTable = false
   @State private var importTableErrorMsg = ""
   @State private var showImportTableError = false
 
+  init() {
+    refresh()
+    _selectedItem = State(initialValue: getCurrentIM())
+    setUri()
+  }
+
+  func refresh() {
+    viewModel.load()
+  }
+
+  func setUri() {
+    if let selectedItem = selectedItem,
+      let name = viewModel.uuidToIM[selectedItem]
+    {
+      manager.uri = "fcitx://config/inputmethod/\(name)"
+    }
+  }
+
+  private func getCurrentIM() -> UUID? {
+    let groupName = String(Fcitx.imGetCurrentGroupName())
+    let imName = String(imGetCurrentIMName())
+    // Search for imName in groupName.
+    for group in viewModel.groups {
+      if group.name == groupName {
+        for item in group.inputMethods {
+          if item.name == imName {
+            return item.id
+          }
+        }
+      }
+    }
+    return nil
+  }
+
   var body: some View {
     NavigationSplitView {
-      List(selection: $viewModel.selectedItem) {
+      List(selection: $selectedItem) {
         ForEach($viewModel.groups, id: \.name) { $group in
           Section {
             HStack {
@@ -137,30 +174,21 @@ struct InputMethodConfigView: View {
         }
       }
     } detail: {
-      if let selectedItem = viewModel.selectedItem {
-        if let configModel = viewModel.configModel {
-          VStack {
-            let scrollView = ScrollView([.vertical]) {
-              buildView(config: configModel).padding()
-            }
-            if #available(macOS 14.0, *) {
-              scrollView.defaultScrollAnchor(.topTrailing)
-            } else {
-              scrollView
-            }
-            footer(
-              reset: {
-                configModel.resetToDefault()
-              },
-              apply: {
-                save(configModel)
-              },
-              close: {
-                FcitxInputController.closeWindow("im")
-              })
-          }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
-        } else if let errorMsg = viewModel.errorMsg {
+      if let selectedItem = selectedItem {
+        if let errorMsg = viewModel.errorMsg {
           Text("Cannot show config for \(selectedItem): \(errorMsg)")
+        } else {
+          ScrollView {
+            BasicConfigView(
+              config: manager.config, value: manager.value, onUpdate: { manager.set($0) }
+            )
+            .padding()
+          }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
+          FooterView(
+            manager: manager,
+            onClose: {
+              FcitxInputController.closeWindow("im")
+            })
         }
       } else {
         Text("Select an input method from the side bar.")
@@ -210,7 +238,7 @@ struct InputMethodConfigView: View {
               showImportTableError = true
             },
             finalize: {
-              refresh()
+              viewModel.load()
             })
         }
         .toast(isPresenting: $showImportTableError) {
@@ -218,6 +246,8 @@ struct InputMethodConfigView: View {
             displayMode: .hud,
             type: .error(Color.red), title: importTableErrorMsg)
         }
+    }.onChange(of: selectedItem) { _ in
+      setUri()
     }
   }
 
@@ -228,36 +258,13 @@ struct InputMethodConfigView: View {
     inputMethodsToAdd = Set()
   }
 
-  private func save(_ configModel: Config) {
-    if let name = viewModel.selectedIMName {
-      setConfig("fcitx://config/inputmethod/\(name)", configModel.encodeValue())
-    }
-  }
-
-  func refresh() {
-    viewModel.load()
-  }
-
   private class ViewModel: ObservableObject {
     @Published var groups = [Group]()
-    @Published var selectedItem: UUID? {
-      didSet {
-        configModel = nil
-        updateModel()
-        if let uuid = selectedItem {
-          selectedIMName = uuidToIM[uuid]
-        }
-      }
-    }
-    @Published var selectedIMName: String?
-    @Published var configModel: Config?
     @Published var errorMsg: String?
     var uuidToIM = [UUID: String]()
 
     func load() {
       groups = []
-      configModel = nil
-      selectedItem = nil
       uuidToIM.removeAll(keepingCapacity: true)
       do {
         let jsonStr = String(Fcitx.imGetGroups())
@@ -278,20 +285,6 @@ struct InputMethodConfigView: View {
           NSLocalizedString("Couldn't load input method config", comment: "") + ": \(error)"
         FCITX_ERROR("Couldn't load input method config: \(error)")
       }
-      selectCurrentIM()
-    }
-
-    func updateModel() {
-      guard let uuid = selectedItem else { return }
-      guard let im = uuidToIM[uuid] else { return }
-      do {
-        configModel = try getConfig(im: im)
-        errorMsg = nil
-      } catch {
-        configModel = nil
-        errorMsg = error.localizedDescription
-        FCITX_ERROR("Couldn't build config view: \(error)")
-      }
     }
 
     func save() {
@@ -305,22 +298,6 @@ struct InputMethodConfigView: View {
         load()
       } catch {
         FCITX_ERROR("Couldn't save input method groups: \(error)")
-      }
-    }
-
-    func selectCurrentIM() {
-      let groupName = String(Fcitx.imGetCurrentGroupName())
-      let imName = String(imGetCurrentIMName())
-      // Search for imName in groupName.
-      for group in groups {
-        if group.name == groupName {
-          for item in group.inputMethods {
-            if item.name == imName {
-              selectedItem = item.id
-              return
-            }
-          }
-        }
       }
     }
 
@@ -378,7 +355,7 @@ struct InputMethodConfigView: View {
   }
 }
 
-struct InputMethod: Codable, Hashable {
+private struct InputMethod: Codable, Hashable {
   let name: String
   let nativeName: String
   let uniqueName: String
@@ -418,7 +395,7 @@ private func languageCodeMatch(_ code: String, _ languagesOfEnabledIMs: Set<Stri
 }
 
 struct AvailableInputMethodView: View {
-  @Binding var selection: Set<InputMethod>
+  @Binding fileprivate var selection: Set<InputMethod>
   @Binding fileprivate var addToGroup: Group?
   @StateObject private var viewModel = ViewModel()
   @State var enabledIMs = Set<String>()

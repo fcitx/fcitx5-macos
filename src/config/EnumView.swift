@@ -1,27 +1,49 @@
 import SwiftUI
 
-struct EnumOptionView: OptionView {
-  let label: String
-  @ObservedObject var model: EnumOption
+private func dataToOptions(_ data: [String: Any]) -> [(String, String)] {
+  let original = data["Enum"] as? [String: String] ?? [:]
+  let translations = data["EnumI18n"] as? [String: String] ?? original
+  var res = [(String, String)]()
+  for i in 0..<original.count {
+    let key = String(i)
+    if let value = original[key], let translation = translations[key] {
+      res.append((value, translation))
+    }
+  }
+  return res
+}
+
+struct EnumView: OptionViewProtocol {
+  let data: [String: Any]
+  @Binding var value: Any
+  let options: [(String, String)]
   @State private var showHelp = false
 
   private func getCount() -> Int {
     // Hack: on macOS < 26 disable Liquid Glass of Background/Blur in webpanel.
-    if model.enumStrings.prefix(4) == ["None", "System", "Blur", "Liquid Glass"] {
+    if options.map({ $0.0 }).prefix(4) == ["None", "System", "Blur", "Liquid Glass"] {
       if osVersion.majorVersion >= 26 {
         return 4
       }
       return 3
     }
-    return model.enumStrings.count
+    return options.count
   }
 
   private func isThemeWithLiquidGlass() -> Bool {
-    if model.enumStrings.prefix(3) == ["System", "Light", "Dark"] && osVersion.majorVersion >= 26 {
+    if options.map({ $0.0 }).prefix(3) == ["System", "Light", "Dark"]
+      && osVersion.majorVersion >= 26
+    {
       let blur = ProcessInfo.processInfo.environment["BLUR"]
       return blur == "1" || blur == "3"
     }
     return false
+  }
+
+  init(data: [String: Any], value: Binding<Any>) {
+    self.data = data
+    self._value = value
+    self.options = dataToOptions(data)
   }
 
   var body: some View {
@@ -48,9 +70,19 @@ struct EnumOptionView: OptionView {
           }
       }
     } else {
-      Picker("", selection: $model.value) {
+      Picker(
+        "",
+        selection: Binding(
+          get: { value as? String ?? "" },
+          set: {
+            if $0 != value as? String {  // Avoid unnecessary setConfig if select the same.
+              value = $0
+            }
+          }
+        )
+      ) {
         ForEach(0..<getCount(), id: \.self) { i in
-          Text(model.enumStringsI18n[i]).tag(model.enumStrings[i])
+          Text(options[i].1).tag(options[i].0)
         }
       }
     }
