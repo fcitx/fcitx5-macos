@@ -3,7 +3,6 @@ import Fcitx
 import InputMethodKit
 import Logging
 import SwiftFrontend
-import SwiftyJSON
 
 struct SyncResponse: Codable {
   let commit: String
@@ -57,9 +56,7 @@ class FcitxInputController: IMKInputController {
   }
 
   func processRes(_ client: IMKTextInput, _ res: String) -> Bool {
-    guard let data = res.data(using: .utf8),
-      let response = try? JSONDecoder().decode(SyncResponse.self, from: data)
-    else {
+    guard let response = decodeJSON(res, nil as SyncResponse?) else {
       return false
     }
     commitAndSetPreeditSync(
@@ -190,14 +187,13 @@ class FcitxInputController: IMKInputController {
     let menu = NSMenu()
 
     // Group switcher
-    let groupNames = JSON(parseJSON: String(Fcitx.imGetGroupNames())).arrayValue
-    let currentGroup = String(Fcitx.imGetCurrentGroupName())
+    let groupNames = decodeJSON(String(Fcitx.imGetGroupNames()), [String]())
+    let currentGroupName = String(Fcitx.imGetCurrentGroupName())
     if groupNames.count > 1 {
       for groupName in groupNames {
-        let groupName = groupName.stringValue
         let item = NSMenuItem(title: groupName, action: #selector(switchGroup), keyEquivalent: "")
         item.representedObject = groupName
-        if groupName == currentGroup {
+        if groupName == currentGroupName {
           item.state = .on
         }
         menu.addItem(item)
@@ -206,11 +202,11 @@ class FcitxInputController: IMKInputController {
     }
 
     // Input method switcher
-    let curGroup = JSON(parseJSON: String(Fcitx.imGetCurrentGroup()))
+    let currentGroup = decodeJSON(String(Fcitx.imGetCurrentGroup()), [[String: String]]())
     let currentIM = String(Fcitx.imGetCurrentIMName())
-    for (_, inputMethod) in curGroup {
-      let imName = inputMethod["name"].stringValue
-      let nativeName = inputMethod["displayName"].stringValue
+    for inputMethod in currentGroup {
+      let imName = inputMethod["name"] ?? ""
+      let nativeName = inputMethod["displayName"] ?? ""
       let item = NSMenuItem(
         title: nativeName,
         action: #selector(switchInputMethod),
@@ -225,20 +221,13 @@ class FcitxInputController: IMKInputController {
     menu.addItem(NSMenuItem.separator())
 
     // Additional actions for the current IC
-    let actionJson = String(Fcitx.getActions())
-    if let data = actionJson.data(using: .utf8) {
-      do {
-        let actions = try JSONDecoder().decode(Array<FcitxAction>.self, from: data)
-        for action in actions {
-          for item in action.toMenuItems(target: self) {
-            menu.addItem(item)
-          }
-        }
-        menu.addItem(NSMenuItem.separator())
-      } catch {
-        FCITX_ERROR("Error decoding actions: \(error)")
+    let actions = decodeJSON(String(Fcitx.getActions()), [FcitxAction]())
+    for action in actions {
+      for item in action.toMenuItems(target: self) {
+        menu.addItem(item)
       }
     }
+    menu.addItem(NSMenuItem.separator())
 
     menu.addItem(
       withTitle: NSLocalizedString("Input Methods", comment: ""),

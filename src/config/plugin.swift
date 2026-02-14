@@ -2,7 +2,6 @@ import AlertToast
 import Fcitx
 import Logging
 import SwiftUI
-import SwiftyJSON
 import UniformTypeIdentifiers
 
 @MainActor
@@ -35,18 +34,18 @@ private func getInstalledPlugins() -> [Plugin] {
 
 private func getVersion(_ plugin: String, native: Bool) -> String {
   let descriptor = getPluginDescriptor(plugin)
-  guard let json = readJSON(descriptor) else {
+  guard let json = readJSON(descriptor) as? [String: Any] else {
     return ""
   }
-  return native ? json["version"].stringValue : json["data_version"].stringValue
+  return native ? json["version"] as? String ?? "" : json["data_version"] as? String ?? ""
 }
 
 private func getAutoAddIms(_ plugin: String) -> [String] {
   let descriptor = getPluginDescriptor(plugin)
-  guard let json = readJSON(descriptor) else {
+  guard let json = readJSON(descriptor) as? [String: Any] else {
     return []
   }
-  return json["input_methods"].arrayValue.map { $0.stringValue }
+  return json["input_methods"] as? [String] ?? []
 }
 
 @MainActor

@@ -13,8 +13,8 @@ struct JsPluginView: OptionViewProtocol {
         continue
       }
       let packageJsonURL = url.appendingPathComponent("package.json")
-      if let json = readJSON(packageJsonURL) {
-        if json["license"].stringValue.hasPrefix("GPL-3.0") {
+      if let json = readJSON(packageJsonURL) as? [String: Any] {
+        if let license = json["license"] as? String, license.hasPrefix("GPL-3.0") {
           plugins.append(fileName)
         } else {
           FCITX_WARN("Rejecting plugin \(fileName) which is not GPLv3")

@@ -1,6 +1,5 @@
 import Cocoa
 import Logging
-import SwiftyJSON
 
 let homeDir = FileManager.default.homeDirectoryForCurrentUser
 let libraryDir = homeDir.appendingPathComponent("Library/fcitx5")
@@ -176,15 +175,23 @@ func writeUTF8(_ file: URL, _ s: String) -> Bool {
   }
 }
 
-func readJSON(_ file: URL) -> JSON? {
-  if let content = readUTF8(file),
-    let data = content.data(using: .utf8, allowLossyConversion: false)
-  {
-    do {
-      return try JSON(data: data)
-    } catch {}
+func decodeJSON<T: Decodable>(_ s: String, _ defaultValue: T) -> T {
+  guard let data = s.data(using: .utf8),
+    let decoded = try? JSONDecoder().decode(T.self, from: data)
+  else {
+    return defaultValue
   }
-  return nil
+  return decoded
+}
+
+func readJSON(_ file: URL) -> Any? {
+  guard let content = readUTF8(file),
+    let data = content.data(using: .utf8),
+    let deserialized = try? JSONSerialization.jsonObject(with: data, options: [])
+  else {
+    return nil
+  }
+  return deserialized
 }
 
 func openInEditor(url: URL) {

@@ -112,8 +112,7 @@ cd po && msgmerge -U <locale>.po base.pot
 ## Credits
 * [fcitx5](https://github.com/fcitx/fcitx5): LGPL-2.1-or-later
 * [fcitx5-android](https://github.com/fcitx5-android/fcitx5-android): LGPL-2.1-or-later
-* [swift-cmake-examples](https://github.com/apple/swift-cmake-examples): Apache-2.0
-* [SwiftyJSON](https://github.com/SwiftyJSON/SwiftyJSON): MIT
+* [swift-cmake-examples](https://github.com/swiftlang/swift-cmake-examples): Apache-2.0
 * [AlertToast](https://github.com/elai950/AlertToast): MIT
 * [Linux](https://github.com/torvalds/linux/blob/master/include/uapi/linux/input-event-codes.h): GPL-2.0-only WITH Linux-syscall-note
 * [webview](https://github.com/webview/webview): MIT

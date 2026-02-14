@@ -108,15 +108,6 @@ class AdvancedViewModel: ObservableObject {
   @Published fileprivate var categories = [Category]()
 
   func load() {
-    let jsonStr = String(Fcitx.getAddons())
-    if let jsonData = jsonStr.data(using: .utf8) {
-      do {
-        categories = try JSONDecoder().decode([Category].self, from: jsonData)
-      } catch {
-        FCITX_ERROR("Couldn't load addon config: \(error)")
-      }
-    } else {
-      FCITX_ERROR("Couldn't decode addon config: not UTF-8")
-    }
+    categories = decodeJSON(String(Fcitx.getAddons()), [Category]())
   }
 }

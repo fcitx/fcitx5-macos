@@ -264,26 +264,12 @@ struct InputMethodConfigView: View {
     var uuidToIM = [UUID: String]()
 
     func load() {
-      groups = []
-      uuidToIM.removeAll(keepingCapacity: true)
-      do {
-        let jsonStr = String(Fcitx.imGetGroups())
-        if let jsonData = jsonStr.data(using: .utf8) {
-          groups = try JSONDecoder().decode([Group].self, from: jsonData)
-          for group in groups {
-            for im in group.inputMethods {
-              uuidToIM[im.id] = im.name
-            }
-          }
-        } else {
-          errorMsg = NSLocalizedString(
-            "Couldn't decode input method config: not UTF-8", comment: "")
-          FCITX_ERROR("Couldn't decode input method config: not UTF-8")
+      uuidToIM.removeAll()
+      groups = decodeJSON(String(Fcitx.imGetGroups()), [Group]())
+      for group in groups {
+        for im in group.inputMethods {
+          uuidToIM[im.id] = im.name
         }
-      } catch {
-        errorMsg =
-          NSLocalizedString("Couldn't load input method config", comment: "") + ": \(error)"
-        FCITX_ERROR("Couldn't load input method config: \(error)")
       }
     }
 
@@ -504,28 +490,13 @@ struct AvailableInputMethodView: View {
     func refresh(_ alreadyEnabled: Set<String>) {
       availableIMs.removeAll()
       languagesOfEnabledIMs.removeAll()
-      let jsonStr = String(Fcitx.imGetAvailableIMs())
-      if let jsonData = jsonStr.data(using: .utf8) {
-        do {
-          let array = try JSONDecoder().decode([InputMethod].self, from: jsonData)
-          for im in array {
-            let code = im.languageCode.isEmpty ? "und" : im.languageCode
-            if var imList = availableIMs[code] {
-              imList.append(im)
-              availableIMs[code] = imList
-            } else {
-              availableIMs[code] = [im]
-            }
-            if alreadyEnabled.contains(im.uniqueName) {
-              languagesOfEnabledIMs.update(with: normalizeLanguageCode(code))
-            }
-          }
-        } catch {
-          errorMsg =
-            NSLocalizedString("Cannot parse json", comment: "") + ": \(error.localizedDescription)"
+      let array = decodeJSON(String(Fcitx.imGetAvailableIMs()), [InputMethod]())
+      for im in array {
+        let code = im.languageCode.isEmpty ? "und" : im.languageCode
+        availableIMs[code, default: []].append(im)
+        if alreadyEnabled.contains(im.uniqueName) {
+          languagesOfEnabledIMs.update(with: normalizeLanguageCode(code))
         }
-      } else {
-        errorMsg = NSLocalizedString("Cannot decode json string into UTF-8 data", comment: "")
       }
       self.alreadyEnabled = alreadyEnabled
     }
