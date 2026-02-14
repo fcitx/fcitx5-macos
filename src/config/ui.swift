@@ -25,42 +25,6 @@ extension View {
   }
 }
 
-@MainActor
-func legacyfooter(
-  reset: @escaping () -> Void, apply: @escaping () -> Void, close: @escaping () -> Void
-)
-  -> some View
-{
-  return HStack {
-    Button {
-      reset()
-    } label: {
-      Text("Reset to default").tooltip(
-        NSLocalizedString(
-          "Reset current page. To reset a single item/group, right click on its label.", comment: ""
-        ))
-    }
-    Button {
-      close()
-    } label: {
-      Text("Cancel")
-    }
-    Spacer()
-    Button {
-      apply()
-    } label: {
-      Text("Apply")
-    }
-    Button {
-      apply()
-      close()
-    } label: {
-      Text("OK")
-    }
-    .buttonStyle(.borderedProminent)
-  }.padding()
-}
-
 func urlButton(_ text: String, _ link: String) -> some View {
   Link(text, destination: URL(string: link)!)
 }
