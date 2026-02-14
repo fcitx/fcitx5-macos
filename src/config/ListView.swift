@@ -54,7 +54,8 @@ struct ListView: OptionViewProtocol {
         HStack {
           ForEach(Array((data["Children"] as? [[String: String]] ?? []).enumerated()), id: \.0) {
             _, child in
-            Text(child["Description"] ?? "").frame(maxWidth: .infinity)
+            let description = child["Description"] ?? ""
+            Text(description).frame(maxWidth: .infinity)
           }
           // Take up spaces for buttons, so that Text aligns with TextField.
           VStack {}.square()
