@@ -52,7 +52,6 @@ add_executable(Fcitx5
 target_link_libraries(Fcitx5
     Fcitx5Objs
     AlertToast
-    SwiftyJSON
     SwiftFrontend
     SwiftNotify
     Logging

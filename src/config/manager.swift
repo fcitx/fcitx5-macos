@@ -12,9 +12,11 @@ func getConfig(_ uri: String) -> [String: Any] {
 }
 
 func setConfig(_ uri: String, _ option: String, _ value: Any) {
+  let object = option.isEmpty ? value : [option: value]
   guard
+    JSONSerialization.isValidJSONObject(object),
     let data = try? JSONSerialization.data(
-      withJSONObject: option.isEmpty ? value : [option: value]),
+      withJSONObject: object),
     let jsonString = String(data: data, encoding: .utf8)
   else {
     FCITX_ERROR("Failed to set config")

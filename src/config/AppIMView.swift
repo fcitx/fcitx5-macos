@@ -31,18 +31,12 @@ struct AppIMView: OptionViewProtocol {
     self._value = value
 
     self.imNameMap = [:]
-    let jsonStr = String(Fcitx.imGetCurrentGroup())
-    if let jsonData = jsonStr.data(using: .utf8),
-      let inputMethods = try? JSONDecoder().decode([InputMethod].self, from: jsonData)
-    {
-      for inputMethod in inputMethods {
-        imNameMap[inputMethod.name] = inputMethod.displayName
-      }
+    let inputMethods = decodeJSON(String(Fcitx.imGetCurrentGroup()), [InputMethod]())
+    for inputMethod in inputMethods {
+      imNameMap[inputMethod.name] = inputMethod.displayName
     }
 
-    if let jsonData = (value.wrappedValue as? String)?.data(using: .utf8),
-      let config = try? JSONDecoder().decode(AppIMConfig.self, from: jsonData)
-    {
+    if let config = decodeJSON(value.wrappedValue as? String ?? "", nil as AppIMConfig?) {
       self._appPath = State(initialValue: config.appPath)
       self._imName = State(initialValue: config.imName)
     } else {

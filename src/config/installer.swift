@@ -26,11 +26,11 @@ func getPluginDescriptor(_ plugin: String) -> URL {
 }
 
 func getFilesFromDescriptor(_ descriptor: URL) -> [String] {
-  guard let json = readJSON(descriptor) else {
+  guard let json = readJSON(descriptor) as? [String: Any] else {
     FCITX_WARN("Skipped invalid JSON \(descriptor.localPath())")
     return []
   }
-  return json["files"].arrayValue.map { $0.stringValue }
+  return json["files"] as? [String] ?? []
 }
 
 func extractPlugin(_ plugin: String, native: Bool) -> Bool {
