@@ -48,6 +48,7 @@ struct AdvancedView: View {
 
   func refresh() {
     viewModel.load()
+    manager.reload()  // Refresh macosfrontend config when click hide in status bar.
   }
 
   var body: some View {

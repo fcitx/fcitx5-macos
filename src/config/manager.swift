@@ -95,7 +95,7 @@ class ConfigManager: ObservableObject {
     set(extractValue(self.config, reset: true))
   }
 
-  private func reload() {
+  func reload() {
     undoStack.removeAll()
     redoStack.removeAll()
     if uri.isEmpty {
