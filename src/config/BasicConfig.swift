@@ -19,16 +19,22 @@ struct BasicConfigView: View {
           let option = child["Option"] as? String ?? ""
           let description = child["Description"] as? String ?? ""
           let type = child["Type"] as? String ?? ""
+          let isGroup = toOptionViewType(child) == GroupView.self
           let label =
             type == "External"
             ? Text(description) as any View
-            : Text(description).contextMenu {
-              Button {
-                onUpdate(mergeChild(value, option, extractValue(child, reset: true)))
-              } label: {
-                Text("Reset to default")
+            : Text(description)
+              .help(
+                isGroup
+                  ? NSLocalizedString("Right click to reset this group", comment: "")
+                  : NSLocalizedString("Right click to reset this item", comment: "")
+              ).contextMenu {
+                Button {
+                  onUpdate(mergeChild(value, option, extractValue(child, reset: true)))
+                } label: {
+                  Text("Reset to default")
+                }
               }
-            }
           let view = optionView(
             data: child,
             value: Binding(
@@ -37,11 +43,10 @@ struct BasicConfigView: View {
                 onUpdate(mergeChild(value, option, $0))
               })
           )
-          if toOptionViewType(child) == GroupView.self {
+          if isGroup {
             // For group, put it inside a box and let it span two columns.
             VStack(alignment: .leading, spacing: 4) {
               AnyView(label).font(.title3)
-                .help(NSLocalizedString("Right click to reset this group", comment: ""))
               view
             }
           } else {
@@ -51,7 +56,6 @@ struct BasicConfigView: View {
               // Hack: Punctuation map looks better without label.
               if type != "List|Entries$PunctuationMapEntryConfig" {
                 AnyView(label).frame(width: 200, alignment: .trailing)
-                  .help(NSLocalizedString("Right click to reset this item", comment: ""))
               }
               view.frame(maxWidth: .infinity, alignment: .leading)
             }

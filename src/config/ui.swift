@@ -15,8 +15,8 @@ extension View {
   func tooltip(_ text: String) -> some View {
     HStack {
       self
-      Image(systemName: "questionmark.circle.fill").help(text)
-    }
+      Image(systemName: "questionmark.circle.fill")
+    }.help(text)
   }
 
   // Enlarge clickable area for border-less icon button, especially minus.
