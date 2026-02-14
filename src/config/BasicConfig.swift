@@ -50,7 +50,7 @@ struct BasicConfigView: View {
             HStack(alignment: .firstTextBaseline, spacing: 16) {
               // Hack: Punctuation map looks better without label.
               if type != "List|Entries$PunctuationMapEntryConfig" {
-                AnyView(label).frame(maxWidth: .infinity, alignment: .trailing)
+                AnyView(label).frame(width: 200, alignment: .trailing)
                   .help(NSLocalizedString("Right click to reset this item", comment: ""))
               }
               view.frame(maxWidth: .infinity, alignment: .leading)
