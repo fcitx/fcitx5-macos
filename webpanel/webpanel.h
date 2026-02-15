@@ -46,18 +46,6 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(HoverBehavior, N_("None"), N_("Move"),
 
 namespace fcitx {
 
-struct UserThemeAnnotation {
-    bool skipDescription() { return false; }
-    // Skip save so that when theme editor passes a non-empty string, we know
-    // user actually selects a theme file. Comparing new value with old (saved)
-    // value makes no sense because user may replace a theme with another theme
-    // that has the same file name.
-    bool skipSave() { return true; }
-    void dumpDescription(RawConfig &config) const {
-        config.setValueByPath("UserTheme", "True");
-    }
-};
-
 struct ImageAnnotation {
     bool skipDescription() { return false; }
     bool skipSave() { return false; }
@@ -90,8 +78,7 @@ FCITX_CONFIGURATION(
         theme{this, "Theme", _("Theme"), candidate_window::theme_t::system};
     OptionWithAnnotation<DefaultTheme, DefaultThemeI18NAnnotation> defaultTheme{
         this, "DefaultTheme", _("Default theme"), DefaultTheme::System};
-    OptionWithAnnotation<std::string, UserThemeAnnotation> userTheme{
-        this, "UserTheme", _("User theme"), ""};
+    ExternalOption userTheme{this, "UserTheme", _("User theme"), ""};
     ExternalOption exportCurrentTheme{this, "ExportCurrentTheme",
                                       _("Export current theme"), ""};);
 

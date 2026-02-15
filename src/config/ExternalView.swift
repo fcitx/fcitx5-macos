@@ -16,6 +16,8 @@ struct ExternalView: OptionViewProtocol {
     let option = data["Option"] as? String
     let external = data["External"] as? String
     switch option {
+    case "UserTheme":
+      UserThemeView()
     case "ExportCurrentTheme":
       Button {
         showExportCurrentTheme = true

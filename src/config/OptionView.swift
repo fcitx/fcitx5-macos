@@ -38,9 +38,6 @@ func toOptionViewType(_ data: [String: Any])
     if data["Plugin"] as? String == "True" {
       return JsPluginView.self
     }
-    if data["UserTheme"] as? String == "True" {
-      return UserThemeView.self
-    }
     if data["VimMode"] as? String == "True" {
       return VimModeView.self
     }

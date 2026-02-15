@@ -1,19 +1,11 @@
+import Fcitx
 import SwiftUI
 import UniformTypeIdentifiers
 
 private let themeDir = localDir.appendingPathComponent("theme")
 
-struct UserThemeView: OptionViewProtocol {
-  let data: [String: Any]
-  @Binding var value: Any
-
-  @State private var themeName: String
-
-  init(data: [String: Any], value: Binding<Any>) {
-    self.data = data
-    self._value = value
-    self._themeName = State(initialValue: value.wrappedValue as? String ?? "")
-  }
+struct UserThemeView: View {
+  @State private var themeName: String = ""
 
   var body: some View {
     SelectFileButton(
@@ -21,8 +13,8 @@ struct UserThemeView: OptionViewProtocol {
       allowedContentTypes: [UTType.init(filenameExtension: "conf")!],
       onFinish: { fileName in
         themeName = String(fileName.dropLast(5))
-        // Don't set value so that it doesn't affect undoStack.
-        setConfig(webpanelUri, "Basic", ["UserTheme": themeName])
+        Fcitx.setConfig(
+          "\(webpanelUri)/usertheme", "\"\(quote(themeName))\"")
       },
       label: {
         if themeName.isEmpty {

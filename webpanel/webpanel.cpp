@@ -324,21 +324,18 @@ inline std::string themePath(const std::string &themeName) {
 
 void WebPanel::setConfig(const RawConfig &config) {
     config_.load(config, true);
-    auto themeName = *config_.basic->userTheme;
-    if (!themeName.empty()) {
-        RawConfig raw;
-        // Only override current theme when user selects a theme file.
-        readAsIni(raw, StandardPathsType::PkgData, themePath(themeName));
-        config_.load(raw, true);
-    }
     safeSaveAsIni(config_, ConfPath);
     updateConfig();
 }
 
 void WebPanel::setSubConfig(const std::string &path, const RawConfig &config) {
-    if (path == "exportcurrenttheme") {
+    auto themeName = config.value();
+    if (path == "usertheme") {
+        RawConfig raw;
+        readAsIni(raw, StandardPathsType::PkgData, themePath(themeName));
+        setConfig(raw);
+    } else if (path == "exportcurrenttheme") {
         static auto removedKeys = {"Basic", "ScrollMode", "Advanced"};
-        auto themeName = config.value();
         RawConfig raw;
         config_.save(raw);
         for (const auto &key : removedKeys) {
