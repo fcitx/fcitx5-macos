@@ -1,76 +1,80 @@
+import Carbon
 import SwiftUI
 
 private let codeMap = [
+  // modifier
+  kVK_Control: "⌃ᴸ",
+  kVK_RightControl: "⌃ᴿ",
+  kVK_Option: "⌥ᴸ",
+  kVK_RightOption: "⌥ᴿ",
+  kVK_Shift: "⇧ᴸ",
+  kVK_RightShift: "⇧ᴿ",
+  kVK_Command: "⌘ᴸ",
+  kVK_RightCommand: "⌘ᴿ",
   // keypad
-  0x52: "🄋",
-  0x53: "➀",
-  0x54: "➁",
-  0x55: "➂",
-  0x56: "➃",
-  0x57: "➄",
-  0x58: "➅",
-  0x59: "➆",
-  0x5b: "➇",
-  0x5c: "➈",
-  0x51: "⊜",
-  0x4e: "⊖",
-  0x43: "⊗",
-  0x45: "⊕",
-  0x4b: "⊘",
+  kVK_ANSI_Keypad0: "🄋",
+  kVK_ANSI_Keypad1: "➀",
+  kVK_ANSI_Keypad2: "➁",
+  kVK_ANSI_Keypad3: "➂",
+  kVK_ANSI_Keypad4: "➃",
+  kVK_ANSI_Keypad5: "➄",
+  kVK_ANSI_Keypad6: "➅",
+  kVK_ANSI_Keypad7: "➆",
+  kVK_ANSI_Keypad8: "➇",
+  kVK_ANSI_Keypad9: "➈",
+  kVK_ANSI_KeypadEquals: "⊜",
+  kVK_ANSI_KeypadMinus: "⊖",
+  kVK_ANSI_KeypadMultiply: "⊗",
+  kVK_ANSI_KeypadPlus: "⊕",
+  kVK_ANSI_KeypadDivide: "⊘",
   // special
-  0x33: "⌫",
-  0x4c: "⌅",
-  0x35: "⎋",
-  0x75: "⌦",
-  0x24: "↵",
-  0x31: "␣",
-  0x30: "⇥",
+  kVK_Delete: "⌫",
+  kVK_ANSI_KeypadEnter: "⌅",
+  kVK_Escape: "⎋",
+  kVK_ForwardDelete: "⌦",
+  kVK_Return: "↵",
+  kVK_Space: "␣",
+  kVK_Tab: "⇥",
   // cursor
-  0x7e: "▲",
-  0x7d: "▼",
-  0x7b: "◀",
-  0x7c: "▶",
-  0x74: "↑",
-  0x79: "↓",
-  0x73: "⤒",
-  0x77: "⤓",
+  kVK_UpArrow: "▲",
+  kVK_DownArrow: "▼",
+  kVK_LeftArrow: "◀",
+  kVK_RightArrow: "▶",
+  kVK_PageUp: "↑",
+  kVK_PageDown: "↓",
+  kVK_Home: "⤒",
+  kVK_End: "⤓",
   // pc keyboard
-  0x72: "⎀",
-  0x71: "⎉",
-  0x69: "⎙",
-  0x6b: "⇳",
+  kVK_Help: "⎀",
+  kVK_F15: "⎉",
+  kVK_F13: "⎙",
+  kVK_F14: "⇳",
 ]
 
 // Separate them because in the menu their font size is smaller and we want the same behavior in recorder UI as well.
 private let functionCodeMap = [
-  0x7a: "F1",
-  0x78: "F2",
-  0x63: "F3",
-  0x76: "F4",
-  0x60: "F5",
-  0x61: "F6",
-  0x62: "F7",
-  0x64: "F8",
-  0x65: "F9",
-  0x6d: "F10",
-  0x67: "F11",
-  0x6f: "F12",
+  kVK_F1: "F1",
+  kVK_F2: "F2",
+  kVK_F3: "F3",
+  kVK_F4: "F4",
+  kVK_F5: "F5",
+  kVK_F6: "F6",
+  kVK_F7: "F7",
+  kVK_F8: "F8",
+  kVK_F9: "F9",
+  kVK_F10: "F10",
+  kVK_F11: "F11",
+  kVK_F12: "F12",
 ]
 
 func shortcutRepr(_ key: String, _ modifiers: NSEvent.ModifierFlags, _ code: UInt16) -> (
   String, String?
 ) {
   var desc = ""
-  if modifiers.contains(.control) { desc += "⌃" }
-  if modifiers.contains(.option) { desc += "⌥" }
-  // There could be Shift_L or Shift+Shift_L
-  // Only when Shift is main key we distinguish L/R.
-  if code == 0x3c {
-    desc += "⬆"  // Shift_R
-  } else if code == 0x38 || modifiers.contains(.shift) {
-    desc += "⇧"  // Shift_L
-  }
-  if modifiers.contains(.command) { desc += "⌘" }
+  if modifiers.contains(.control) && code != kVK_Control && code != kVK_RightControl { desc += "⌃" }
+  if modifiers.contains(.option) && code != kVK_Option && code != kVK_RightOption { desc += "⌥" }
+  if modifiers.contains(.shift) && code != kVK_Shift && code != kVK_RightShift { desc += "⇧" }
+  if modifiers.contains(.command) && code != kVK_Command && code != kVK_RightCommand { desc += "⌘" }
   if let normalFont = codeMap[Int(code)] {
     return (desc + normalFont, nil)
   } else if let smallerFont = functionCodeMap[Int(code)] {
