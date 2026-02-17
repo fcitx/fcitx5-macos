@@ -1,8 +1,24 @@
+import Carbon
 import CxxFrontend
 import Fcitx
 import InputMethodKit
 import Logging
 import SwiftFrontend
+
+/// Get the current system keyboard layout ID.
+///
+/// This function uses the Text Input Sources API to detect the user's current
+/// keyboard layout (e.g., Dvorak, Colemak, Qwerty) so that Fcitx5 can respect
+/// the user's preferred layout instead of forcing the ABC (US Qwerty) layout.
+func getCurrentKeyboardLayout() -> String {
+  let inputSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+  if let id = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID) {
+    let layoutId = Unmanaged<AnyObject>.fromOpaque(id).takeUnretainedValue() as? String
+    // If we have a valid layout ID, use it; otherwise fall back to ABC
+    return layoutId ?? "com.apple.keylayout.ABC"
+  }
+  return "com.apple.keylayout.ABC"
+}
 
 struct SyncResponse: Codable {
   let commit: String
@@ -170,8 +186,11 @@ class FcitxInputController: IMKInputController {
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
     // overrideKeyboard is needed for pressing space to play in Shotcut.
+    // We use the current system keyboard layout to respect user's layout preference
+    // (e.g., Dvorak, Colemak, etc.) instead of forcing ABC (US Qwerty).
     if let client = client as? IMKTextInput {
-      client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.ABC")
+      let layout = getCurrentKeyboardLayout()
+      client.overrideKeyboard(withKeyboardNamed: layout)
     }
     setController(self, self.client)
     // Make sure status bar is updated on click password input, before first key event.
