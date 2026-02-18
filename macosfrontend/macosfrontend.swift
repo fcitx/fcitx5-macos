@@ -1,10 +1,121 @@
 import AppKit
+import Carbon
 import InputMethodKit
 
 nonisolated(unsafe) private var u16pos = 0
 nonisolated(unsafe) private var currentPreedit = ""
 
 private let zeroWidthSpace = "\u{200B}"
+
+/// Mapping from fcitx5 XKB keyboard layout names to macOS keyboard layout IDs.
+///
+/// This maps the keyboard- prefixed layout names from fcitx5 (e.g., "keyboard-us",
+/// "keyboard-us-dvorak") to their corresponding macOS keyboard layout IDs
+/// (e.g., "com.apple.keylayout.ABC", "com.apple.keylayout.Dvorak").
+private let xkbToMacOSLayoutMap: [String: String] = [
+  // US layouts
+  "keyboard-us": "com.apple.keylayout.ABC",
+  "keyboard-us-dvorak": "com.apple.keylayout.Dvorak",
+  "keyboard-us-colemak": "com.apple.keylayout.Colemak",
+  "keyboard-us-workman": "com.apple.keylayout.Workman",
+
+  // Dvorak variants
+  "keyboard-dvorak": "com.apple.keylayout.Dvorak",
+  "keyboard-dvorak-l": "com.apple.keylayout.Dvorak",  // Left-handed Dvorak
+  "keyboard-dvorak-r": "com.apple.keylayout.Dvorak",  // Right-handed Dvorak
+
+  // Colemak variants
+  "keyboard-colemak": "com.apple.keylayout.Colemak",
+
+  // Workman
+  "keyboard-workman": "com.apple.keylayout.Workman",
+
+  // Other common layouts
+  "keyboard-gb": "com.apple.keylayout.British",
+  "keyboard-ca": "com.apple.keylayout.Canadian",
+  "keyboard-ca-multix": "com.apple.keylayout.CanadianMultilingual",
+  "keyboard-de": "com.apple.keylayout.German",
+  "keyboard-fr": "com.apple.keylayout.French",
+  "keyboard-latin": "com.apple.keylayout.Latin",
+  "keyboard-es": "com.apple.keylayout.Spanish",
+  "keyboard-it": "com.apple.keylayout.Italian",
+  "keyboard-se": "com.apple.keylayout.Swedish-Pro",
+  "keyboard-fi": "com.apple.keylayout.Finnish",
+  "keyboard-no": "com.apple.keylayout.Norwegian",
+  "keyboard-dk": "com.apple.keylayout.Danish",
+  "keyboard-nl": "com.apple.keylayout.Dutch",
+  "keyboard-pt": "com.apple.keylayout.Portuguese",
+  "keyboard-ch": "com.apple.keylayout.SwissGerman",
+  "keyboard-be": "com.apple.keylayout.Belgian",
+  "keyboard-pl": "com.apple.keylayout.PolishPro",
+  "keyboard-lt": "com.apple.keylayout.Lithuanian",
+  "keyboard-lv": "com.apple.keylayout.Latvian",
+  "keyboard-ee": "com.apple.keylayout.Estonian",
+  "keyboard-hu": "com.apple.keylayout.Hungarian",
+  "keyboard-cs": "com.apple.keylayout.Czech",
+  "keyboard-ru": "com.apple.keylayout.Russian-Win",
+  "keyboard-ua": "com.apple.keylayout.Ukrainian",
+  "keyboard-gr": "com.apple.keylayout.Greek",
+  "keyboard-tr": "com.apple.keylayout.Turkish",
+  "keyboard-il": "com.apple.keylayout.Hebrew",
+  "keyboard-ar": "com.apple.keylayout.Arabic",
+  "keyboard-th": "com.apple.keylayout.Thai",
+  "keyboard-jp": "com.apple.keylayout.Japanese",
+  "keyboard-kr": "com.apple.keylayout.Korean",
+  "keyboard-cn": "com.apple.keylayout.PinyinSimplified",
+  "keyboard-tw": "com.apple.keylayout.TCinyinTrad",
+]
+
+/// Sync the macOS keyboard layout to match the fcitx5 keyboard layout.
+///
+/// This function takes a fcitx5 keyboard layout name (e.g., "keyboard-us-dvorak"),
+/// maps it to the corresponding macOS keyboard layout ID, and then switches the
+/// system keyboard layout to match.
+///
+/// - Parameter fcitxLayout: The fcitx5 keyboard layout name (e.g., "keyboard-us", "keyboard-us-dvorak")
+/// - Returns: true if the layout was successfully synced, false otherwise
+@MainActor
+public func syncKeyboardLayout(_ fcitxLayout: String) -> Bool {
+  // Check if the layout is a keyboard layout
+  guard fcitxLayout.hasPrefix("keyboard-") else {
+    return false
+  }
+
+  // Look up the macOS layout ID
+  guard let macosLayoutId = xkbToMacOSLayoutMap[fcitxLayout] else {
+    FCITX_WARN("No macOS layout mapping found for fcitx5 layout: \(fcitxLayout)")
+    return false
+  }
+
+  // Get the input source
+  let inputSourceList = TISCreateInputSourceList(nil, false).takeRetainedValue()
+  let count = CFArrayGetCount(inputSourceList)
+
+  for i in 0..<count {
+    let inputSource = CFArrayGetValueAtIndex(inputSourceList, i)
+    let inputSourceRef = unsafeBitCast(inputSource, to: TISInputSource.self)
+
+    // Get the input source ID
+    if let id = TISGetInputSourceProperty(inputSourceRef, kTISPropertyInputSourceID) {
+      let layoutId = Unmanaged<AnyObject>.fromOpaque(id).takeUnretainedValue() as? String
+
+      if layoutId == macosLayoutId {
+        // Select this input source
+        let result = TISSelectInputSource(inputSourceRef)
+        if result == noErr {
+          FCITX_INFO("Synced keyboard layout: \(fcitxLayout) -> \(macosLayoutId)")
+          return true
+        } else {
+          FCITX_ERROR("Failed to select keyboard layout: \(macosLayoutId) (error: \(result))")
+          return false
+        }
+      }
+    }
+  }
+
+  FCITX_WARN("Keyboard layout not found on system: \(macosLayoutId)")
+  return false
+}
 
 private let passwordOnlyApps: Set<String> = [
   "com.apple.loginwindow",

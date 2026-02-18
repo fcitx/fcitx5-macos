@@ -31,10 +31,19 @@ MacosFrontend::MacosFrontend(Instance *instance)
         EventType::InputContextUpdateUI, EventWatcherPhase::Default,
         [this](Event &event) { updateStatusItemText(); }));
     // For switching from VSCode to Terminal, otherwise the first key press
-    // triggers text update.
+    // triggers text update. Also sync keyboard layout to macOS.
     eventHandlers_.emplace_back(instance_->watchEvent(
         EventType::InputContextInputMethodActivated, EventWatcherPhase::Default,
-        [this](Event &event) { updateStatusItemText(); }));
+        [this](Event &event) {
+            updateStatusItemText();
+            // Sync keyboard layout to macOS system
+            if (auto ic = instance_->mostRecentInputContext()) {
+                auto entry = instance_->inputMethodEntry(ic);
+                if (entry) {
+                    syncKeyboardLayoutToSystem(entry->uniqueName());
+                }
+            }
+        }));
     reloadConfig();
 }
 
@@ -59,6 +68,18 @@ void MacosFrontend::updateStatusItemText() {
             SwiftFrontend::setStatusItemText(statusItemText);
         }
     }
+}
+
+void MacosFrontend::syncKeyboardLayoutToSystem(const std::string &imName) {
+    // Only sync keyboard layouts (input methods starting with "keyboard-")
+    if (imName.size() < 9 || imName.substr(0, 9) != "keyboard-") {
+        return;
+    }
+
+    // Call the Swift function to sync the layout
+    dispatch_async(dispatch_get_main_queue(), ^{
+        SwiftFrontend::syncKeyboardLayout(imName);
+    });
 }
 
 bool skipPassword(const Configuration *config) {
