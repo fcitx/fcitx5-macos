@@ -112,7 +112,8 @@ private:
         eventHandlers_;
     std::string statusItemText;
     void updateStatusItemText();
-    void syncKeyboardLayoutToSystem(const std::string &imName);
+    void syncKeyboardLayoutToSystem(const std::string &imName,
+                                    const std::string &addon);
 
     inline MacosInputContext *findIC(ICUUID);
     void useAppDefaultIM(const std::string &appId);

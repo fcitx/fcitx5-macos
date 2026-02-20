@@ -40,7 +40,8 @@ MacosFrontend::MacosFrontend(Instance *instance)
             if (auto ic = instance_->mostRecentInputContext()) {
                 auto entry = instance_->inputMethodEntry(ic);
                 if (entry) {
-                    syncKeyboardLayoutToSystem(entry->uniqueName());
+                    syncKeyboardLayoutToSystem(entry->uniqueName(),
+                                               entry->addon());
                 }
             }
         }));
@@ -70,9 +71,12 @@ void MacosFrontend::updateStatusItemText() {
     }
 }
 
-void MacosFrontend::syncKeyboardLayoutToSystem(const std::string &imName) {
-    // Only sync keyboard layouts (input methods starting with "keyboard-")
-    if (imName.size() < 9 || imName.substr(0, 9) != "keyboard-") {
+void MacosFrontend::syncKeyboardLayoutToSystem(const std::string &imName,
+                                               const std::string &addon) {
+    // Only sync keyboard layouts (input methods with addon "keyboard")
+    // This prevents syncing when switching to non-keyboard IMs like pinyin,
+    // which would cause macOS to switch back to the last input method
+    if (addon != "keyboard") {
         return;
     }
 

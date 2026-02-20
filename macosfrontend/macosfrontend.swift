@@ -1,6 +1,7 @@
 import AppKit
 import Carbon
 import InputMethodKit
+import Logging
 
 nonisolated(unsafe) private var u16pos = 0
 nonisolated(unsafe) private var currentPreedit = ""
@@ -74,7 +75,6 @@ private let xkbToMacOSLayoutMap: [String: String] = [
 ///
 /// - Parameter fcitxLayout: The fcitx5 keyboard layout name (e.g., "keyboard-us", "keyboard-us-dvorak")
 /// - Returns: true if the layout was successfully synced, false otherwise
-@MainActor
 public func syncKeyboardLayout(_ fcitxLayout: String) -> Bool {
   // Check if the layout is a keyboard layout
   guard fcitxLayout.hasPrefix("keyboard-") else {
