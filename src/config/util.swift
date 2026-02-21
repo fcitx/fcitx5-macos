@@ -16,7 +16,7 @@ let rimeLocalDir = localDir.appendingPathComponent("rime")
 
 let squirrelDir = homeDir.appendingPathComponent("Library/Rime")
 
-let sourceRepo = "https://github.com/fcitx-contrib/fcitx5-macos"
+let sourceRepo = "https://github.com/fcitx/fcitx5-macos"
 
 let osVersion = ProcessInfo.processInfo.operatingSystemVersion
 private let macOSVersion =
