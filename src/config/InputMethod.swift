@@ -98,6 +98,18 @@ struct InputMethodConfigView: View {
     return nil
   }
 
+  private var maxDisplayNameWidth: CGFloat {
+    min(
+      getTextWidth("键盘 - 英语（美国） - 英语（Colemak）", 16),
+      viewModel.groups.reduce(0) { maxWidth, group in
+        max(
+          maxWidth,
+          group.inputMethods.reduce(0) { maxIMWidth, im in
+            max(maxIMWidth, getTextWidth(im.displayName, 16))
+          })
+      })
+  }
+
   var body: some View {
     NavigationSplitView {
       List(selection: $selectedItem) {
@@ -162,7 +174,7 @@ struct InputMethodConfigView: View {
           }
         }
       }
-      .frame(minWidth: 168)  // Enough to hold "Add input methods".
+      .frame(minWidth: maxDisplayNameWidth)
       .contextMenu {
         Button(NSLocalizedString("Add group", comment: "")) {
           addGroupDialog.show { input in
@@ -330,7 +342,7 @@ struct InputMethodConfigView: View {
       for i in 0..<self.groups.count {
         if self.groups[i].name == groupName {
           for im in ims {
-            let item = GroupItem(name: im.uniqueName, displayName: im.displayName)
+            let item = GroupItem(name: im.name, displayName: im.displayName)
             self.groups[i].inputMethods.append(item)
             self.uuidToIM[item.id] = item.name
           }
@@ -341,23 +353,10 @@ struct InputMethodConfigView: View {
   }
 }
 
-private struct InputMethod: Codable, Hashable {
+struct InputMethod: Codable, Hashable {
   let name: String
-  let nativeName: String
-  let uniqueName: String
+  let displayName: String
   let languageCode: String
-  let icon: String
-  let isConfigurable: Bool
-
-  var displayName: String {
-    if nativeName != "" {
-      nativeName
-    } else if name != "" {
-      name
-    } else {
-      uniqueName
-    }
-  }
 }
 
 private func normalizeLanguageCode(_ code: String) -> String {
@@ -406,13 +405,13 @@ struct AvailableInputMethodView: View {
       if viewModel.selectedLanguageCode != nil {
         List(selection: $selection) {
           ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
-            Text(im.displayName).fontWeight(popularIMs.contains(im.uniqueName) ? .bold : .regular)
+            Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
           }
         }.contextMenu(forSelectionType: InputMethod.self) { items in
         } primaryAction: { items in
           onDoubleClick()
           // Hack: enabledIMs isn't synced with group's inputMethods.
-          enabledIMs.formUnion(items.map { $0.uniqueName })
+          enabledIMs.formUnion(items.map { $0.name })
           viewModel.refresh(enabledIMs)
         }
       } else {
@@ -469,11 +468,11 @@ struct AvailableInputMethodView: View {
         availableIMsForLanguage = []
         return
       }
-      availableIMsForLanguage = ims.filter { !alreadyEnabled.contains($0.uniqueName) }.sorted {
+      availableIMsForLanguage = ims.filter { !alreadyEnabled.contains($0.name) }.sorted {
         a, b in
         // Pin popular input methods.
-        let ia = popularIMs.firstIndex(of: a.uniqueName)
-        let ib = popularIMs.firstIndex(of: b.uniqueName)
+        let ia = popularIMs.firstIndex(of: a.name)
+        let ib = popularIMs.firstIndex(of: b.name)
         if ia == nil && ib != nil {
           return false
         }
@@ -494,7 +493,7 @@ struct AvailableInputMethodView: View {
       for im in array {
         let code = im.languageCode.isEmpty ? "und" : im.languageCode
         availableIMs[code, default: []].append(im)
-        if alreadyEnabled.contains(im.uniqueName) {
+        if alreadyEnabled.contains(im.name) {
           languagesOfEnabledIMs.update(with: normalizeLanguageCode(code))
         }
       }
