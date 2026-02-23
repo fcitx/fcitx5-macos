@@ -294,12 +294,13 @@ void imSetCurrentGroup(const char *groupName) noexcept {
     });
 }
 
-static nlohmann::json json_describe_im(const fcitx::InputMethodEntry *entry) {
+static nlohmann::json json_describe_im(const fcitx::InputMethodEntry &entry) {
     nlohmann::json j;
-    j["name"] = entry->uniqueName();
-    j["displayName"] = entry->nativeName() != "" ? entry->nativeName()
-                       : entry->name() != ""     ? entry->name()
-                                                 : entry->uniqueName();
+    j["name"] = entry.uniqueName();
+    j["displayName"] = entry.nativeName() != "" ? entry.nativeName()
+                       : entry.name() != ""     ? entry.name()
+                                                : entry.uniqueName();
+    j["languageCode"] = entry.languageCode();
     return j;
 }
 
@@ -309,10 +310,9 @@ std::string imGetCurrentGroup() noexcept {
         auto &imMgr = fcitx.instance()->inputMethodManager();
         auto group = imMgr.currentGroup();
         for (const auto &im : group.inputMethodList()) {
-            auto entry = imMgr.entry(im.name());
-            if (!entry)
-                continue;
-            j.push_back(json_describe_im(entry));
+            if (auto entry = imMgr.entry(im.name())) {
+                j.push_back(json_describe_im(*entry));
+            }
         }
         return j.dump();
     });
@@ -345,8 +345,9 @@ std::string imGetGroups() noexcept {
                 g["name"] = groupName;
                 auto ims = nlohmann::json::array();
                 for (const auto &im : group->inputMethodList()) {
-                    if (auto entry = imMgr.entry(im.name()))
-                        ims.push_back(json_describe_im(entry));
+                    if (auto entry = imMgr.entry(im.name())) {
+                        ims.push_back(json_describe_im(*entry));
+                    }
                 }
                 g["inputMethods"] = ims;
                 j.push_back(g);
@@ -402,14 +403,7 @@ std::string imGetAvailableIMs() noexcept {
         nlohmann::json j;
         fcitx.instance()->inputMethodManager().foreachEntries(
             [&j](const fcitx::InputMethodEntry &entry) {
-                j.push_back(
-                    nlohmann::json{{"name", entry.name()},
-                                   {"uniqueName", entry.uniqueName()},
-                                   {"nativeName", entry.nativeName()},
-                                   {"isConfigurable", entry.isConfigurable()},
-                                   {"languageCode", entry.languageCode()},
-                                   {"icon", entry.icon()},
-                                   {"label", entry.label()}});
+                j.push_back(json_describe_im(entry));
                 return true;
             });
         return j.dump();

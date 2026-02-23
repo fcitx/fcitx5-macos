@@ -7,11 +7,6 @@ private let presetApps: [String] = [
   "/System/Library/Input Methods/CharacterPalette.app",  // emoji picker
 ]
 
-private struct InputMethod: Codable {
-  let name: String
-  let displayName: String
-}
-
 private struct AppIMConfig: Codable {
   let appId: String
   let appPath: String

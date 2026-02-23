@@ -130,3 +130,9 @@ func appIconFromPath(_ path: String) -> Image {
   let icon = NSWorkspace.shared.icon(forFile: path)
   return Image(nsImage: icon)
 }
+
+func getTextWidth(_ text: String, _ fontSize: CGFloat) -> CGFloat {
+  return (text as NSString).size(withAttributes: [
+    .font: NSFont.systemFont(ofSize: fontSize)
+  ]).width
+}
