@@ -1,10 +1,6 @@
-import AlertToast
 import Fcitx
 import Logging
 import SwiftUI
-
-let en = "en"
-let popularIMs = ["keyboard-us", "pinyin", "shuangpin", "wbx", "rime", "mozc", "hallelujah"]
 
 class InputMethodConfigController: ConfigWindowController {
   let view = InputMethodConfigView()
@@ -27,12 +23,12 @@ class InputMethodConfigController: ConfigWindowController {
   }
 }
 
-private struct Group: Codable {
+struct Group: Codable {
   var name: String
   var inputMethods: [GroupItem]
 }
 
-private struct GroupItem: Identifiable, Codable {
+struct GroupItem: Identifiable, Codable {
   let name: String
   let displayName: String
   let id = UUID()
@@ -55,14 +51,9 @@ struct InputMethodConfigView: View {
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
   @State var addingInputMethod = false
-  @State fileprivate var inputMethodsToAdd = Set<InputMethod>()
   @State fileprivate var addToGroup: Group?
   @State private var mouseHoverIMID: UUID?
   @State private var selectedItem: UUID?
-
-  @State private var showImportTable = false
-  @State private var importTableErrorMsg = ""
-  @State private var showImportTableError = false
 
   init() {
     refresh()
@@ -213,61 +204,22 @@ struct InputMethodConfigView: View {
       renameGroupDialog.view()
     }
     .sheet(isPresented: $addingInputMethod) {
-      VStack {
-        AvailableInputMethodView(
-          selection: $inputMethodsToAdd,
-          addToGroup: $addToGroup,
-          onDoubleClick: add
-        ).padding([.leading])
-        HStack {
-          Button {
-            addingInputMethod = false
-            inputMethodsToAdd = Set()
-          } label: {
-            Text("Cancel")
-          }
-
-          Spacer()
-
-          Button {
-            showImportTable = true
-          } label: {
-            Text("Import customized table")
-          }
-          Button {
-            add()
-            addingInputMethod = false
-          } label: {
-            Text("Add")
-          }.buttonStyle(.borderedProminent)
-            .disabled(inputMethodsToAdd.isEmpty)
-        }.padding()
-      }.padding([.top])
-        .sheet(isPresented: $showImportTable) {
-          ImportTableView().load(
-            onError: { msg in
-              importTableErrorMsg = msg
-              showImportTableError = true
-            },
-            finalize: {
-              viewModel.load()
-            })
-        }
-        .toast(isPresenting: $showImportTableError) {
-          AlertToast(
-            displayMode: .hud,
-            type: .error(Color.red), title: importTableErrorMsg)
-        }
+      AvailableInputMethodView(
+        group: $addToGroup,
+        onImport: {
+          viewModel.load()
+        },
+        onAdd: add
+      )
     }.onChange(of: selectedItem) { _ in
       setUri()
     }
   }
 
-  private func add() {
+  private func add(_ inputMethods: Set<InputMethod>) {
     if let groupName = addToGroup?.name {
-      viewModel.addItems(groupName, inputMethodsToAdd)
+      viewModel.addItems(groupName, inputMethods)
     }
-    inputMethodsToAdd = Set()
   }
 
   private class ViewModel: ObservableObject {
@@ -357,196 +309,6 @@ struct InputMethod: Codable, Hashable {
   let name: String
   let displayName: String
   let languageCode: String
-}
-
-private func normalizeLanguageCode(_ code: String) -> String {
-  // "".split throws
-  if code.isEmpty {
-    return ""
-  }
-  return String(code.split(separator: "_")[0])
-}
-
-// Match English, system language (or language assigned to Fcitx5) and languages of enabled input methods.
-private func languageCodeMatch(_ code: String, _ languagesOfEnabledIMs: Set<String>) -> Bool {
-  guard let languageCode = Locale.current.language.languageCode?.identifier else {
-    return true
-  }
-  if code == en {
-    return true
-  }
-  let normalized = normalizeLanguageCode(code)
-  return normalized == languageCode || languagesOfEnabledIMs.contains(normalized)
-}
-
-struct AvailableInputMethodView: View {
-  @Binding fileprivate var selection: Set<InputMethod>
-  @Binding fileprivate var addToGroup: Group?
-  @StateObject private var viewModel = ViewModel()
-  @State var enabledIMs = Set<String>()
-  var onDoubleClick: () -> Void
-
-  var body: some View {
-    NavigationSplitView {
-      List(selection: $viewModel.selectedLanguageCode) {
-        ForEach(viewModel.languages(), id: \.code) { language in
-          Text(language.localized)
-        }
-      }
-      Toggle(
-        NSLocalizedString("Only show current language", comment: ""),
-        isOn: Binding(
-          get: { viewModel.addIMOnlyShowCurrentLanguage ?? false },
-          set: { viewModel.addIMOnlyShowCurrentLanguage = $0 }
-        )
-      )
-    } detail: {
-      // Input methods for this language
-      if viewModel.selectedLanguageCode != nil {
-        List(selection: $selection) {
-          ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
-            Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
-          }
-        }.contextMenu(forSelectionType: InputMethod.self) { items in
-        } primaryAction: { items in
-          onDoubleClick()
-          // Hack: enabledIMs isn't synced with group's inputMethods.
-          enabledIMs.formUnion(items.map { $0.name })
-          viewModel.refresh(enabledIMs)
-        }
-      } else {
-        Text("Select a language from the left list.")
-      }
-    }
-    .frame(minWidth: 640, minHeight: 480)
-    .onAppear {
-      enabledIMs = Set(addToGroup?.inputMethods.map { $0.name } ?? [])
-      viewModel.refresh(enabledIMs)
-    }
-    .alert(
-      NSLocalizedString("Error", comment: ""),
-      isPresented: $viewModel.hasError,
-      presenting: ()
-    ) { _ in
-      Button {
-        viewModel.errorMsg = nil
-      } label: {
-        Text("OK")
-      }.buttonStyle(.borderedProminent)
-    } message: { _ in
-      Text(viewModel.errorMsg!)
-    }
-  }
-
-  private class ViewModel: ObservableObject {
-    @AppStorage("AddIMOnlyShowCurrentLanguage") var addIMOnlyShowCurrentLanguage: Bool?
-    @Published var availableIMs = [String: [InputMethod]]()
-    @Published var hasError = false
-    @Published var selectedLanguageCode: String? {
-      didSet {
-        updateList()
-      }
-    }
-    @Published var alreadyEnabled = Set<String>() {
-      didSet {
-        updateList()
-      }
-    }
-    @Published var availableIMsForLanguage = [InputMethod]()
-    var languagesOfEnabledIMs = Set<String>()
-
-    var errorMsg: String? {
-      didSet {
-        hasError = (errorMsg != nil)
-      }
-    }
-
-    private func updateList() {
-      guard let selectedLanguageCode = selectedLanguageCode,
-        let ims = availableIMs[selectedLanguageCode]
-      else {
-        availableIMsForLanguage = []
-        return
-      }
-      availableIMsForLanguage = ims.filter { !alreadyEnabled.contains($0.name) }.sorted {
-        a, b in
-        // Pin popular input methods.
-        let ia = popularIMs.firstIndex(of: a.name)
-        let ib = popularIMs.firstIndex(of: b.name)
-        if ia == nil && ib != nil {
-          return false
-        }
-        if ia != nil && ib == nil {
-          return true
-        }
-        if let ia = ia, let ib = ib {
-          return ia < ib
-        }
-        return a.displayName.localizedCompare(b.displayName) == .orderedAscending
-      }
-    }
-
-    func refresh(_ alreadyEnabled: Set<String>) {
-      availableIMs.removeAll()
-      languagesOfEnabledIMs.removeAll()
-      let array = decodeJSON(String(Fcitx.imGetAvailableIMs()), [InputMethod]())
-      for im in array {
-        let code = im.languageCode.isEmpty ? "und" : im.languageCode
-        availableIMs[code, default: []].append(im)
-        if alreadyEnabled.contains(im.name) {
-          languagesOfEnabledIMs.update(with: normalizeLanguageCode(code))
-        }
-      }
-      self.alreadyEnabled = alreadyEnabled
-    }
-
-    fileprivate struct LocalizedLanguageCode: Comparable {
-      let code: String
-      let localized: String
-
-      init(code: String) {
-        self.code = code
-        var localized = Locale.current.localizedString(forIdentifier: code) ?? ""
-        if localized.isEmpty {
-          localized = String(isoName(code))  // Fallback to iso_639-3.mo.
-        }
-        if localized.isEmpty {
-          localized = String(format: NSLocalizedString("Unknown - %@", comment: ""), code)
-        }
-        self.localized = localized
-      }
-
-      public static func < (lhs: Self, rhs: Self) -> Bool {
-        // Pin English.
-        if lhs.code == en {
-          return true
-        }
-        if rhs.code == en {
-          return false
-        }
-        // Pin system language (or language assigned to Fcitx5).
-        let curIdent = Locale.current.identifier.prefix(2)
-        let le = lhs.code.prefix(2) == curIdent
-        let re = rhs.code.prefix(2) == curIdent
-        if le && !re {
-          return true
-        }
-        if !le && re {
-          return false
-        }
-        return lhs.localized.localizedCompare(rhs.localized) == .orderedAscending
-      }
-    }
-
-    fileprivate func languages() -> [LocalizedLanguageCode] {
-      return Array(availableIMs.keys)
-        .filter {
-          !(addIMOnlyShowCurrentLanguage ?? false) || languageCodeMatch($0, languagesOfEnabledIMs)
-        }
-        .map { LocalizedLanguageCode(code: $0) }
-        .sorted()
-    }
-  }
 }
 
 /// A common modal dialog view-model + view builder for getting user
