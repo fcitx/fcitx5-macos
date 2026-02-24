@@ -35,13 +35,17 @@ struct ImportTableView: View {
   @Environment(\.presentationMode) var presentationMode
 
   @ObservedObject private var importTableVM = ImportTableVM()
+  let onAdd: ([String]) -> Void
 
-  func load(onError: @escaping (String) -> Void, finalize: @escaping () -> Void) -> some View {
+  init(
+    onAdd: @escaping ([String]) -> Void, onError: @escaping (String) -> Void,
+    finalize: @escaping () -> Void
+  ) {
+    self.onAdd = onAdd
     mkdirP(imLocalDir.localPath())
     mkdirP(tableLocalDir.localPath())
     importTableVM.setHandler(onError: onError, finalize: finalize)
     importTableVM.load()
-    return self
   }
 
   var body: some View {
@@ -70,11 +74,7 @@ struct ImportTableView: View {
           importTableVM.load()
           let newIMs = importTableVM.ims.filter({ im in !existingIMs.contains(im) })
           Fcitx.reload()
-          if Fcitx.imGroupCount() == 1 {
-            for im in newIMs {
-              Fcitx.imAddToCurrentGroup(im)
-            }
-          }
+          onAdd(newIMs)
           presentationMode.wrappedValue.dismiss()
           if !failures.isEmpty {
             let msg = String(
