@@ -31,7 +31,7 @@ private func signalHandler(signal: Int32) {
   // routed back to the main thread.
   DispatchQueue.main.async {
     if signal == SIGTERM {
-      NSApplication.shared.terminate(nil)
+      restartProcess()
     }
   }
 }

@@ -4,6 +4,12 @@ import Fcitx
 // Don't call it synchronously in SwiftUI as it will make IM temporarily unavailable in focused client.
 @MainActor
 func restartProcess() {
+  // Sheets prevent Fcitx5 from normal termination.
+  for window in NSApp.windows {
+    for sheet in window.sheets {
+      window.endSheet(sheet)
+    }
+  }
   NSApp.terminate(nil)
 }
 
