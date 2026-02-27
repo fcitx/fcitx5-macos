@@ -17,10 +17,6 @@ private let pluginMap = officialPlugins.reduce(into: [String: Plugin]()) { resul
   result[plugin.id] = plugin
 }
 
-// fcitx5 doesn't unload addons from memory, so once loaded, we have to restart process to use an updated version.
-@MainActor
-private var needsRestart = false
-
 private func getInstalledPlugins() -> [Plugin] {
   let names = getFileNamesWithExtension(pluginDir.localPath(), ".json")
   return names.map {
@@ -113,8 +109,6 @@ struct PluginView: View {
   @State private var selectedAvailable = Set<String>()
 
   @State private var processing = false
-  @State private var promptRestart = false
-
   @State private var downloading = false
   @State private var downloadProgress = 0.0
 
@@ -445,16 +439,6 @@ struct PluginView: View {
         }
       }
     }.padding()
-      .sheet(isPresented: $promptRestart) {
-        VStack {
-          Text("Please restart Fcitx5 in IM menu")
-          Button {
-            promptRestart = false
-          } label: {
-            Text("OK")
-          }.buttonStyle(.borderedProminent)
-        }.padding()
-      }
       .toast(isPresenting: $showUpToDate) {
         AlertToast(
           displayMode: .hud,
