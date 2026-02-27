@@ -17,12 +17,6 @@ private let pluginMap = officialPlugins.reduce(into: [String: Plugin]()) { resul
   result[plugin.id] = plugin
 }
 
-// fcitx5 doesn't unload addons from memory, so once loaded, we have to restart process to use an updated version.
-@MainActor
-private var inMemoryPlugins = [String]()
-@MainActor
-private var needsRestart = false
-
 private func getInstalledPlugins() -> [Plugin] {
   let names = getFileNamesWithExtension(pluginDir.localPath(), ".json")
   return names.map {
@@ -59,9 +53,6 @@ class PluginVM: ObservableObject {
   func refresh() {
     installedPlugins = getInstalledPlugins()
     availablePlugins = officialPlugins.filter { !installedPlugins.contains($0) }
-    for plugin in installedPlugins.filter({ !inMemoryPlugins.contains($0.id) }) {
-      inMemoryPlugins.append(plugin.id)
-    }
     // Allow recheck update on reopen plugin manager.
     upToDate = false
   }
@@ -118,8 +109,7 @@ struct PluginView: View {
   @State private var selectedAvailable = Set<String>()
 
   @State private var processing = false
-  @State private var promptRestart = false
-
+  @State private var downloading = false
   @State private var downloadProgress = 0.0
 
   @State private var showUpToDate = false
@@ -129,6 +119,7 @@ struct PluginView: View {
   @State private var showDownloadFailed = false
   @State private var showUpdateAvailable = false
   @State private var showInvalidFileName = false
+  @State private var showConfirmUninstall = false
 
   @ObservedObject private var pluginVM = PluginVM()
 
@@ -202,10 +193,10 @@ struct PluginView: View {
       let _ = removeFile(descriptor)
       FCITX_INFO("Uninstalled \(selectedPlugin)")
     }
-    selectedInstalled.removeAll()
-    refreshPlugins()
-    Fcitx.reload()
-    processing = false
+    // Always restart process so that
+    // 1. Plugin binary is unloaded, thus input methods that belong to the plugin are filtered out from input method list, and removed from profile next time.
+    // 2. Restart is not needed for plugin fresh install.
+    restart()
   }
 
   private func categorizePlugins(_ plugins: [Plugin]) -> some View {
@@ -217,8 +208,8 @@ struct PluginView: View {
         ForEach(categorizedPlugins[category]!) { plugin in
           HStack {
             Text(plugin.id)
-            if plugin.github != nil,
-              let url = URL(string: "https://github.com/\(plugin.github!)")
+            if let github = plugin.github,
+              let url = URL(string: "https://github.com/\(github)")
             {
               Button {
                 NSWorkspace.shared.open(url)
@@ -232,10 +223,13 @@ struct PluginView: View {
     }
   }
 
-  private func install(_ autoRestart: Bool, isUpdate: Bool = false) {
+  private func install(isUpdate: Bool = false) {
     processing = true
     Task {
-      defer { processing = false }
+      defer {
+        downloading = false
+        processing = false
+      }
       guard await checkMainCompatible() else {
         return
       }
@@ -273,13 +267,18 @@ struct PluginView: View {
       let updater = Updater(
         tag: releaseTag, main: false, debug: false, nativePlugins: pluginVM.nativeAvailable,
         dataPlugins: pluginVM.dataAvailable)
+      downloading = true
       let (_, nativeResults, dataResults) = await updater.update(onProgress: { progress in
         Task { @MainActor in
           downloadProgress = progress
         }
       })
-      var inputMethods = [String]()
-      if !isUpdate {
+      refreshPlugins()
+      if isUpdate {
+        if !nativeResults.filter({ _, success in success }).isEmpty {
+          restart()
+        }
+      } else {
         let downloadedPlugins = selectedPlugins.filter {
           (nativeResults[$0] ?? true) && (dataResults[$0] ?? true)
         }
@@ -288,30 +287,16 @@ struct PluginView: View {
           return
         }
         // Don't add IMs for dependencies.
-        inputMethods = downloadedPlugins.flatMap { getAutoAddIms($0) }
-      }
-      if !Set(nativeResults.filter({ _, success in success }).keys).intersection(
-        inMemoryPlugins
-      )
-      .isEmpty {
-        needsRestart = true
-      }
-      refreshPlugins()
-      Fcitx.setupI18N()  // Register .mo.
-      Fcitx.reload()
-      if Fcitx.imGroupCount() == 1 {
-        // Otherwise user knows how to play with it, don't mess it up.
-        for im in inputMethods {
-          Fcitx.imAddToCurrentGroup(im)
+        let inputMethods = downloadedPlugins.flatMap { getAutoAddIms($0) }
+        Fcitx.setupI18N()  // Register .mo.
+        Fcitx.reload()
+        if Fcitx.imGroupCount() == 1 {
+          // Otherwise user knows how to play with it, don't mess it up.
+          for im in inputMethods {
+            Fcitx.imAddToCurrentGroup(im)
+          }
         }
-      }
-      FcitxInputController.refreshAll()
-      if needsRestart {
-        if autoRestart {
-          restart()
-        } else {
-          promptRestart = true
-        }
+        FcitxInputController.refreshAll()
       }
     }
   }
@@ -324,7 +309,7 @@ struct PluginView: View {
   }
 
   var body: some View {
-    if processing {
+    if downloading {
       ProgressView(value: downloadProgress, total: 1)
     }
     HStack {
@@ -368,7 +353,7 @@ struct PluginView: View {
                     }
                     Button {
                       showUpdateAvailable = false
-                      install(true, isUpdate: true)
+                      install(isUpdate: true)
                     } label: {
                       Text("Update")
                     }.buttonStyle(.borderedProminent)
@@ -376,8 +361,34 @@ struct PluginView: View {
                 }.padding()
               }
           }
-          Button("Uninstall", role: .destructive, action: uninstall).disabled(
-            selectedInstalled.isEmpty || processing)
+          Button {
+            showConfirmUninstall = true
+          } label: {
+            Text("Uninstall")
+          }.disabled(
+            selectedInstalled.isEmpty || processing
+          )
+          .sheet(isPresented: $showConfirmUninstall) {
+            VStack(spacing: gapSize) {
+              Text("Are you sure to uninstall selected plugins?")
+
+              Text("Fcitx5 will auto restart.")
+
+              HStack {
+                Button {
+                  showConfirmUninstall = false
+                } label: {
+                  Text("Cancel")
+                }
+                Button {
+                  showConfirmUninstall = false
+                  uninstall()
+                } label: {
+                  Text("OK")
+                }.buttonStyle(.borderedProminent)
+              }
+            }.padding()
+          }
         }
       }
       VStack {
@@ -388,22 +399,13 @@ struct PluginView: View {
         }.contextMenu(forSelectionType: String.self) { items in
         } primaryAction: { items in
           // Double click
-          install(false)
+          install()
         }
         HStack {
           Button {
-            install(false)
+            install()
           } label: {
             Text("Install")
-          }.disabled(selectedAvailable.isEmpty || processing)
-            .buttonStyle(.borderedProminent)
-          Button {
-            install(true)
-          } label: {
-            Text("Install silently").tooltip(
-              NSLocalizedString(
-                "Upgrading a plugin needs to restart IM. Click it to auto restart on demand.",
-                comment: ""))
           }.disabled(selectedAvailable.isEmpty || processing)
             .buttonStyle(.borderedProminent)
           Button {
@@ -437,16 +439,6 @@ struct PluginView: View {
         }
       }
     }.padding()
-      .sheet(isPresented: $promptRestart) {
-        VStack {
-          Text("Please restart Fcitx5 in IM menu")
-          Button {
-            promptRestart = false
-          } label: {
-            Text("OK")
-          }.buttonStyle(.borderedProminent)
-        }.padding()
-      }
       .toast(isPresenting: $showUpToDate) {
         AlertToast(
           displayMode: .hud,
