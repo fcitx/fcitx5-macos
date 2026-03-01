@@ -31,12 +31,16 @@ struct Group: Codable {
 struct GroupItem: Identifiable, Codable {
   let name: String
   let displayName: String
+  let isKeyboard: Bool
+  let layout: String
   let id = UUID()
 
   // Silence warning: immutable property will not be decoded.
   enum CodingKeys: String, CodingKey {
     case name
     case displayName
+    case isKeyboard
+    case layout
   }
 }
 
@@ -50,8 +54,10 @@ struct InputMethodConfigView: View {
     title: NSLocalizedString("Rename group", comment: "dialog title"),
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
-  @State var addingInputMethod = false
-  @State fileprivate var addToGroup: Group?
+  @State private var addingInputMethod = false
+  @State private var setInputMethodLayout = false
+  @State private var selectedGroup: Group?
+  @State private var selectedGroupItemToSetLayout: GroupItem?
   @State private var mouseHoverIMID: UUID?
   @State private var selectedItem: UUID?
 
@@ -130,7 +136,7 @@ struct InputMethodConfigView: View {
             }
 
             Button {
-              addToGroup = group
+              selectedGroup = group
               addingInputMethod = true
             } label: {
               Text("Add input methods")
@@ -141,6 +147,17 @@ struct InputMethodConfigView: View {
                 Text(inputMethod.displayName)
                 Spacer()
                 if mouseHoverIMID == inputMethod.id {
+                  if !inputMethod.isKeyboard {
+                    Button {
+                      selectedGroup = group
+                      selectedGroupItemToSetLayout = inputMethod
+                      setInputMethodLayout = true
+                    } label: {
+                      Image(systemName: "keyboard.macwindow")
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                    .help(NSLocalizedString("Set keyboard layout of input method", comment: ""))
+                  }
                   Button {
                     viewModel.removeItem(group.name, inputMethod.id)
                   } label: {
@@ -151,7 +168,6 @@ struct InputMethodConfigView: View {
                       .contentShape(Rectangle())
                   }
                   .buttonStyle(BorderlessButtonStyle())
-                  .frame(alignment: .trailing)
                 }
               }
               .onHover { hovering in
@@ -172,9 +188,17 @@ struct InputMethodConfigView: View {
             viewModel.addGroup(input)
           }
         }
-        Button(NSLocalizedString("Refresh", comment: "")) {
-          viewModel.load()
-        }
+      }
+      .sheet(isPresented: $setInputMethodLayout) {
+        KeyboardLayoutView(
+          group: $selectedGroup, groupItem: $selectedGroupItemToSetLayout,
+          setLayout: {
+            if let group = selectedGroup, let groupItem = selectedGroupItemToSetLayout {
+              Fcitx.setInputMethodLayout(
+                group.name, groupItem.name, String($0.dropFirst("keyboard-".count)))
+              refresh()
+            }
+          })
       }
     } detail: {
       if let selectedItem = selectedItem {
@@ -205,10 +229,8 @@ struct InputMethodConfigView: View {
     }
     .sheet(isPresented: $addingInputMethod) {
       AvailableInputMethodView(
-        group: $addToGroup,
-        onImport: {
-          viewModel.load()
-        },
+        group: $selectedGroup,
+        onImport: refresh,
         onAdd: add
       )
     }.onChange(of: selectedItem) { _ in
@@ -217,7 +239,7 @@ struct InputMethodConfigView: View {
   }
 
   private func add(_ inputMethods: Set<InputMethod>) {
-    if let groupName = addToGroup?.name {
+    if let groupName = selectedGroup?.name {
       viewModel.addItems(groupName, inputMethods)
     }
   }
@@ -294,7 +316,8 @@ struct InputMethodConfigView: View {
       for i in 0..<self.groups.count {
         if self.groups[i].name == groupName {
           for im in ims {
-            let item = GroupItem(name: im.name, displayName: im.displayName)
+            let item = GroupItem(
+              name: im.name, displayName: im.displayName, isKeyboard: im.isKeyboard, layout: "")
             self.groups[i].inputMethods.append(item)
             self.uuidToIM[item.id] = item.name
           }
@@ -309,6 +332,7 @@ struct InputMethod: Codable, Hashable {
   let name: String
   let displayName: String
   let languageCode: String
+  let isKeyboard: Bool
 }
 
 /// A common modal dialog view-model + view builder for getting user
