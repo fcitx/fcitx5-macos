@@ -376,8 +376,7 @@ void imSetGroups(const char *json) noexcept {
             for (const auto &im : g["inputMethods"]) {
                 auto &item = imList.emplace_back(im["name"]);
                 auto layoutIt = im.find("layout");
-                if (layoutIt != im.end() && !layoutIt->is_null() &&
-                    !layoutIt->get<std::string>().empty()) {
+                if (layoutIt != im.end() && layoutIt->is_string()) {
                     item.setLayout(*layoutIt);
                 }
             }
