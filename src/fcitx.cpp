@@ -294,13 +294,16 @@ void imSetCurrentGroup(const char *groupName) noexcept {
     });
 }
 
-static nlohmann::json json_describe_im(const fcitx::InputMethodEntry &entry) {
+static nlohmann::json json_describe_im(const fcitx::InputMethodEntry &entry,
+                                       const std::string &layout = "") {
     nlohmann::json j;
     j["name"] = entry.uniqueName();
     j["displayName"] = entry.nativeName() != "" ? entry.nativeName()
                        : entry.name() != ""     ? entry.name()
                                                 : entry.uniqueName();
     j["languageCode"] = entry.languageCode();
+    j["isKeyboard"] = entry.isKeyboard();
+    j["layout"] = layout;
     return j;
 }
 
@@ -346,7 +349,7 @@ std::string imGetGroups() noexcept {
                 auto ims = nlohmann::json::array();
                 for (const auto &im : group->inputMethodList()) {
                     if (auto entry = imMgr.entry(im.name())) {
-                        ims.push_back(json_describe_im(*entry));
+                        ims.push_back(json_describe_im(*entry, im.layout()));
                     }
                 }
                 g["inputMethods"] = ims;
@@ -371,7 +374,11 @@ void imSetGroups(const char *json) noexcept {
             auto &imList = updated.inputMethodList();
             imList.clear();
             for (const auto &im : g["inputMethods"]) {
-                imList.emplace_back(im["name"]);
+                auto &item = imList.emplace_back(im["name"]);
+                auto layoutIt = im.find("layout");
+                if (layoutIt != im.end() && layoutIt->is_string()) {
+                    item.setLayout(*layoutIt);
+                }
             }
             imMgr.setGroup(updated);
         }
@@ -387,6 +394,24 @@ void imSetGroups(const char *json) noexcept {
 void imSetCurrentIM(const char *imName) noexcept {
     return with_fcitx(
         [=](Fcitx &fcitx) { fcitx.instance()->setCurrentInputMethod(imName); });
+}
+
+void setInputMethodLayout(const char *group, const char *im,
+                          const char *layout) noexcept {
+    return with_fcitx([=](Fcitx &fcitx) {
+        auto &imMgr = fcitx.instance()->inputMethodManager();
+        if (auto g = imMgr.group(group)) {
+            auto updated = *g;
+            for (auto &imEntry : updated.inputMethodList()) {
+                if (imEntry.name() == im) {
+                    imEntry.setLayout(layout);
+                    break;
+                }
+            }
+            imMgr.setGroup(updated);
+            imMgr.save();
+        }
+    });
 }
 
 void toggleInputMethod() noexcept {
