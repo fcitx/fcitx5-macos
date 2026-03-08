@@ -346,6 +346,7 @@ std::string imGetGroups() noexcept {
             if (auto group = imMgr.group(groupName)) {
                 nlohmann::json g;
                 g["name"] = groupName;
+                g["layout"] = group->defaultLayout();
                 auto ims = nlohmann::json::array();
                 for (const auto &im : group->inputMethodList()) {
                     if (auto entry = imMgr.entry(im.name())) {

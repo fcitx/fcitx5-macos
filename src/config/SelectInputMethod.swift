@@ -263,17 +263,33 @@ struct AvailableInputMethodView: View {
   }
 }
 
+func dropKeyboardPrefix(_ layout: String) -> String {
+  return String(layout.dropFirst("keyboard-".count))
+}
+
 struct KeyboardLayoutView: View {
   @Environment(\.presentationMode) var presentationMode
 
   @StateObject private var viewModel = SelectIMViewModel(domain: .allLayouts)
   @State private var selection: InputMethod?
   @State private var enabled = Set<String>()
+  @State private var symbols = [[String]]()
+  @State private var symbolsCache = [String: [[String]]]()
 
   // Use @Binding var instead of let to avoid redraw on first load if input method has a non-default layout.
   @Binding var group: Group?
   @Binding var groupItem: GroupItem?
   let setLayout: (String) -> Void
+
+  private func setSymbols(_ layout: String) {
+    if let cached = symbolsCache[layout] {
+      symbols = cached
+    } else {
+      let result = decodeJSON(String(Fcitx.getSymbolsOfLayout(layout)), [[String]]())
+      symbolsCache[layout] = result
+      symbols = result
+    }
+  }
 
   var body: some View {
     if let groupItem = groupItem {
@@ -308,6 +324,8 @@ struct KeyboardLayoutView: View {
           presentationMode.wrappedValue.dismiss()
         }
 
+        KeyboardViewer(symbols: symbols)
+
         HStack {
           Button {
             presentationMode.wrappedValue.dismiss()
@@ -338,8 +356,17 @@ struct KeyboardLayoutView: View {
     }
     .frame(minWidth: 640, minHeight: 480)
     .onAppear {
-      enabled = Set(group?.inputMethods.map { $0.name } ?? [])
-      viewModel.refresh(enabled)
+      if let group = group, let groupItem = groupItem {
+        setSymbols(groupItem.layout.isEmpty ? group.layout : groupItem.layout)
+        enabled = Set(group.inputMethods.map { $0.name })
+        viewModel.refresh(enabled)
+      }
+    }
+    .onChange(of: selection) { newValue in
+      if let im = newValue {
+        let layout = dropKeyboardPrefix(im.name)
+        setSymbols(layout)
+      }
     }
   }
 }
