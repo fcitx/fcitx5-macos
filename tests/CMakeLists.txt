@@ -21,6 +21,10 @@ add_executable(key-cpp testkey.cpp)
 target_link_libraries(key-cpp Keycode)
 add_test(NAME key-cpp COMMAND key-cpp)
 
+add_executable(layout-cpp testlayout.cpp)
+target_link_libraries(layout-cpp Fcitx5Objs)
+add_test(NAME layout-cpp COMMAND layout-cpp)
+
 add_executable(KeySwift testkey.swift
     ${PROJECT_SOURCE_DIR}/src/config/keycode.swift
     ${PROJECT_SOURCE_DIR}/src/config/keyrecorder.swift

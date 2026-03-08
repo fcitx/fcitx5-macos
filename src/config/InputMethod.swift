@@ -25,6 +25,7 @@ class InputMethodConfigController: ConfigWindowController {
 
 struct Group: Codable {
   var name: String
+  var layout: String
   var inputMethods: [GroupItem]
 }
 
@@ -195,7 +196,7 @@ struct InputMethodConfigView: View {
           setLayout: {
             if let group = selectedGroup, let groupItem = selectedGroupItemToSetLayout {
               Fcitx.setInputMethodLayout(
-                group.name, groupItem.name, String($0.dropFirst("keyboard-".count)))
+                group.name, groupItem.name, dropKeyboardPrefix($0))
               refresh()
             }
           })
@@ -277,7 +278,7 @@ struct InputMethodConfigView: View {
       if name == "" || groups.contains(where: { $0.name == name }) {
         return
       }
-      groups.append(Group(name: name, inputMethods: []))
+      groups.append(Group(name: name, layout: "us", inputMethods: []))
       save()
     }
 
