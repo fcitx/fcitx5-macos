@@ -1,9 +1,10 @@
 #include <nlohmann/json.hpp>
 #include <xkbcommon/xkbcommon.h>
+#include "fcitx-public.h"
 #include "../fcitx5/src/lib/fcitx-utils/key.h"
 #include "../fcitx5/src/lib/fcitx/misc_p.h"
 
-std::string getSymbolsOfLayout(const char *layout) {
+std::string getSymbolsOfLayout(const char *layout) noexcept {
     auto [layoutStr, variant] = fcitx::parseLayout(layout);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
