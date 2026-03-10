@@ -15,6 +15,11 @@ struct SyncResponse: Codable {
 let capsLock = NSEvent.ModifierFlags.capsLock.rawValue
 let shift = NSEvent.ModifierFlags.shift.rawValue
 
+@MainActor class ModifierState: ObservableObject {
+  static let shared = ModifierState()
+  @Published var shift = false
+}
+
 class FcitxInputController: IMKInputController {
   let uuid: ICUUID
   let appId: String
@@ -106,6 +111,9 @@ class FcitxInputController: IMKInputController {
         // Shift release following press when text selection is changed.
         // Send a no-op key event to fcitx so that Shift+Click doesn't trigger im toggle.
         process_key(uuid, 0, 0, 0, false, false)
+      }
+      Task { @MainActor in
+        ModifierState.shared.shift = isShiftPress
       }
     }
     lastEventIsShiftPress = isShiftPress
