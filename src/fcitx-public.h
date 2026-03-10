@@ -43,7 +43,7 @@ void activateActionById(int id, bool hotkey) noexcept;
 
 std::string isoName(const char *code) noexcept;
 
-std::string getSymbolsOfLayout(const char *layout) noexcept;
+std::string getSymbolsOfLayout(const char *layout, bool shift) noexcept;
 
 // Tunnel variables
 #include "tunnel.h"

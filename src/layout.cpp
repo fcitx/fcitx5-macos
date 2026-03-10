@@ -4,7 +4,7 @@
 #include "../fcitx5/src/lib/fcitx-utils/key.h"
 #include "../fcitx5/src/lib/fcitx/misc_p.h"
 
-std::string getSymbolsOfLayout(const char *layout) noexcept {
+std::string getSymbolsOfLayout(const char *layout, bool shift) noexcept {
     auto [layoutStr, variant] = fcitx::parseLayout(layout);
 
     struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
@@ -39,14 +39,15 @@ std::string getSymbolsOfLayout(const char *layout) noexcept {
                                                "AB05", "AB06", "AB07", "AB08",
                                                "AB09", "AB10"};
 
-    auto getRow = [&](auto &keys) {
+    auto getRow = [&](auto &keys, bool s) {
         nlohmann::json row = nlohmann::json::array();
         for (const auto &keyName : keys) {
             xkb_keycode_t key = xkb_keymap_key_by_name(keymap, keyName);
             std::string utf8;
             if (key != XKB_KEYCODE_INVALID) {
                 const xkb_keysym_t *syms = nullptr;
-                xkb_keymap_key_get_syms_by_level(keymap, key, 0, 0, &syms);
+                xkb_keymap_key_get_syms_by_level(keymap, key, 0, s ? 1 : 0,
+                                                 &syms);
                 if (syms && syms[0]) {
                     utf8 = fcitx::Key::keySymToUTF8(
                         static_cast<fcitx::KeySym>(syms[0]));
@@ -58,10 +59,10 @@ std::string getSymbolsOfLayout(const char *layout) noexcept {
     };
 
     nlohmann::json result = nlohmann::json::array();
-    result.push_back(getRow(row1Keys));
-    result.push_back(getRow(row2Keys));
-    result.push_back(getRow(row3Keys));
-    result.push_back(getRow(row4Keys));
+    result.push_back(getRow(row1Keys, shift));
+    result.push_back(getRow(row2Keys, shift));
+    result.push_back(getRow(row3Keys, shift));
+    result.push_back(getRow(row4Keys, shift));
 
     xkb_keymap_unref(keymap);
     xkb_context_unref(ctx);
