@@ -1,3 +1,5 @@
+import Fcitx
+import Logging
 import SwiftUI
 
 // Configurable
@@ -35,8 +37,30 @@ private func getBackground(_ colorScheme: ColorScheme, _ fixed: Bool) -> Color {
   }
 }
 
+private class SymbolsCache: ObservableObject {
+  var data = [String: [[String]]]()
+}
+
 struct KeyboardViewer: View {
-  let symbols: [[String]]
+  @ObservedObject private var modifierState = ModifierState.shared
+  @StateObject private var cache = SymbolsCache()
+  @State private var symbols = [[String]]()
+  @Binding var layout: String
+
+  private func updateSymbols() {
+    let key = "\(layout)_\(ModifierState.shared.shift)"
+    if let cached = cache.data[key] {
+      FCITX_DEBUG("KeyboardViewer: hit \(key) cache")
+      symbols = cached
+    } else {
+      FCITX_DEBUG("KeyboardViewer: miss \(key) cache")
+      let result = decodeJSON(
+        String(Fcitx.getSymbolsOfLayout(layout, modifierState.shift)), [[String]]())
+      cache.data[key] = result
+      symbols = result
+    }
+  }
+
   @Environment(\.colorScheme) var colorScheme
 
   private struct RoundedCorner: Shape {
@@ -106,68 +130,78 @@ struct KeyboardViewer: View {
   }
 
   var body: some View {
-    if symbols.count == 4 {
-      let keyboard = VStack(spacing: spacing) {
-        HStack(spacing: spacing) {
-          ForEach(symbols[0].indices, id: \.self) { col in
-            Key(symbols[0][col], fixed: false)
+    VStack {
+      if symbols.count == 4 {
+        let keyboard = VStack(spacing: spacing) {
+          HStack(spacing: spacing) {
+            ForEach(symbols[0].indices, id: \.self) { col in
+              Key(symbols[0][col], fixed: false)
+            }
+            Key("⌫", width: deleteWidth)
           }
-          Key("⌫", width: deleteWidth)
+          HStack(spacing: spacing) {
+            Key("⇥", width: deleteWidth)
+            ForEach(symbols[1].indices, id: \.self) { col in
+              Key(symbols[1][col], fixed: false)
+            }
+          }
+          HStack(spacing: spacing) {
+            Key("⇪", width: returnWidth)
+            ForEach(symbols[2].indices, id: \.self) { col in
+              Key(symbols[2][col], fixed: false)
+            }
+            Key("↩", width: returnWidth)
+          }
+          HStack(spacing: spacing) {
+            Key("⇧", width: shiftWidth)
+            ForEach(symbols[3].indices, id: \.self) { col in
+              Key(symbols[3][col], fixed: false)
+            }
+            Key("⇧", width: shiftWidth)
+          }
+          HStack(spacing: spacing) {
+            Key("fn")
+            Key("⌃")
+            Key("⌥")
+            Key("⌘", width: commandWidth)
+            Key("", width: spaceWidth)
+            Key("⌘", width: commandWidth)
+            Key("⌥")
+            VStack {
+              Spacer()
+              Key("←", height: arrowKeyHeight)
+            }
+            .frame(height: keyWidth)
+            VStack(spacing: spacing / 2) {
+              Key("↑", height: arrowKeyHeight, topRounded: true, bottomRounded: false)
+              Key("↓", height: arrowKeyHeight, topRounded: false, bottomRounded: true)
+            }
+            VStack {
+              Spacer()
+              Key("→", height: arrowKeyHeight)
+            }
+            .frame(height: keyWidth)
+          }
         }
-        HStack(spacing: spacing) {
-          Key("⇥", width: deleteWidth)
-          ForEach(symbols[1].indices, id: \.self) { col in
-            Key(symbols[1][col], fixed: false)
-          }
-        }
-        HStack(spacing: spacing) {
-          Key("⇪", width: returnWidth)
-          ForEach(symbols[2].indices, id: \.self) { col in
-            Key(symbols[2][col], fixed: false)
-          }
-          Key("↩", width: returnWidth)
-        }
-        HStack(spacing: spacing) {
-          Key("⇧", width: shiftWidth)
-          ForEach(symbols[3].indices, id: \.self) { col in
-            Key(symbols[3][col], fixed: false)
-          }
-          Key("⇧", width: shiftWidth)
-        }
-        HStack(spacing: spacing) {
-          Key("fn")
-          Key("⌃")
-          Key("⌥")
-          Key("⌘", width: commandWidth)
-          Key("", width: spaceWidth)
-          Key("⌘", width: commandWidth)
-          Key("⌥")
-          VStack {
-            Spacer()
-            Key("←", height: arrowKeyHeight)
-          }
-          .frame(height: keyWidth)
-          VStack(spacing: spacing / 2) {
-            Key("↑", height: arrowKeyHeight, topRounded: true, bottomRounded: false)
-            Key("↓", height: arrowKeyHeight, topRounded: false, bottomRounded: true)
-          }
-          VStack {
-            Spacer()
-            Key("→", height: arrowKeyHeight)
-          }
-          .frame(height: keyWidth)
-        }
-      }
-      .padding(spacing)
+        .padding(spacing)
 
-      if colorScheme == .dark {
-        keyboard.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))
-      } else {
-        keyboard.overlay(
-          RoundedRectangle(cornerRadius: keyCornerRadius)
-            .stroke(Color(.sRGB, red: 199 / 255, green: 206 / 255, blue: 211 / 255), lineWidth: 1)
-        )
+        if colorScheme == .dark {
+          keyboard.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))
+        } else {
+          keyboard.overlay(
+            RoundedRectangle(cornerRadius: keyCornerRadius)
+              .stroke(Color(.sRGB, red: 199 / 255, green: 206 / 255, blue: 211 / 255), lineWidth: 1)
+          )
+        }
       }
+    }.onAppear {
+      updateSymbols()
+    }
+    .onChange(of: layout) { _ in
+      updateSymbols()
+    }
+    .onChange(of: modifierState.shift) { shift in
+      updateSymbols()
     }
   }
 }
