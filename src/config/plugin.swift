@@ -218,6 +218,7 @@ struct PluginView: View {
               }.buttonStyle(.plain).help("\(url)")
             }
           }
+          .listRowSeparator(.hidden)
         }
       }
     }
@@ -319,6 +320,7 @@ struct PluginView: View {
         List(selection: $selectedInstalled) {
           categorizePlugins(pluginVM.installedPlugins)
         }
+        .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
         HStack {
           // No plugin update for stable release.
           if releaseTag == "latest" {
@@ -396,7 +398,9 @@ struct PluginView: View {
           maxWidth: .infinity, alignment: .leading)
         List(selection: $selectedAvailable) {
           categorizePlugins(pluginVM.availablePlugins)
-        }.contextMenu(forSelectionType: String.self) { items in
+        }
+        .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
+        .contextMenu(forSelectionType: String.self) { items in
         } primaryAction: { items in
           // Double click
           install()

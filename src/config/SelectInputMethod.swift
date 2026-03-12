@@ -196,6 +196,7 @@ struct AvailableInputMethodView: View {
           List(selection: $selection) {
             ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
               Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
+                .listRowSeparator(.hidden)
             }
           }.contextMenu(forSelectionType: InputMethod.self) { _ in
           } primaryAction: { items in
@@ -203,6 +204,8 @@ struct AvailableInputMethodView: View {
             enabled.formUnion(items.map { $0.name })
             viewModel.refresh(enabled)
           }
+          .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
+          .padding([.top, .leading, .trailing])
         } else {
           Text("Select a language from the left list.").frame(maxHeight: .infinity)
         }
@@ -304,6 +307,7 @@ struct KeyboardLayoutView: View {
         List(selection: $selection) {
           ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
             Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
+              .listRowSeparator(.hidden)
           }
         }.contextMenu(forSelectionType: InputMethod.self) { _ in
         } primaryAction: { items in
@@ -312,6 +316,8 @@ struct KeyboardLayoutView: View {
           }
           dismiss()
         }
+        .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
+        .padding([.top, .leading, .trailing])
 
         KeyboardViewer(layout: $layout)
 

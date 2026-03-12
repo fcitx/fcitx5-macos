@@ -3,6 +3,8 @@ import UniformTypeIdentifiers
 
 let sectionHeaderSize: CGFloat = 16
 let gapSize: CGFloat = 10
+let listBorderRadius: CGFloat = 4
+let listBorderColor = Color.gray.opacity(0.3)
 let checkboxColumnWidth: CGFloat = 20
 let minKeywordColumnWidth: CGFloat = 80
 let minPhraseColumnWidth: CGFloat = 160
