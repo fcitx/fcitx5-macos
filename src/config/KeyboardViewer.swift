@@ -15,6 +15,7 @@ private let shiftWidth: CGFloat = (keyboardWidth - 10 * keyWidth - 11 * spacing)
 private let spaceWidth: CGFloat = 5 * keyWidth + 4 * spacing
 private let commandWidth: CGFloat = (keyboardWidth - spaceWidth - 7 * keyWidth - 9 * spacing) / 2
 private let arrowKeyHeight: CGFloat = (keyWidth - spacing / 2) / 2
+let keyboardHeight: CGFloat = 5 * keyWidth + 4 * spacing + spacing * 2
 
 private func getForeground(_ colorScheme: ColorScheme) -> Color {
   return colorScheme == .dark
@@ -113,6 +114,7 @@ struct KeyboardViewer: View {
 
     var body: some View {
       Text(text)
+        .font(height < keyWidth ? .caption : .body)  // Shrink arrow key labels.
         .foregroundColor(getForeground(colorScheme))
         .frame(width: width, height: height)
         .background(getBackground(colorScheme, fixed))
@@ -166,16 +168,16 @@ struct KeyboardViewer: View {
             Key("⌥")
             VStack {
               Spacer()
-              Key("←", height: arrowKeyHeight)
+              Key("◀", height: arrowKeyHeight)
             }
             .frame(height: keyWidth)
             VStack(spacing: spacing / 2) {
-              Key("↑", height: arrowKeyHeight, topRounded: true, bottomRounded: false)
-              Key("↓", height: arrowKeyHeight, topRounded: false, bottomRounded: true)
+              Key("▲", height: arrowKeyHeight, topRounded: true, bottomRounded: false)
+              Key("▼", height: arrowKeyHeight, topRounded: false, bottomRounded: true)
             }
             VStack {
               Spacer()
-              Key("→", height: arrowKeyHeight)
+              Key("▶", height: arrowKeyHeight)
             }
             .frame(height: keyWidth)
           }

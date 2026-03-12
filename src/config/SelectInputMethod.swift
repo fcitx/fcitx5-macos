@@ -7,6 +7,11 @@ private let popularIMs = [
   "keyboard-us", "pinyin", "shuangpin", "wbx", "rime", "mozc", "hallelujah",
 ]
 
+private let sheetWidth: CGFloat = 640
+private let sheetHeight: CGFloat = 480
+// If column is too narrow, input method list will be wider than keyboard viewer, which is ugly.
+private let columnWidth: CGFloat = 150
+
 enum InputMethodDomain {
   case availableInputMethods
   case allLayouts
@@ -171,6 +176,7 @@ struct AvailableInputMethodView: View {
   @State private var showImportTable = false
   @State private var importTableErrorMsg = ""
   @State private var showImportTableError = false
+  @State private var layout: String = "us"
 
   @Binding var group: Group?
   let onImport: () -> Void
@@ -182,7 +188,7 @@ struct AvailableInputMethodView: View {
         ForEach(languages(viewModel: viewModel), id: \.code) { language in
           Text(language.localized)
         }
-      }
+      }.frame(minWidth: columnWidth)
       Toggle(
         NSLocalizedString("Only show current language", comment: ""),
         isOn: Binding(
@@ -206,6 +212,13 @@ struct AvailableInputMethodView: View {
           }
           .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
           .padding([.top, .leading, .trailing])
+
+          if selection.count == 1, let im = selection.first, im.isKeyboard {
+            KeyboardViewer(layout: $layout).padding([.leading, .trailing])
+          } else {
+            Text("Keyboard layout not available")
+              .frame(height: keyboardHeight)
+          }
         } else {
           Text("Select a language from the left list.").frame(maxHeight: .infinity)
         }
@@ -236,10 +249,15 @@ struct AvailableInputMethodView: View {
         }.padding([.horizontal, .bottom])
       }
     }
-    .frame(minWidth: 640, minHeight: 480)
+    .frame(width: sheetWidth, height: sheetHeight)
     .onAppear {
       enabled = Set(group?.inputMethods.map { $0.name } ?? [])
       viewModel.refresh(enabled)
+    }
+    .onChange(of: selection) { newValue in
+      if let im = newValue.first, im.isKeyboard {
+        self.layout = dropKeyboardPrefix(im.name)
+      }
     }
     .sheet(isPresented: $showImportTable) {
       ImportTableView(
@@ -294,7 +312,7 @@ struct KeyboardLayoutView: View {
         ForEach(languages(viewModel: viewModel), id: \.code) { language in
           Text(language.localized)
         }
-      }
+      }.frame(minWidth: columnWidth)
       Toggle(
         NSLocalizedString("Only show current language", comment: ""),
         isOn: Binding(
@@ -319,7 +337,7 @@ struct KeyboardLayoutView: View {
         .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
         .padding([.top, .leading, .trailing])
 
-        KeyboardViewer(layout: $layout)
+        KeyboardViewer(layout: $layout).padding([.leading, .trailing])
 
         HStack {
           Button {
@@ -349,7 +367,7 @@ struct KeyboardLayoutView: View {
         }.padding([.horizontal, .bottom])
       }
     }
-    .frame(minWidth: 640, minHeight: 480)
+    .frame(width: sheetWidth, height: sheetHeight)
     .onAppear {
       if let group = group, let groupItem = groupItem {
         self.layout = groupItem.layout.isEmpty ? group.layout : groupItem.layout
