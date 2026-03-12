@@ -37,27 +37,23 @@ private func getBackground(_ colorScheme: ColorScheme, _ fixed: Bool) -> Color {
   }
 }
 
-private class SymbolsCache: ObservableObject {
-  var data = [String: [[String]]]()
-}
-
 struct KeyboardViewer: View {
   @ObservedObject private var modifierState = ModifierState.shared
-  @StateObject private var cache = SymbolsCache()
+  @State private var symbolsCache = [String: [[String]]]()
   @State private var symbols = [[String]]()
   @Binding var layout: String
 
   private func updateSymbols() {
     let shift = modifierState.shift
     let key = "\(layout)_\(shift)"
-    if let cached = cache.data[key] {
+    if let cached = symbolsCache[key] {
       FCITX_DEBUG("KeyboardViewer: hit \(key) cache")
       symbols = cached
     } else {
       FCITX_DEBUG("KeyboardViewer: miss \(key) cache")
       let result = decodeJSON(
         String(Fcitx.getSymbolsOfLayout(layout, shift)), [[String]]())
-      cache.data[key] = result
+      symbolsCache[key] = result
       symbols = result
     }
   }
