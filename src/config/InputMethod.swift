@@ -57,8 +57,10 @@ struct InputMethodConfigView: View {
 
   @State private var addingInputMethod = false
   @State private var setInputMethodLayout = false
+  @State private var showKeyboardLayout = false
   @State private var selectedGroup: Group?
   @State private var selectedGroupItemToSetLayout: GroupItem?
+  @State private var selectedGroupItemForLayout: GroupItem?
   @State private var mouseHoverIMID: UUID?
   @State private var selectedItem: UUID?
 
@@ -148,7 +150,17 @@ struct InputMethodConfigView: View {
                 Text(inputMethod.displayName)
                 Spacer()
                 if mouseHoverIMID == inputMethod.id {
-                  if !inputMethod.isKeyboard {
+                  if inputMethod.isKeyboard {
+                    Button {
+                      selectedGroup = group
+                      selectedGroupItemForLayout = inputMethod
+                      showKeyboardLayout = true
+                    } label: {
+                      Image(systemName: "keyboard.macwindow")
+                    }
+                    .buttonStyle(BorderlessButtonStyle())
+                    .help(NSLocalizedString("Show keyboard layout", comment: ""))
+                  } else {
                     Button {
                       selectedGroup = group
                       selectedGroupItemToSetLayout = inputMethod
@@ -200,6 +212,9 @@ struct InputMethodConfigView: View {
               refresh()
             }
           })
+      }
+      .sheet(isPresented: $showKeyboardLayout) {
+        KeyboardInfoView(groupItem: $selectedGroupItemForLayout)
       }
     } detail: {
       if let selectedItem = selectedItem {
@@ -401,5 +416,29 @@ class InputDialog: ObservableObject {
       }
     }.padding()
       .frame(minWidth: 200)
+  }
+}
+
+struct KeyboardInfoView: View {
+  @Binding var groupItem: GroupItem?
+  @Environment(\.dismiss) private var dismiss
+
+  var body: some View {
+    VStack(spacing: gapSize) {
+      if let item = groupItem {
+        Text(item.displayName)
+        KeyboardViewer(
+          layout: Binding(
+            get: { dropKeyboardPrefix(item.name) },
+            set: { _ in }
+          ))
+      }
+      Button {
+        dismiss()
+      } label: {
+        Text("Close")
+      }
+    }
+    .padding()
   }
 }
