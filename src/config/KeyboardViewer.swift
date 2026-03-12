@@ -48,14 +48,15 @@ struct KeyboardViewer: View {
   @Binding var layout: String
 
   private func updateSymbols() {
-    let key = "\(layout)_\(ModifierState.shared.shift)"
+    let shift = modifierState.shift
+    let key = "\(layout)_\(shift)"
     if let cached = cache.data[key] {
       FCITX_DEBUG("KeyboardViewer: hit \(key) cache")
       symbols = cached
     } else {
       FCITX_DEBUG("KeyboardViewer: miss \(key) cache")
       let result = decodeJSON(
-        String(Fcitx.getSymbolsOfLayout(layout, modifierState.shift)), [[String]]())
+        String(Fcitx.getSymbolsOfLayout(layout, shift)), [[String]]())
       cache.data[key] = result
       symbols = result
     }
