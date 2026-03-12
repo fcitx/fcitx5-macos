@@ -51,7 +51,7 @@ class CustomPhraseVM: ObservableObject {
 }
 
 struct CustomPhraseView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   @State private var selectedRows = Set<UUID>()
   @ObservedObject private var customphraseVM = CustomPhraseVM()
@@ -188,7 +188,7 @@ struct CustomPhraseView: View {
         }
 
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Close")
         }

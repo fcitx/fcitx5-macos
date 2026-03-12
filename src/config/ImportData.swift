@@ -242,7 +242,7 @@ class ImportDataVM: ObservableObject {
 }
 
 struct ImportDataView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) var dismiss
 
   @ObservedObject private var importDataVM = ImportDataVM()
   @State private var failedItems = [String]()
@@ -264,7 +264,7 @@ struct ImportDataView: View {
       }.frame(minWidth: 300, minHeight: 200)
       HStack {
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Done")
         }

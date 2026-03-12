@@ -2,7 +2,7 @@ import Fcitx
 import SwiftUI
 
 struct ExportThemeView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
   @State private var themeName = ""
 
   var body: some View {
@@ -10,14 +10,14 @@ struct ExportThemeView: View {
       TextField(NSLocalizedString("Theme name", comment: ""), text: $themeName)
       HStack {
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Cancel")
         }
         Button {
           Fcitx.setConfig(
             "\(webpanelUri)/exportcurrenttheme", "\"\(quote(themeName))\"")
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("OK")
         }.disabled(themeName.isEmpty)
