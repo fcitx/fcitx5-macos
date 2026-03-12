@@ -32,7 +32,7 @@ private func convertTxt() -> [String] {
 }
 
 struct ImportTableView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   @ObservedObject private var importTableVM = ImportTableVM()
   let onAdd: ([String]) -> Void
@@ -63,7 +63,7 @@ struct ImportTableView: View {
 
       HStack {
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Cancel")
         }
@@ -75,7 +75,7 @@ struct ImportTableView: View {
           let newIMs = importTableVM.ims.filter({ im in !existingIMs.contains(im) })
           Fcitx.reload()
           onAdd(newIMs)
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
           if !failures.isEmpty {
             let msg = String(
               format: NSLocalizedString("Failed to convert txt table(s): %@", comment: ""),

@@ -74,7 +74,7 @@ private func quickPhrasesToString(_ quickPhrases: [QuickPhrase]) -> String {
 }
 
 struct QuickPhraseView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) var dismiss
 
   @State private var showNewFile = false
   @State private var newFileName = ""
@@ -218,7 +218,7 @@ struct QuickPhraseView: View {
         }
 
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Close")
         }

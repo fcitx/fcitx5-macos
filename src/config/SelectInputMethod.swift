@@ -163,7 +163,7 @@ private func languages(viewModel: SelectIMViewModel) -> [LocalizedLanguageCode] 
 }
 
 struct AvailableInputMethodView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   @StateObject private var viewModel = SelectIMViewModel(domain: .availableInputMethods)
   @State private var selection = Set<InputMethod>()
@@ -209,7 +209,7 @@ struct AvailableInputMethodView: View {
 
         HStack {
           Button {
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           } label: {
             Text("Cancel")
           }
@@ -225,7 +225,7 @@ struct AvailableInputMethodView: View {
           }
           Button {
             onAdd(selection)
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           } label: {
             Text("Add")
           }.buttonStyle(.borderedProminent)
@@ -268,7 +268,7 @@ func dropKeyboardPrefix(_ layout: String) -> String {
 }
 
 struct KeyboardLayoutView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   @StateObject private var viewModel = SelectIMViewModel(domain: .allLayouts)
   @State private var selection: InputMethod?
@@ -310,21 +310,21 @@ struct KeyboardLayoutView: View {
           if let selection = selection {
             setLayout(selection.name)
           }
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         }
 
         KeyboardViewer(layout: $layout)
 
         HStack {
           Button {
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           } label: {
             Text("Cancel")
           }
 
           Button {
             setLayout("")
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           } label: {
             Text("Reset to default")
           }.disabled(groupItem?.layout.isEmpty ?? true)
@@ -335,7 +335,7 @@ struct KeyboardLayoutView: View {
             if let selection = selection {
               setLayout(selection.name)
             }
-            presentationMode.wrappedValue.dismiss()
+            dismiss()
           } label: {
             Text("OK")
           }.buttonStyle(.borderedProminent)

@@ -57,7 +57,7 @@ class DictVM: ObservableObject {
 }
 
 struct DictManagerView: View {
-  @Environment(\.presentationMode) var presentationMode
+  @Environment(\.dismiss) private var dismiss
 
   let openPanel = NSOpenPanel()
   @AppStorage("DictManagerSelectedDirectory") var dictManagerSelectedDirectory: String?
@@ -177,7 +177,7 @@ struct DictManagerView: View {
         }
 
         Button {
-          presentationMode.wrappedValue.dismiss()
+          dismiss()
         } label: {
           Text("Close")
         }
