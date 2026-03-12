@@ -269,39 +269,16 @@ func dropKeyboardPrefix(_ layout: String) -> String {
 
 struct KeyboardLayoutView: View {
   @Environment(\.presentationMode) var presentationMode
-  @ObservedObject private var modifierState = ModifierState.shared
 
   @StateObject private var viewModel = SelectIMViewModel(domain: .allLayouts)
   @State private var selection: InputMethod?
   @State private var enabled = Set<String>()
-  @State private var symbols = [[String]]()
-  @State private var symbolsCache = [String: [[String]]]()
-  @State private var layout: String = "us" {
-    didSet {
-      updateSymbols()
-    }
-  }
-  @State private var shift = false {
-    didSet {
-      updateSymbols()
-    }
-  }
+  @State private var layout: String = "us"
 
   // Use @Binding var instead of let to avoid redraw on first load if input method has a non-default layout.
   @Binding var group: Group?
   @Binding var groupItem: GroupItem?
   let setLayout: (String) -> Void
-
-  private func updateSymbols() {
-    let key = "\(layout)_\(shift)"
-    if let cached = symbolsCache[key] {
-      symbols = cached
-    } else {
-      let result = decodeJSON(String(Fcitx.getSymbolsOfLayout(layout, shift)), [[String]]())
-      symbolsCache[key] = result
-      symbols = result
-    }
-  }
 
   var body: some View {
     if let groupItem = groupItem {
@@ -336,7 +313,7 @@ struct KeyboardLayoutView: View {
           presentationMode.wrappedValue.dismiss()
         }
 
-        KeyboardViewer(symbols: symbols)
+        KeyboardViewer(layout: $layout)
 
         HStack {
           Button {
@@ -378,9 +355,6 @@ struct KeyboardLayoutView: View {
       if let im = newValue {
         self.layout = dropKeyboardPrefix(im.name)
       }
-    }
-    .onReceive(modifierState.$shift) { shift in
-      self.shift = shift
     }
   }
 }
