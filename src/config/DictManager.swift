@@ -57,7 +57,7 @@ class DictVM: ObservableObject {
 }
 
 struct DictManagerView: View {
-  @Environment(\.dismiss) var dismiss
+  @Environment(\.dismiss) private var dismiss
 
   let openPanel = NSOpenPanel()
   @AppStorage("DictManagerSelectedDirectory") var dictManagerSelectedDirectory: String?

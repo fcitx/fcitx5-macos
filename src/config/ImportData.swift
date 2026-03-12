@@ -242,7 +242,7 @@ class ImportDataVM: ObservableObject {
 }
 
 struct ImportDataView: View {
-  @Environment(\.dismiss) var dismiss
+  @Environment(\.dismiss) private var dismiss
 
   @ObservedObject private var importDataVM = ImportDataVM()
   @State private var failedItems = [String]()
