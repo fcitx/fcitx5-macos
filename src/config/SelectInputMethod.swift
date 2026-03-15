@@ -69,7 +69,7 @@ class SelectIMViewModel: ObservableObject {
       case .allLayouts:
         $0.isKeyboard
       case .mappableLayouts:
-        $0.isKeyboard && layoutMap.keys.contains(dropKeyboardPrefix($0.name))
+        $0.isKeyboard && layoutMap[dropKeyboardPrefix($0.name)] != nil
       }
     }
   }
