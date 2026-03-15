@@ -1,5 +1,7 @@
 import AppKit
+import CxxFrontend
 import InputMethodKit
+import Logging
 
 nonisolated(unsafe) private var u16pos = 0
 nonisolated(unsafe) private var currentPreedit = ""
@@ -196,4 +198,15 @@ public func getSelection() -> String {
   // TODO: remove it after Swift 6.3, test by copying Chinese: https://github.com/swiftlang/swift/issues/69870
   str.makeContiguousUTF8()
   return str
+}
+
+// Call it on
+// 1. Open a new App: FcitxInputController.init
+// 2. Switch App: FcitxInputController.activateServer
+// 3. Switch group: InputMethodGroupChanged
+public func overrideKeyboardLayout() {
+  let layout = String(getCurrentGroupLayout())
+  let appleLayout = layoutMap[layout] ?? "ABC"
+  FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
+  client?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
 }

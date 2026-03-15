@@ -44,6 +44,11 @@ class FcitxInputController: IMKInputController {
     self.uuid = create_input_context(appId, accentColor)
     super.init(server: server, delegate: delegate, client: client)
     setController(self, self.client)
+    // On Chrome's home page execute document.addEventListener('keydown', console.log),
+    // restart Fcitx5, click another app, then click blank area of Chrome's home page.
+    // Now FcitxInputController is created but activateServer is not called, so we have
+    // to override keyboard layout here as well.
+    overrideKeyboardLayout()
   }
 
   deinit {
@@ -177,14 +182,11 @@ class FcitxInputController: IMKInputController {
 
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
-    // overrideKeyboard is needed for pressing space to play in Shotcut.
-    if let client = client as? IMKTextInput {
-      client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.ABC")
-    }
     setController(self, self.client)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
     focus_in(uuid, isPassword)
+    overrideKeyboardLayout()
   }
 
   override func deactivateServer(_ client: Any!) {

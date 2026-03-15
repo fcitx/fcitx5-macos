@@ -16,3 +16,4 @@ void destroy_input_context(ICUUID uuid) noexcept;
 void focus_in(ICUUID uuid, bool isPassword) noexcept;
 std::string commit_composition(ICUUID uuid) noexcept;
 void focus_out(ICUUID uuid) noexcept;
+std::string getCurrentGroupLayout() noexcept;

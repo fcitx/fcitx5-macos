@@ -56,6 +56,7 @@ struct InputMethodConfigView: View {
     prompt: NSLocalizedString("Group name", comment: "dialog prompt"))
 
   @State private var addingInputMethod = false
+  @State private var setGroupLayout = false
   @State private var setInputMethodLayout = false
   @State private var showKeyboardLayout = false
   @State private var selectedGroup: Group?
@@ -128,6 +129,16 @@ struct InputMethodConfigView: View {
               .buttonStyle(BorderlessButtonStyle())
               .foregroundColor(.secondary)  // As if it's in section header.
               .help(NSLocalizedString("Rename", comment: "") + " '\(group.name)'")
+
+              Button {
+                selectedGroup = group
+                setGroupLayout = true
+              } label: {
+                Image(systemName: "keyboard.macwindow")
+              }
+              .buttonStyle(BorderlessButtonStyle())
+              .foregroundColor(.secondary)
+              .help(NSLocalizedString("Set keyboard layout of group", comment: ""))
             }
             // Make right-click available in the whole line.
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -202,13 +213,25 @@ struct InputMethodConfigView: View {
           }
         }
       }
+      .sheet(isPresented: $setGroupLayout) {
+        KeyboardLayoutView(
+          group: $selectedGroup, groupItem: .constant(nil),
+          setLayout: { layout in
+            if let group = selectedGroup,
+              let index = viewModel.groups.firstIndex(where: { $0.name == group.name })
+            {
+              viewModel.groups[index].layout = layout
+              viewModel.save()
+            }
+          })
+      }
       .sheet(isPresented: $setInputMethodLayout) {
         KeyboardLayoutView(
           group: $selectedGroup, groupItem: $selectedGroupItemToSetLayout,
           setLayout: {
             if let group = selectedGroup, let groupItem = selectedGroupItemToSetLayout {
               Fcitx.setInputMethodLayout(
-                group.name, groupItem.name, dropKeyboardPrefix($0))
+                group.name, groupItem.name, $0)
               refresh()
             }
           })
