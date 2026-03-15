@@ -15,6 +15,7 @@
 #include <fcitx/addonmanager.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputmethodengine.h>
+#include <fcitx/inputmethodmanager.h>
 #include <fcitx/inputpanel.h>
 #include <nlohmann/json.hpp>
 
@@ -35,6 +36,13 @@ MacosFrontend::MacosFrontend(Instance *instance)
     eventHandlers_.emplace_back(instance_->watchEvent(
         EventType::InputContextInputMethodActivated, EventWatcherPhase::Default,
         [this](Event &event) { updateStatusItemText(); }));
+    eventHandlers_.emplace_back(
+        instance_->watchEvent(EventType::InputMethodGroupChanged,
+                              EventWatcherPhase::Default, [this](Event &event) {
+                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                    SwiftFrontend::overrideKeyboardLayout();
+                                  });
+                              }));
     reloadConfig();
 }
 
@@ -423,4 +431,13 @@ std::string commit_composition(ICUUID uuid) noexcept {
 
 void focus_out(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
+}
+
+std::string get_current_group_layout() noexcept {
+    return with_fcitx([=](Fcitx &fcitx) {
+        return fcitx.instance()
+            ->inputMethodManager()
+            .currentGroup()
+            .defaultLayout();
+    });
 }

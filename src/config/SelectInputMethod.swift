@@ -1,5 +1,6 @@
 import AlertToast
 import Fcitx
+import SwiftFrontend
 import SwiftUI
 
 private let en = "en"
@@ -15,6 +16,7 @@ private let columnWidth: CGFloat = 150
 enum InputMethodDomain {
   case availableInputMethods
   case allLayouts
+  case mappableLayouts
 }
 
 private func normalizeLanguageCode(_ code: String) -> String {
@@ -66,6 +68,8 @@ class SelectIMViewModel: ObservableObject {
         !alreadyEnabled.contains($0.name)
       case .allLayouts:
         $0.isKeyboard
+      case .mappableLayouts:
+        $0.isKeyboard && layoutMap[dropKeyboardPrefix($0.name)] != nil
       }
     }
   }
@@ -291,7 +295,7 @@ func dropKeyboardPrefix(_ layout: String) -> String {
 struct KeyboardLayoutView: View {
   @Environment(\.dismiss) private var dismiss
 
-  @StateObject private var viewModel = SelectIMViewModel(domain: .allLayouts)
+  @StateObject private var viewModel: SelectIMViewModel
   @State private var selection: InputMethod?
   @State private var enabled = Set<String>()
   @State private var layout: String = "us"
@@ -301,11 +305,23 @@ struct KeyboardLayoutView: View {
   @Binding var groupItem: GroupItem?
   let setLayout: (String) -> Void
 
+  init(
+    group: Binding<Group?>, groupItem: Binding<GroupItem?>, setLayout: @escaping (String) -> Void
+  ) {
+    let domain: InputMethodDomain = groupItem.wrappedValue == nil ? .mappableLayouts : .allLayouts
+    _viewModel = StateObject(wrappedValue: SelectIMViewModel(domain: domain))
+    _group = group
+    _groupItem = groupItem
+    self.setLayout = setLayout
+  }
+
   var body: some View {
     if let groupItem = groupItem {
       Text(
         "Current keyboard layout: \(groupItem.layout.isEmpty ? NSLocalizedString("Default", comment: "") : viewModel.layoutDisplayName(groupItem.layout))"
       ).padding([.top])
+    } else if let group = group {
+      Text("Current keyboard layout: \(viewModel.layoutDisplayName(group.layout))").padding([.top])
     }
     NavigationSplitView {
       List(selection: $viewModel.selectedLanguageCode) {
@@ -330,7 +346,7 @@ struct KeyboardLayoutView: View {
         }.contextMenu(forSelectionType: InputMethod.self) { _ in
         } primaryAction: { items in
           if let selection = selection {
-            setLayout(selection.name)
+            setLayout(dropKeyboardPrefix(selection.name))
           }
           dismiss()
         }
@@ -347,17 +363,17 @@ struct KeyboardLayoutView: View {
           }
 
           Button {
-            setLayout("")
+            setLayout(groupItem == nil ? "us" : "")
             dismiss()
           } label: {
             Text("Reset to default")
-          }.disabled(groupItem?.layout.isEmpty ?? true)
+          }.disabled(groupItem?.layout.isEmpty ?? (group?.layout == "us"))
 
           Spacer()
 
           Button {
             if let selection = selection {
-              setLayout(selection.name)
+              setLayout(dropKeyboardPrefix(selection.name))
             }
             dismiss()
           } label: {
@@ -369,8 +385,12 @@ struct KeyboardLayoutView: View {
     }
     .frame(width: sheetWidth, height: sheetHeight)
     .onAppear {
-      if let group = group, let groupItem = groupItem {
-        self.layout = groupItem.layout.isEmpty ? group.layout : groupItem.layout
+      if let group = group {
+        if let groupItem = groupItem {
+          self.layout = groupItem.layout.isEmpty ? group.layout : groupItem.layout
+        } else {
+          self.layout = group.layout
+        }
         enabled = Set(group.inputMethods.map { $0.name })
         viewModel.refresh(enabled)
       }
