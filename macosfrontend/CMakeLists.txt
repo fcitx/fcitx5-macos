@@ -1,13 +1,14 @@
-add_library(SwiftFrontend STATIC macosfrontend.swift)
+add_library(SwiftFrontend STATIC macosfrontend.swift layout.swift)
 set_target_properties(SwiftFrontend PROPERTIES Swift_MODULE_NAME SwiftFrontend)
 target_compile_options(SwiftFrontend PUBLIC "$<$<COMPILE_LANGUAGE:Swift>:-cxx-interoperability-mode=default>")
 target_include_directories(SwiftFrontend PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(SwiftFrontend PRIVATE Logging)
 
 _swift_generate_cxx_header(
     SwiftFrontend
     "${CMAKE_CURRENT_BINARY_DIR}/include/macosfrontend-swift.h"
     SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/macosfrontend.swift"
-    SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}"
+    SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR};${PROJECT_BINARY_DIR}/logging"
 )
 
 add_library(macosfrontend STATIC macosfrontend.cpp pasteboard.mm)

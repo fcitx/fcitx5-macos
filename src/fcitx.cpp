@@ -372,13 +372,17 @@ void imSetGroups(const char *json) noexcept {
                 imMgr.addEmptyGroup(g["name"]);
             }
             auto updated = *imMgr.group(g["name"]);
+            auto layoutIt = g.find("layout");
+            if (layoutIt != g.end() && layoutIt->is_string()) {
+                updated.setDefaultLayout(*layoutIt);
+            }
             auto &imList = updated.inputMethodList();
             imList.clear();
             for (const auto &im : g["inputMethods"]) {
                 auto &item = imList.emplace_back(im["name"]);
-                auto layoutIt = im.find("layout");
-                if (layoutIt != im.end() && layoutIt->is_string()) {
-                    item.setLayout(*layoutIt);
+                auto imLayoutIt = im.find("layout");
+                if (imLayoutIt != im.end() && imLayoutIt->is_string()) {
+                    item.setLayout(*imLayoutIt);
                 }
             }
             imMgr.setGroup(updated);
