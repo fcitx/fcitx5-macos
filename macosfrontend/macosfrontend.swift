@@ -205,7 +205,7 @@ public func getSelection() -> String {
 // 2. Switch App: FcitxInputController.activateServer
 // 3. Switch group: InputMethodGroupChanged
 public func overrideKeyboardLayout() {
-  let layout = String(getCurrentGroupLayout())
+  let layout = String(get_current_group_layout())
   let appleLayout = layoutMap[layout] ?? "ABC"
   FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
   client?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")

@@ -433,7 +433,7 @@ void focus_out(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
 }
 
-std::string getCurrentGroupLayout() noexcept {
+std::string get_current_group_layout() noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
         return fcitx.instance()
             ->inputMethodManager()
