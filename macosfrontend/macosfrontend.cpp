@@ -464,7 +464,7 @@ std::string get_current_group_layout() noexcept {
                     ;
             }
         }
-        pinyinKeyboard = groupLayout == "PinyinKeyboard";
+        ::pinyinKeyboard = groupLayout == "PinyinKeyboard";
 
         return groupLayout;
     });
