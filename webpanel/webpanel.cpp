@@ -1,6 +1,8 @@
 #include <fcitx/inputpanel.h>
 
 #include "fcitx.h"
+#include "fcitx/action.h"
+#include "fcitx/userinterfacemanager.h"
 #include "../macosfrontend/macosfrontend.h"
 #include "config/config.h"
 #include "webpanel.h"
@@ -468,6 +470,33 @@ void WebPanel::update(UserInterfaceComponent component,
         break;
     }
     case UserInterfaceComponent::StatusArea:
+        auto &statusArea = inputContext->statusArea();
+        bool needUpdate = false;
+        for (auto *action : statusArea.allActions()) {
+            if (!action->id()) {
+                // Not registered with UI manager.
+                continue;
+            }
+            auto name = action->name();
+            if (name == "punctuation") {
+                auto icon = action->icon(inputContext);
+                chinesePunctuation = icon == "fcitx-punc-active";
+                needUpdate = true;
+            } else if (name.starts_with("fcitx-rime-") &&
+                       name.ends_with("-ascii_punct")) {
+                auto text = action->shortText(inputContext);
+                auto dotIndex = text.find("．");
+                auto enIndex = text.find("英");
+                rimePunctuation =
+                    dotIndex != std::string::npos &&
+                        text.find("。") < dotIndex ||
+                    enIndex != std::string::npos && text.find("中") < enIndex;
+                needUpdate = true;
+            }
+        }
+        if (needUpdate) {
+            overrideKeyboardLayoutAsync();
+        }
         // No need to implement.  MacOS will always try to fetch new
         // data, and we don't try to cache anything.
         break;

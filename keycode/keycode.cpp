@@ -299,6 +299,8 @@ static struct {
     {NSEventModifierFlagCommand, fcitx::KeyState::Super},
 };
 
+bool pinyinKeyboard = false;
+
 fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
                                           uint32_t osxModifiers,
                                           uint16_t osxKeycode) {
@@ -328,7 +330,22 @@ fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
     // but not Control+Shift+f and Control+Shift+parenright
     else if ((unicode >= 'a') && (unicode <= 'z') &&
              (osxModifiers & NSEventModifierFlagShift)) {
-        unicode = unicode - 'a' + 'A';
+        unicode += 'A' - 'a';
+    }
+    // If com.apple.keylayout.PinyinKeyboard is used, we need to map Chinese
+    // punctuations back to ASCII so that engines can handle them properly, e.g.
+    // Rime when typing pinyin followed by comma.
+    else if (pinyinKeyboard &&
+             (osxModifiers & ~NSEventModifierFlagShift) == 0) {
+        for (int i = 26; i < sizeof(char_mappings) / sizeof(char_mappings[0]);
+             i++) {
+            if (char_mappings[i].osxKeycode == osxKeycode) {
+                unicode = (osxModifiers & NSEventModifierFlagShift)
+                              ? char_mappings[i].shiftedAsciiChar
+                              : char_mappings[i].asciiChar;
+                break;
+            }
+        }
     }
     return fcitx::Key::keySymFromUnicode(unicode);
 }

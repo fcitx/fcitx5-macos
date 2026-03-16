@@ -29,6 +29,10 @@ FCITX_CONFIG_ENUM_NAME_WITH_I18N(StatusBar, N_("Hidden"),
 
 namespace fcitx {
 
+extern bool chinesePunctuation;
+extern bool rimePunctuation;
+void overrideKeyboardLayoutAsync();
+
 class MacosInputContext;
 
 struct AppIMAnnotation {

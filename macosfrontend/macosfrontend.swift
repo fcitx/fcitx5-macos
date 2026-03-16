@@ -203,10 +203,13 @@ public func getSelection() -> String {
 // Call it on
 // 1. Open a new App: FcitxInputController.init
 // 2. Switch App: FcitxInputController.activateServer
-// 3. Switch group: InputMethodGroupChanged
+// 3. Switch group: condition covered by 4
+// (below are HACK for VSCode terminal and Neovide Chinese punctuation)
+// 4. Switch input method: InputContextInputMethodActivated
+// 5. Update punctuation option: UserInterfaceComponent::StatusArea
 public func overrideKeyboardLayout() {
   let layout = String(get_current_group_layout())
-  let appleLayout = layoutMap[layout] ?? "ABC"
+  let appleLayout = layout == "PinyinKeyboard" ? "PinyinKeyboard" : layoutMap[layout] ?? "ABC"
   FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
   client?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
 }
