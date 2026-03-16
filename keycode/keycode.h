@@ -57,3 +57,5 @@ uint16_t fcitx_keysym_to_osx_function_key(fcitx::KeySym);
 
 uint16_t fcitx_keysym_to_osx_keycode(fcitx::KeySym);
 uint32_t fcitx_keystates_to_osx_modifiers(fcitx::KeyStates ks);
+
+extern bool pinyinKeyboard;

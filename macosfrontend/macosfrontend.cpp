@@ -15,6 +15,7 @@
 #include <fcitx/addonmanager.h>
 #include <fcitx/inputcontext.h>
 #include <fcitx/inputmethodengine.h>
+#include <fcitx/inputmethodentry.h>
 #include <fcitx/inputmethodmanager.h>
 #include <fcitx/inputpanel.h>
 #include <nlohmann/json.hpp>
@@ -23,6 +24,15 @@
 #include "../fcitx5/src/modules/clipboard/clipboard_public.h"
 
 namespace fcitx {
+
+bool chinesePunctuation = false;
+bool rimePunctuation = false;
+
+void overrideKeyboardLayoutAsync() {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      SwiftFrontend::overrideKeyboardLayout();
+    });
+}
 
 MacosFrontend::MacosFrontend(Instance *instance)
     : instance_(instance),
@@ -33,15 +43,11 @@ MacosFrontend::MacosFrontend(Instance *instance)
         [this](Event &event) { updateStatusItemText(); }));
     // For switching from VSCode to Terminal, otherwise the first key press
     // triggers text update.
-    eventHandlers_.emplace_back(instance_->watchEvent(
-        EventType::InputContextInputMethodActivated, EventWatcherPhase::Default,
-        [this](Event &event) { updateStatusItemText(); }));
     eventHandlers_.emplace_back(
-        instance_->watchEvent(EventType::InputMethodGroupChanged,
+        instance_->watchEvent(EventType::InputContextInputMethodActivated,
                               EventWatcherPhase::Default, [this](Event &event) {
-                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                    SwiftFrontend::overrideKeyboardLayout();
-                                  });
+                                  updateStatusItemText();
+                                  overrideKeyboardLayoutAsync();
                               }));
     reloadConfig();
 }
@@ -434,10 +440,32 @@ void focus_out(ICUUID uuid) noexcept {
 }
 
 std::string get_current_group_layout() noexcept {
-    return with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.instance()
-            ->inputMethodManager()
-            .currentGroup()
-            .defaultLayout();
+    return with_fcitx([=](Fcitx &fcitx) -> std::string {
+        auto &group = fcitx.instance()->inputMethodManager().currentGroup();
+        auto groupLayout = group.defaultLayout();
+
+        auto *ic = fcitx.instance()->mostRecentInputContext();
+        auto *entry = ic ? fcitx.instance()->inputMethodEntry(ic) : nullptr;
+        auto addon = entry ? entry->addon() : "";
+        // HACK: VSCode terminal (xterm.js) can't type ， and 。, so replace
+        // com.apple.keylayout.ABC with com.apple.keylayout.PinyinKeyboard.
+        auto isChineseAddons = addon == "pinyin" || addon == "table";
+        auto isRime = addon == "rime";
+        if (isChineseAddons || isRime) {
+            auto imLayout = group.layoutFor(entry->uniqueName());
+            if (imLayout == "us" || (imLayout == "" && groupLayout == "us")) {
+                groupLayout =
+                    (isChineseAddons && fcitx::chinesePunctuation) ||
+                            (isRime && fcitx::rimePunctuation)
+                        ? "PinyinKeyboard"
+                        : "us" /* us is needed when group has us-dvorak and
+                                  pinyin has us on typing comma and period.
+                                */
+                    ;
+            }
+        }
+        ::pinyinKeyboard = groupLayout == "PinyinKeyboard";
+
+        return groupLayout;
     });
 }
