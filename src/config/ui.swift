@@ -93,7 +93,7 @@ struct SelectFileButton<Label>: View where Label: View {
               let dst = directory.appendingPathComponent(item.fileName)
               _ = removeFile(dst)
               if copyFile(item.url, dst) {
-                onFinish(fileName)
+                onFinish(item.fileName)
               }
               duplicateFile = nil
             } label: {
