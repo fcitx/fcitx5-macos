@@ -31,6 +31,12 @@ func urlButton(_ text: String, _ link: String) -> some View {
   Link(text, destination: URL(string: link)!)
 }
 
+struct DuplicateFile: Identifiable {
+  let id = UUID()
+  let url: URL
+  var fileName: String { url.lastPathComponent }
+}
+
 struct SelectFileButton<Label>: View where Label: View {
   let directory: URL
   let allowedContentTypes: [UTType]
@@ -39,62 +45,57 @@ struct SelectFileButton<Label>: View where Label: View {
   let model: Binding<String>
 
   @State private var openPanel = NSOpenPanel()
-  @State private var showDuplicate = false
-  @State private var src: URL? = nil
+  @State private var duplicateFile: DuplicateFile? = nil
 
   var body: some View {
     HStack {
-      Button(
-        action: {
-          mkdirP(directory.localPath())
-          // Only consider the first file, but allow multiple deletion.
-          openPanel.allowsMultipleSelection = true
-          openPanel.canChooseDirectories = false
-          openPanel.allowedContentTypes = allowedContentTypes
-          openPanel.directoryURL = directory
-          openPanel.begin { response in
-            if response == .OK {
-              guard let file = openPanel.urls.first else {
+      Button {
+        mkdirP(directory.localPath())
+        // Only consider the first file, but allow multiple deletion.
+        openPanel.allowsMultipleSelection = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowedContentTypes = allowedContentTypes
+        openPanel.directoryURL = directory
+        openPanel.begin { response in
+          if response == .OK {
+            guard let file = openPanel.urls.first else {
+              return
+            }
+            var fileName = file.lastPathComponent
+            if !directory.contains(file) {
+              let dst = directory.appendingPathComponent(fileName)
+              if dst.exists() {
+                duplicateFile = DuplicateFile(url: file)
                 return
               }
-              var fileName = file.lastPathComponent
-              if !directory.contains(file) {
-                let dst = directory.appendingPathComponent(fileName)
-                if dst.exists() {
-                  src = file
-                  showDuplicate = true
-                  return
-                }
-                if !copyFile(file, dst) {
-                  return
-                }
-              } else {
-                // Need to consider subdirectory of www/img.
-                fileName = String(file.localPath().dropFirst(directory.localPath().count))
+              if !copyFile(file, dst) {
+                return
               }
-              onFinish(fileName)
+            } else {
+              // Need to consider subdirectory of www/img.
+              fileName = String(file.localPath().dropFirst(directory.localPath().count))
             }
+            onFinish(fileName)
           }
-        },
-        label: label
-      ).sheet(isPresented: $showDuplicate) {
+        }
+      } label: {
+        label()
+      }.sheet(item: $duplicateFile) { item in
         VStack {
-          Text("\(src!.lastPathComponent) already exists. Replace?")
+          Text("\(item.fileName) already exists. Replace?")
           HStack {
             Button {
-              showDuplicate = false
+              duplicateFile = nil
             } label: {
               Text("Cancel")
             }
             Button {
-              showDuplicate = false
-              guard let src = src else { return }
-              let fileName = src.lastPathComponent
-              let dst = directory.appendingPathComponent(fileName)
+              let dst = directory.appendingPathComponent(item.fileName)
               _ = removeFile(dst)
-              if copyFile(src, dst) {
+              if copyFile(item.url, dst) {
                 onFinish(fileName)
               }
+              duplicateFile = nil
             } label: {
               Text("OK")
             }.buttonStyle(.borderedProminent)
