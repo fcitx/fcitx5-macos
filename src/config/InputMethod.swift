@@ -246,7 +246,7 @@ struct InputMethodConfigView: View {
         } else {
           ScrollView {
             BasicConfigView(
-              config: manager.config, value: manager.value, onUpdate: { manager.set($0) }
+              config: manager.config, value: $manager.value, onUpdate: { manager.set($0) }
             )
             .padding()
           }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.

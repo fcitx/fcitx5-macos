@@ -100,7 +100,7 @@ struct ExternalView: OptionViewProtocol {
           VStack {
             ScrollView([.vertical]) {  // ScrollView is useful for punctuation map.
               BasicConfigView(
-                config: manager.config, value: manager.value, onUpdate: { manager.set($0) }
+                config: manager.config, value: $manager.value, onUpdate: { manager.set($0) }
               ).padding()
             }
             FooterView(

@@ -8,7 +8,7 @@ func mergeChild(_ value: Any, _ childKey: String, _ childValue: Any) -> [String:
 
 struct BasicConfigView: View {
   let config: [String: Any]
-  let value: Any
+  @Binding var value: Any
   let onUpdate: (Any) -> Void
 
   var body: some View {

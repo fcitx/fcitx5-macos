@@ -28,8 +28,10 @@ struct SplitConfigView: View {
           .padding([.top, .leading, .trailing])
       }
       ScrollView {
-        BasicConfigView(config: manager.config, value: manager.value, onUpdate: { manager.set($0) })
-          .padding()
+        BasicConfigView(
+          config: manager.config, value: $manager.value, onUpdate: { manager.set($0) }
+        )
+        .padding()
       }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
       FooterView(
         manager: manager,
