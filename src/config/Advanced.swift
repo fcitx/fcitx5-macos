@@ -85,7 +85,7 @@ struct AdvancedView: View {
         } else {
           ScrollView {
             BasicConfigView(
-              config: manager.config, value: manager.value, onUpdate: { manager.set($0) }
+              config: manager.config, value: $manager.value, onUpdate: { manager.set($0) }
             )
             .padding()
           }

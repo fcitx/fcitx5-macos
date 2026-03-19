@@ -6,7 +6,7 @@ struct GroupView: OptionViewProtocol {
 
   var body: some View {
     GroupBox {
-      BasicConfigView(config: data, value: value, onUpdate: { value = $0 })
+      BasicConfigView(config: data, value: $value, onUpdate: { value = $0 })
     }
   }
 }
