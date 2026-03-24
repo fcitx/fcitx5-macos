@@ -1,52 +1,29 @@
 import AlertToast
 import Fcitx
 import SwiftUI
-import UniformTypeIdentifiers
 
 let pinyinPath = pinyinLocalDir.localPath()
 
 let customphrase = pinyinLocalDir.appendingPathComponent("customphrase")
 let nativeCustomPhrase = cacheDir.appendingPathComponent("customphrase.plist")
 
-struct CustomPhrase: Identifiable {
+struct CustomPhrase: Identifiable, Codable {
   let id = UUID()  // To support uninterrupted in-place edit, id can't be hash of content.
   var keyword: String
   var phrase: String
   var order: Int
   var enabled: Bool
-}
 
-private func parseLine(_ s: String) -> CustomPhrase? {
-  let regex = try! NSRegularExpression(pattern: "(\\S+),(-?\\d+)=(.+)", options: [])
-  let matches = regex.matches(
-    in: s, options: [], range: NSRange(location: 0, length: s.utf16.count))
-
-  if let match = matches.first {
-    let keyword = String(s[Range(match.range(at: 1), in: s)!])
-    let order = Int(String(s[Range(match.range(at: 2), in: s)!])) ?? 0
-    let phrase = String(s[Range(match.range(at: 3), in: s)!])
-    return CustomPhrase(keyword: keyword, phrase: phrase, order: abs(order), enabled: order > 0)
+  enum CodingKeys: String, CodingKey {
+    case keyword, phrase, order, enabled
   }
-  return nil
-}
-
-private func stringToCustomPhrases(_ s: String) -> [CustomPhrase] {
-  return s.split(separator: "\n").compactMap { line in
-    parseLine(String(line))
-  }
-}
-
-private func customPhrasesToString(_ customphraseVM: CustomPhraseVM) -> String {
-  return customphraseVM.customPhrases.map { customPhrase in
-    "\(customPhrase.keyword),\(customPhrase.enabled ? "" : "-")\(customPhrase.order)=\(customPhrase.phrase)"
-  }.joined(separator: "\n")
 }
 
 class CustomPhraseVM: ObservableObject {
   @Published var customPhrases = [CustomPhrase]()
 
   func refreshItems() {
-    customPhrases = stringToCustomPhrases(readUTF8(customphrase) ?? "")
+    customPhrases = decodeJSON(String(customphrase_get(customphrase.localPath())), [CustomPhrase]())
   }
 }
 
@@ -75,12 +52,11 @@ struct CustomPhraseView: View {
   }
 
   private func save() -> Bool {
-    mkdirP(pinyinPath)
-    if writeUTF8(customphrase, customPhrasesToString(customphraseVM) + "\n") {
-      reloadCustomPhrase()
-      return true
-    }
-    return false
+    guard let json = encodeJSON(customphraseVM.customPhrases),
+      customphrase_set(customphrase.localPath(), json)
+    else { return false }
+    reloadCustomPhrase()
+    return true
   }
 
   var body: some View {
