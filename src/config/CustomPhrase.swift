@@ -52,6 +52,7 @@ struct CustomPhraseView: View {
   }
 
   private func save() -> Bool {
+    mkdirP(pinyinPath)
     guard let json = encodeJSON(customphraseVM.customPhrases),
       customphrase_set(customphrase.localPath(), json)
     else { return false }
