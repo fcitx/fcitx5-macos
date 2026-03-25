@@ -184,6 +184,15 @@ func decodeJSON<T: Decodable>(_ s: String, _ defaultValue: T) -> T {
   return decoded
 }
 
+func encodeJSON<T: Encodable>(_ value: T) -> String? {
+  guard let data = try? JSONEncoder().encode(value),
+    let s = String(data: data, encoding: .utf8)
+  else {
+    return nil
+  }
+  return s
+}
+
 func readJSON(_ file: URL) -> Any? {
   guard let content = readUTF8(file),
     let data = content.data(using: .utf8),
