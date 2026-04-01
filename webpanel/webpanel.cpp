@@ -450,7 +450,7 @@ void WebPanel::update(UserInterfaceComponent component,
                      label,
                      instance_->outputFilter(inputContext, candidate.comment())
                          .toString(),
-                     actions});
+                     actions, candidate.spaceBetweenComment()});
             }
             highlighted = list->cursorIndex();
         } else {
@@ -577,7 +577,8 @@ void WebPanel::scroll(int start, int count) {
                 {instance_->outputFilter(ic, candidate.text()).toString(),
                  "",
                  instance_->outputFilter(ic, candidate.comment()).toString(),
-                 {}});
+                 {},
+                 candidate.spaceBetweenComment()});
         } catch (const std::invalid_argument &e) {
             // size == -1 but actual limit is reached
             endReached = true;
