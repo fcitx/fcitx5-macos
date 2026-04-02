@@ -65,15 +65,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else  // Menu
             {
               let menu = NSMenu()
-              menu.addItem(
-                NSMenuItem(
-                  title: NSLocalizedString("Toggle input method", comment: ""),
-                  action: #selector(self.toggle), keyEquivalent: ""))
+
+              let toggle = NSMenuItem(
+                title: NSLocalizedString("Toggle input method", comment: ""),
+                action: #selector(self.toggle), keyEquivalent: "")
+              toggle.image = NSImage(systemSymbolName: "globe", accessibilityDescription: nil)
+              menu.addItem(toggle)
+
               menu.addItem(NSMenuItem.separator())
-              menu.addItem(
-                NSMenuItem(
-                  title: NSLocalizedString("Hide", comment: ""),
-                  action: #selector(self.hide), keyEquivalent: ""))
+
+              let hide = NSMenuItem(
+                title: NSLocalizedString("Hide", comment: ""),
+                action: #selector(self.hide), keyEquivalent: "")
+              hide.image = NSImage(systemSymbolName: "eye.slash", accessibilityDescription: nil)
+              menu.addItem(hide)
+
               statusItem.menu = menu
             }
           }
