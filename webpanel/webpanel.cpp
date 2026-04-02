@@ -486,10 +486,13 @@ void WebPanel::update(UserInterfaceComponent component,
                        name.ends_with("-ascii_punct")) {
                 auto text = action->shortText(inputContext);
                 auto dotIndex = text.find("．");
+                auto dollarIndex = text.find("$");
                 auto enIndex = text.find("英");
                 rimePunctuation =
                     dotIndex != std::string::npos &&
                         text.find("。") < dotIndex ||
+                    dollarIndex != std::string::npos &&
+                        text.find("¥") < dollarIndex ||
                     enIndex != std::string::npos && text.find("中") < enIndex;
                 needUpdate = true;
             }

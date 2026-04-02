@@ -213,7 +213,7 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
     if (!keepVimPreedit) {
         ic->setVimPreedit(false);
     }
-    return ic->popState(keyEvent.accepted());
+    return ic->popState(keyEvent.accepted(), key);
 }
 
 MacosInputContext *MacosFrontend::findIC(ICUUID uuid) {
@@ -354,13 +354,31 @@ void MacosInputContext::updatePreeditImpl() {
     state_.caretPos = preedit.cursor();
 }
 
-std::string MacosInputContext::popState(bool accepted) {
+std::string MacosInputContext::popState(bool accepted, const Key &key) {
     nlohmann::json j;
-    j["commit"] = state_.commit;
+
+    // We translated Chinese punctuations to ASCII in
+    // osx_unicode_to_fcitx_keysym, but there is functionality of "use ASCII
+    // punctuation after alpha/digit", which is implemented by not accepting key
+    // event, resulting in Chinese punctuations. Thus we accept the event and
+    // commit the ASCII punctuation directly.
+    bool noModExceptShift =
+        (key.states() & ~KeyStates(KeyState::Shift)) == KeyStates();
+    auto utf8 = Key::keySymToUTF8(key.sym());
+    bool isPunct =
+        utf8.size() == 1 && std::ispunct(static_cast<unsigned char>(utf8[0]));
+    if (::pinyinKeyboard && !accepted && state_.commit.empty() &&
+        noModExceptShift && isPunct) {
+        j["commit"] = std::move(utf8);
+        j["accepted"] = true;
+    } else {
+        j["commit"] = state_.commit;
+        j["accepted"] = accepted;
+    }
+
     j["preedit"] = state_.preedit;
     j["caretPos"] = state_.caretPos;
     j["dummyPreedit"] = state_.dummyPreedit || state_.vimPreedit;
-    j["accepted"] = accepted;
     resetState();
     return j.dump();
 }
