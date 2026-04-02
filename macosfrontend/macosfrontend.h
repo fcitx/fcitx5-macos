@@ -156,7 +156,7 @@ public:
         state_.dummyPreedit = dummyPreedit;
     }
     void setVimPreedit(bool vimPreedit) { state_.vimPreedit = vimPreedit; }
-    std::string popState(bool accepted);
+    std::string popState(bool accepted, const Key &key = Key());
     // Shows whether we are processing a sync event (mainly key down) that needs
     // to return a bool to indicate if it's handled. In this case, commit and
     // preedit need to be set in batch synchronously before returning. Otherwise
