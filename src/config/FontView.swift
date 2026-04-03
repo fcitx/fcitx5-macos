@@ -1,5 +1,11 @@
 import SwiftUI
 
+@MainActor
+class FontVM: ObservableObject {
+  static let shared = FontVM()
+  @Published var hasNewFonts = false
+}
+
 private let genericFamilies = [
   "cursive",
   "fangsong",
@@ -114,6 +120,12 @@ struct FontView: OptionViewProtocol {
   private func select() {
     if let selectedFontFamily = selectedFontFamily {
       value = selectedFontFamily
+      // Prompt restart if user puts a new font (not available on WKWebview start) into Fonts dir and uses it.
+      let currentFamilies = enumerateUserFontFamilies()
+      let newFonts = currentFamilies.subtracting(userFontFamiliesOnStart)
+      if newFonts.contains(selectedFontFamily) {
+        FontVM.shared.hasNewFonts = true
+      }
     }
     selectorIsOpen = false
   }
