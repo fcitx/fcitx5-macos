@@ -29,8 +29,7 @@ struct ExternalView: OptionViewProtocol {
       }
     case "UserFontDir":
       Button {
-        let fontDir = homeDir.appendingPathComponent("Library/Fonts")
-        NSWorkspace.shared.open(fontDir)
+        NSWorkspace.shared.open(userFontDir)
       } label: {
         Image(systemName: "folder")
       }

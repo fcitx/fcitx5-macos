@@ -46,6 +46,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   func applicationDidFinishLaunching(_ notification: Notification) {
     redirectStderr()
 
+    // Once process started, WKWebView doesn't accept new font files. Record and prompt user restart if needed.
+    initUserFontFamiliesOnStart()
+
     signal(SIGTERM, signalHandler)
 
     setStatusItemCallback { mode, text in

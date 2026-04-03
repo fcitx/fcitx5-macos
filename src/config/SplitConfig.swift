@@ -4,6 +4,7 @@ struct SplitConfigView: View {
   private let key: String
   private let options: [String]
   @ObservedObject private var manager = ConfigManager()
+  @ObservedObject private var fontVM = FontVM.shared
   @State private var dummyText = ""
 
   init(uri: String, key: String) {
@@ -24,6 +25,21 @@ struct SplitConfigView: View {
       }
     } detail: {
       if manager.uri == webpanelUri {
+        if manager.config["Option"] as? String == "Font" && fontVM.hasNewFonts {
+          GroupBox {
+            HStack {
+              Text("Restart process to load new fonts")
+              Button {
+                FcitxInputController.controllers[key]?.window?.performClose(_: nil)
+                DispatchQueue.main.async {
+                  restartProcess()
+                }
+              } label: {
+                Image(systemName: "arrow.clockwise")
+              }
+            }.frame(maxWidth: .infinity)
+          }.padding([.leading, .trailing])
+        }
         TextField(NSLocalizedString("Type here to preview style", comment: ""), text: $dummyText)
           .padding([.top, .leading, .trailing])
       }
