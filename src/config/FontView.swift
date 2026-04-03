@@ -120,11 +120,16 @@ struct FontView: OptionViewProtocol {
   private func select() {
     if let selectedFontFamily = selectedFontFamily {
       value = selectedFontFamily
+      let selectedFont = selectedFontFamily
       // Prompt restart if user puts a new font (not available on WKWebview start) into Fonts dir and uses it.
-      let currentFamilies = enumerateUserFontFamilies()
-      let newFonts = currentFamilies.subtracting(userFontFamiliesOnStart)
-      if newFonts.contains(selectedFontFamily) {
-        FontVM.shared.hasNewFonts = true
+      Task.detached {
+        let currentFamilies = enumerateUserFontFamilies()
+        await MainActor.run {
+          let newFonts = currentFamilies.subtracting(userFontFamiliesOnStart)
+          if newFonts.contains(selectedFont) {
+            FontVM.shared.hasNewFonts = true
+          }
+        }
       }
     }
     selectorIsOpen = false

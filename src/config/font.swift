@@ -37,5 +37,10 @@ func enumerateUserFontFamilies() -> Set<String> {
 @MainActor var userFontFamiliesOnStart = Set<String>()
 
 @MainActor func initUserFontFamiliesOnStart() {
-  userFontFamiliesOnStart = enumerateUserFontFamilies()
+  Task.detached {
+    let families = enumerateUserFontFamilies()
+    await MainActor.run {
+      userFontFamiliesOnStart = families
+    }
+  }
 }
