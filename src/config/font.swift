@@ -1,6 +1,5 @@
 import Cocoa
 import CoreText
-import Logging
 
 let userFontDir = homeDir.appendingPathComponent("Library/Fonts")
 
