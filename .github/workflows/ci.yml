@@ -91,7 +91,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          archive: false
           name: Fcitx5-${{ matrix.arch }}${{ matrix.postfix }}
           path: |
             Fcitx5-${{ matrix.arch }}*.tar.bz2
