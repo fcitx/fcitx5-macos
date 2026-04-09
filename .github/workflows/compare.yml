@@ -11,7 +11,7 @@ jobs:
         run: wget -O release.tar.bz2 https://github.com/fcitx/fcitx5-macos/releases/download/latest/Fcitx5-arm64.tar.bz2
 
       - name: Download artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
 
@@ -32,7 +32,7 @@ jobs:
           done
 
       - name: Find comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -40,7 +40,7 @@ jobs:
           body-includes: "arm64 comparison"
 
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-id: ${{ steps.fc.outputs.comment-id }}
