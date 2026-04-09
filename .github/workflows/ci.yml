@@ -89,8 +89,9 @@ jobs:
           ctest --test-dir build/${{ matrix.arch }} --output-on-failure
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: Fcitx5-${{ matrix.arch }}${{ matrix.postfix }}
           path: |
             Fcitx5-${{ matrix.arch }}*.tar.bz2
@@ -104,28 +105,15 @@ jobs:
         run: |
           md5sum -c checksum
 
-      # TODO: remove all meta.json stuff after 2026-03-02
-      - name: Generate meta.json
-        if: ${{ matrix.arch == 'arm64' && matrix.type == 'Release' }}
-        run: |
-          echo "{\"object\": {\"sha\": \"6dddc59c941ead66d0020ec7eef9dea85c401ffb\"}}" > meta.json
-
-      - name: Upload meta.json
-        if: ${{ matrix.arch == 'arm64' && matrix.type == 'Release' }}
-        uses: actions/upload-artifact@v5
-        with:
-          name: meta.json
-          path: |
-            meta.json
-
       - name: Generate version.json
         if: ${{ matrix.arch == 'arm64' && matrix.type == 'Release' }}
         run: python scripts/generate-version.py
 
       - name: Upload version.json
         if: ${{ matrix.arch == 'arm64' && matrix.type == 'Release' }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
+          archive: false
           name: version.json
           path: |
             version.json
@@ -145,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
 
@@ -159,7 +147,6 @@ jobs:
           title: "Nightly Build"
           files: |
             Fcitx5-*.tar.bz2
-            meta.json
             version.json
 
       - name: Create Stable release
