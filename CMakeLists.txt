@@ -1,4 +1,7 @@
-cmake_minimum_required(VERSION 4.0.1)
+cmake_minimum_required(VERSION 4.3)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 13.3)
+set(CMAKE_Swift_COMPILER_TARGET "${CMAKE_OSX_ARCHITECTURES}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
 
 project(fcitx5-macos VERSION 0.3.2 LANGUAGES CXX Swift)
 
@@ -17,10 +20,8 @@ execute_process(COMMAND xcrun --sdk macosx --show-sdk-path
     OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set(CMAKE_OSX_DEPLOYMENT_TARGET 13.3)
-set(F5M_TARGET "${CMAKE_OSX_ARCHITECTURES}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
-add_compile_options(-target "${F5M_TARGET}")
-add_link_options(-target "${F5M_TARGET}")
+add_compile_options(-target "${CMAKE_Swift_COMPILER_TARGET}")
+add_link_options(-target "${CMAKE_Swift_COMPILER_TARGET}")
 
 set(CMAKE_Swift_LANGUAGE_VERSION 6)
 # Disallow InitializeSwift to execute link_directories which adds Xcode paths to rpath.
