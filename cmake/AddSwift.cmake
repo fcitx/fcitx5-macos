@@ -58,7 +58,7 @@ function(_swift_generate_cxx_header target header)
       ${ARG_SEARCH_PATHS}
       ${_SwiftSources}
       ${SDK_FLAGS}
-      -target ${F5M_TARGET}
+      -target ${CMAKE_Swift_COMPILER_TARGET}
       -module-name "${ARG_MODULE_NAME}"
       -cxx-interoperability-mode=default
       -emit-clang-header-path ${header_path}

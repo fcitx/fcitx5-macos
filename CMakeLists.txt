@@ -1,4 +1,13 @@
-cmake_minimum_required(VERSION 4.0.1)
+cmake_minimum_required(VERSION 4.3)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET 13.3)
+if(NOT CMAKE_OSX_ARCHITECTURES)
+    execute_process(COMMAND uname -m
+        OUTPUT_VARIABLE CMAKE_OSX_ARCHITECTURES
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif()
+set(CMAKE_Swift_COMPILER_TARGET "${CMAKE_OSX_ARCHITECTURES}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
 
 project(fcitx5-macos VERSION 0.3.2 LANGUAGES CXX Swift)
 
@@ -8,19 +17,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # On x86 /Library/Frameworks/Mono.framework will mess up libintl.
 set(CMAKE_FIND_FRAMEWORK LAST)
 
-if(NOT CMAKE_OSX_ARCHITECTURES)
-    set(CMAKE_OSX_ARCHITECTURES "${CMAKE_HOST_SYSTEM_PROCESSOR}")
-endif()
-
 # Starting from cmake 4.0, CMAKE_OSX_SYSROOT defaults to empty.
 execute_process(COMMAND xcrun --sdk macosx --show-sdk-path
     OUTPUT_VARIABLE CMAKE_OSX_SYSROOT
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-set(CMAKE_OSX_DEPLOYMENT_TARGET 13.3)
-set(F5M_TARGET "${CMAKE_OSX_ARCHITECTURES}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
-add_compile_options(-target "${F5M_TARGET}")
-add_link_options(-target "${F5M_TARGET}")
+add_compile_options(-target "${CMAKE_Swift_COMPILER_TARGET}")
+add_link_options(-target "${CMAKE_Swift_COMPILER_TARGET}")
 
 set(CMAKE_Swift_LANGUAGE_VERSION 6)
 # Disallow InitializeSwift to execute link_directories which adds Xcode paths to rpath.
