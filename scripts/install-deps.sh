@@ -23,6 +23,6 @@ deps=(
 
 for dep in "${deps[@]}"; do
   file=$dep-$ARCH.tar.bz2
-  [[ -f cache/$file ]] || wget -P cache https://github.com/fcitx-contrib/fcitx5-prebuilder/releases/download/macos/$file
-  tar xjvf cache/$file -C $EXTRACT_DIR
+  [[ -f cache/$file ]] || curl -fsSLO --output-dir cache https://github.com/fcitx-contrib/fcitx5-prebuilder/releases/download/macos/$file
+  tar xf cache/$file -C $EXTRACT_DIR
 done

@@ -45,6 +45,10 @@ jobs:
         with:
           node-version: 24.x
 
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 26.4
+
       - name: Install dependencies
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
@@ -57,9 +61,6 @@ jobs:
           ./scripts/install-deps.sh ${{ matrix.arch }}
           npm i -g pnpm
           pnpm --prefix=fcitx5-webview i
-
-      - name: Bypass download.fcitx-im.org
-        run: wget -P fcitx5/src/modules/spell https://github.com/fcitx-contrib/fcitx5/releases/download/20241204/en_dict-20121020.tar.gz
 
       - name: Build
         run: |

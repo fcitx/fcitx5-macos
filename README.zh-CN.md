@@ -4,6 +4,6 @@
 
 # 小企鹅输入法 macOS 版
 
-[Fcitx5](https://github.com/fcitx/fcitx5) 输入框架的 macOS 移植。
+[Fcitx5](https://github.com/fcitx/fcitx5) 输入框架的 macOS ≥ 13.3 移植。
 
 请下载[安装器](https://github.com/fcitx-contrib/fcitx5-macos-installer/blob/master/README.zh-CN.md)并阅读[文档](https://fcitx-contrib.github.io/docs/)。

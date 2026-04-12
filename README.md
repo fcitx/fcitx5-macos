@@ -4,15 +4,15 @@ English
 
 # Fcitx5 macOS
 
-[Fcitx5](https://github.com/fcitx/fcitx5) input method framework ported to macOS.
+[Fcitx5](https://github.com/fcitx/fcitx5) input method framework ported to macOS ≥ 13.3.
 
 Please download [installer](https://github.com/fcitx-contrib/fcitx5-macos-installer) and read [documentation](https://fcitx-contrib.github.io/docs/).
 
 ## Build
-While the App runs on macOS >= 13.3, native build on macOS >= 15 is supported.
+Native and cross build on macOS ≥ 26.2 is supported.
 
 This is NOT an Xcode project,
-but Xcode >= 26 is needed for Swift compiler.
+but Xcode ≥ 26.4 is needed for Swift 6.3 compiler.
 
 ### Install dependencies
 You may use [nvm](https://github.com/nvm-sh/nvm)
