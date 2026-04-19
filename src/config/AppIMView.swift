@@ -58,7 +58,6 @@ struct AppIMView: OptionViewProtocol {
   }
 
   var body: some View {
-    let openPanel = NSOpenPanel()  // macOS 26 crashes if put outside of body.
     HStack {
       if !appPath.isEmpty {
         appIconFromPath(appPath)
@@ -79,7 +78,6 @@ struct AppIMView: OptionViewProtocol {
       }
       Button {
         selectApplication(
-          openPanel,
           onFinish: { path in
             appPath = path
           })

@@ -5,7 +5,6 @@ struct VimModeView: OptionViewProtocol {
   @Binding var value: Any
 
   var body: some View {
-    let openPanel = NSOpenPanel()  // macOS 26 crashes if put outside of body.
     HStack {
       let appPath = appPathFromBundleIdentifier(value as? String ?? "")
       let appName = appNameFromPath(appPath)
@@ -22,7 +21,6 @@ struct VimModeView: OptionViewProtocol {
       }
       Button {
         selectApplication(
-          openPanel,
           onFinish: { path in
             value = bundleIdentifier(path)
           })

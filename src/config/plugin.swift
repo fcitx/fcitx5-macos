@@ -123,8 +123,6 @@ struct PluginView: View {
 
   @ObservedObject private var pluginVM = PluginVM()
 
-  private let openPanel = NSOpenPanel()
-
   init() {
     refreshPlugins()
   }
@@ -413,29 +411,29 @@ struct PluginView: View {
           }.disabled(selectedAvailable.isEmpty || processing)
             .buttonStyle(.borderedProminent)
           Button {
-            openPanel.allowsMultipleSelection = false
-            openPanel.canChooseDirectories = false
-            openPanel.allowedContentTypes = [UTType.init(filenameExtension: "bz2")!]
-            openPanel.directoryURL = URL(
-              fileURLWithPath: homeDir.appendingPathComponent("Downloads").localPath())
-            openPanel.begin { response in
-              if response == .OK {
-                for url in openPanel.urls {
-                  let fileName = url.lastPathComponent
-                  for pluginName in pluginMap.keys {
-                    if fileName == getPluginFileName(pluginName, native: true) {
-                      mkdirP(cacheDir.localPath())
-                      let cacheFileURL = getCacheURL(pluginName, native: true)
-                      let _ = copyFile(url, cacheFileURL)
-                      let _ = exec(
-                        "/usr/bin/xattr", ["-dr", "com.apple.quarantine", cacheFileURL.localPath()])
-                      let _ = extractPlugin(pluginName, native: true)
-                      restart()
-                    }
+            let _ = selectFile(
+              allowsMultipleSelection: false,
+              canChooseDirectories: false,
+              canChooseFiles: true,
+              allowedContentTypes: [UTType.init(filenameExtension: "bz2")!],
+              directoryURL: URL(
+                fileURLWithPath: homeDir.appendingPathComponent("Downloads").localPath())
+            ) { urls, _ in
+              for url in urls {
+                let fileName = url.lastPathComponent
+                for pluginName in pluginMap.keys {
+                  if fileName == getPluginFileName(pluginName, native: true) {
+                    mkdirP(cacheDir.localPath())
+                    let cacheFileURL = getCacheURL(pluginName, native: true)
+                    let _ = copyFile(url, cacheFileURL)
+                    let _ = exec(
+                      "/usr/bin/xattr", ["-dr", "com.apple.quarantine", cacheFileURL.localPath()])
+                    let _ = extractPlugin(pluginName, native: true)
+                    restart()
                   }
                 }
-                showInvalidFileName = true
               }
+              showInvalidFileName = true
             }
           } label: {
             Text("Install manually")

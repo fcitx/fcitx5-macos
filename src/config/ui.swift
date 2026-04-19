@@ -44,39 +44,37 @@ struct SelectFileButton<Label>: View where Label: View {
   let label: () -> Label
   let model: Binding<String>
 
-  @State private var openPanel = NSOpenPanel()
   @State private var duplicateFile: DuplicateFile? = nil
 
   var body: some View {
     HStack {
       Button {
         mkdirP(directory.localPath())
-        // Only consider the first file, but allow multiple deletion.
-        openPanel.allowsMultipleSelection = true
-        openPanel.canChooseDirectories = false
-        openPanel.allowedContentTypes = allowedContentTypes
-        openPanel.directoryURL = directory
-        openPanel.begin { response in
-          if response == .OK {
-            guard let file = openPanel.urls.first else {
+        let _ = selectFile(
+          allowsMultipleSelection: false,
+          canChooseDirectories: false,
+          canChooseFiles: true,
+          allowedContentTypes: allowedContentTypes,
+          directoryURL: directory
+        ) { urls, _ in
+          guard let file = urls.first else {
+            return
+          }
+          var fileName = file.lastPathComponent
+          if !directory.contains(file) {
+            let dst = directory.appendingPathComponent(fileName)
+            if dst.exists() {
+              duplicateFile = DuplicateFile(url: file)
               return
             }
-            var fileName = file.lastPathComponent
-            if !directory.contains(file) {
-              let dst = directory.appendingPathComponent(fileName)
-              if dst.exists() {
-                duplicateFile = DuplicateFile(url: file)
-                return
-              }
-              if !copyFile(file, dst) {
-                return
-              }
-            } else {
-              // Need to consider subdirectory of www/img.
-              fileName = String(file.localPath().dropFirst(directory.localPath().count))
+            if !copyFile(file, dst) {
+              return
             }
-            onFinish(fileName)
+          } else {
+            // Need to consider subdirectory of www/img.
+            fileName = String(file.localPath().dropFirst(directory.localPath().count))
           }
+          onFinish(fileName)
         }
       } label: {
         label()
@@ -114,17 +112,16 @@ struct SelectFileButton<Label>: View where Label: View {
 }
 
 @MainActor
-func selectApplication(_ openPanel: NSOpenPanel, onFinish: @escaping (String) -> Void) {
-  openPanel.allowsMultipleSelection = false
-  openPanel.canChooseDirectories = false
-  openPanel.allowedContentTypes = [.application]
-  openPanel.directoryURL = URL(fileURLWithPath: "/Applications")
-  openPanel.begin { response in
-    if response == .OK {
-      let selectedApp = openPanel.urls.first
-      if let appURL = selectedApp {
-        onFinish(appURL.localPath())
-      }
+func selectApplication(onFinish: @escaping (String) -> Void) {
+  let _ = selectFile(
+    allowsMultipleSelection: false,
+    canChooseDirectories: false,
+    canChooseFiles: true,
+    allowedContentTypes: [.application],
+    directoryURL: URL(fileURLWithPath: "/Applications")
+  ) { urls, _ in
+    if let url = urls.first {
+      onFinish(url.localPath())
     }
   }
 }

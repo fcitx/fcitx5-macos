@@ -59,7 +59,6 @@ class DictVM: ObservableObject {
 struct DictManagerView: View {
   @Environment(\.dismiss) private var dismiss
 
-  let openPanel = NSOpenPanel()
   @AppStorage("DictManagerSelectedDirectory") var dictManagerSelectedDirectory: String?
   @State private var selectedDicts = Set<String>()
   @ObservedObject private var dictVM = DictVM()
@@ -105,36 +104,37 @@ struct DictManagerView: View {
       }
       VStack {
         Button {
-          openPanel.allowsMultipleSelection = true
-          openPanel.canChooseDirectories = false
-          openPanel.allowedContentTypes = ["dict", "scel", "txt"].map {
-            UTType.init(filenameExtension: $0)!
-          }
-          openPanel.directoryURL = URL(
+          let initialDirectoryURL = URL(
             fileURLWithPath: dictManagerSelectedDirectory
               ?? homeDir.appendingPathComponent("Downloads").localPath())
-          openPanel.begin { response in
-            if response == .OK {
-              mkdirP(dictPath)
-              failure =
-                openPanel.urls.map({ file in
-                  switch file.pathExtension {
-                  case "dict":
-                    importDict(file)
-                  case "scel":
-                    importScelDict(file)
-                  case "txt":
-                    importTxtDict(file)
-                  default:
-                    false
-                  }
-                }).filter({ !$0 }).count
-            }
+          let _ = selectFile(
+            allowsMultipleSelection: true,
+            canChooseDirectories: false,
+            canChooseFiles: true,
+            allowedContentTypes: ["dict", "scel", "txt"].compactMap {
+              UTType.init(filenameExtension: $0)
+            },
+            directoryURL: initialDirectoryURL
+          ) { urls, dirURL in
+            mkdirP(dictPath)
+            failure =
+              urls.map({ file in
+                switch file.pathExtension {
+                case "dict":
+                  importDict(file)
+                case "scel":
+                  importScelDict(file)
+                case "txt":
+                  importTxtDict(file)
+                default:
+                  false
+                }
+              }).filter({ !$0 }).count
             if failure > 0 {
               showFailure = true
             }
             reloadDicts()
-            dictManagerSelectedDirectory = openPanel.directoryURL?.localPath()
+            dictManagerSelectedDirectory = dirURL?.localPath()
           }
         } label: {
           Text("Import dictionaries")

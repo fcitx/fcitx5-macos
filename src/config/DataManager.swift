@@ -73,7 +73,6 @@ private func exportZip(_ name: String, withRime: Bool) -> Bool {
 }
 
 struct DataView: View {
-  @State private var openPanel = NSOpenPanel()
   @AppStorage("ImportDataSelectedDirectory") var importDataSelectedDirectory: String?
   @AppStorage("ExportDataSelectedDirectory") var exportDataSelectedDirectory: String?
   @State private var showImportF5a = false
@@ -88,28 +87,26 @@ struct DataView: View {
   @State private var showExportFailure = false
 
   private func importZip(_ binding: Binding<Bool>, _ validator: @escaping () -> Bool) {
-    // Keep a single openPanel to avoid confusion.
-    if openPanel.isVisible {
-      openPanel.cancel(nil)
-      openPanel = NSOpenPanel()
-    }
-    openPanel.allowsMultipleSelection = false
-    openPanel.canChooseDirectories = false
-    openPanel.allowedContentTypes = [.zip]
-    openPanel.directoryURL = URL(
+    let initialDirectoryURL = URL(
       fileURLWithPath: importDataSelectedDirectory
         ?? homeDir.appendingPathComponent("Downloads").localPath())
-    openPanel.begin { response in
-      if response == .OK {
+    let _ = selectFile(
+      allowsMultipleSelection: false,
+      canChooseDirectories: false,
+      canChooseFiles: true,
+      allowedContentTypes: [.zip],
+      directoryURL: initialDirectoryURL
+    ) { urls, dirURL in
+      if let file = urls.first {
         _ = removeFile(extractDir)
         mkdirP(extractPath)
-        if let file = openPanel.urls.first, extractZip(file), validator() {
+        if extractZip(file), validator() {
           binding.wrappedValue = true
         } else {
           showInvalidZip = true
         }
       }
-      importDataSelectedDirectory = openPanel.directoryURL?.localPath()
+      importDataSelectedDirectory = dirURL?.localPath()
     }
   }
 
@@ -123,15 +120,15 @@ struct DataView: View {
       }.value
       showRunning = false
       if res {
-        if openPanel.isVisible {
-          openPanel.cancel(nil)
-          openPanel = NSOpenPanel()
-        }
-        openPanel.allowsMultipleSelection = false
-        openPanel.canChooseDirectories = true
-        openPanel.canChooseFiles = false
-        if openPanel.runModal() == .OK {
-          if let url = openPanel.url {
+        let initialDirectoryURL = exportDataSelectedDirectory.map { URL(fileURLWithPath: $0) }
+        let _ = selectFile(
+          allowsMultipleSelection: false,
+          canChooseDirectories: true,
+          canChooseFiles: false,
+          allowedContentTypes: [],
+          directoryURL: initialDirectoryURL
+        ) { urls, _ in
+          if let url = urls.first {
             if moveFile(
               composeDir.appendingPathComponent(name),
               url.appendingPathComponent(name)

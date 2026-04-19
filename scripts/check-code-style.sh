@@ -13,4 +13,8 @@ for file in $(git ls-files | grep '\.swift$'); do
     echo "Please use NSLocalizedString instead of LocalizedStringKey"
     exit 1
   fi
+  if [[ $file != *PanelManager.swift ]] && grep 'NSOpenPanel(' $file; then
+    echo "Please use selectFile instead of NSOpenPanel"
+    exit 1
+  fi
 done
