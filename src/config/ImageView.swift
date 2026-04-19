@@ -15,11 +15,7 @@ struct ImageView: OptionViewProtocol {
 
   @State private var mode: Int
   @State private var file: String
-  @State private var url: String {
-    didSet {
-      value = url
-    }
-  }
+  @State private var url: String
 
   init(data: [String: Any], value: Binding<Any>) {
     self.data = data
@@ -64,6 +60,8 @@ struct ImageView: OptionViewProtocol {
       }
     }.onChange(of: file) {
       value = $0.isEmpty ? "" : fcitxPrefix + $0
+    }.onChange(of: url) {
+      value = $0
     }
   }
 }
