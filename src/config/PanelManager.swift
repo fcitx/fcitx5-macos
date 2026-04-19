@@ -14,7 +14,9 @@ func selectFile(
   directoryURL: URL?,
   onSelect: @escaping ([URL], URL?) -> Void
 ) -> Bool {
-  if openPanel != nil {
+  if let panel = openPanel {
+    NSSound.beep()
+    panel.makeKeyAndOrderFront(nil)
     return false
   }
   let panel = NSOpenPanel()
