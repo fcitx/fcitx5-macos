@@ -14,11 +14,7 @@ struct ImageView: OptionViewProtocol {
   @Binding var value: Any
 
   @State private var mode: Int
-  @State private var file: String {
-    didSet {
-      value = file.isEmpty ? "" : fcitxPrefix + file
-    }
-  }
+  @State private var file: String
   @State private var url: String {
     didSet {
       value = url
@@ -66,6 +62,8 @@ struct ImageView: OptionViewProtocol {
         TextField(
           NSLocalizedString("https:// or data:image/png;base64,", comment: ""), text: $url)
       }
+    }.onChange(of: file) {
+      value = $0.isEmpty ? "" : fcitxPrefix + file
     }
   }
 }
