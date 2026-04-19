@@ -63,7 +63,7 @@ struct ImageView: OptionViewProtocol {
           NSLocalizedString("https:// or data:image/png;base64,", comment: ""), text: $url)
       }
     }.onChange(of: file) {
-      value = $0.isEmpty ? "" : fcitxPrefix + file
+      value = $0.isEmpty ? "" : fcitxPrefix + $0
     }
   }
 }
