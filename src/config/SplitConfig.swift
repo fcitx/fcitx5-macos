@@ -30,7 +30,7 @@ struct SplitConfigView: View {
             HStack {
               Text("Restart process to load new fonts")
               Button {
-                FcitxInputController.controllers[key]?.window?.performClose(_: nil)
+                ConfigWindowController.closeWindow(key)
                 DispatchQueue.main.async {
                   restartProcess()
                 }
@@ -52,7 +52,7 @@ struct SplitConfigView: View {
       FooterView(
         manager: manager,
         onClose: {
-          FcitxInputController.controllers[key]?.window?.performClose(_: nil)
+          ConfigWindowController.closeWindow(key)
         })
     }
   }

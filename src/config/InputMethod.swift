@@ -253,7 +253,7 @@ struct InputMethodConfigView: View {
           FooterView(
             manager: manager,
             onClose: {
-              FcitxInputController.closeWindow("im")
+              ConfigWindowController.closeWindow("im")
             })
         }
       } else {

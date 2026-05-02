@@ -77,7 +77,7 @@ struct AdvancedView: View {
           HStack {
             Spacer()
             Button {
-              FcitxInputController.closeWindow("advanced")
+              ConfigWindowController.closeWindow("advanced")
             } label: {
               Text("Close")
             }
@@ -92,7 +92,7 @@ struct AdvancedView: View {
           FooterView(
             manager: manager,
             onClose: {
-              FcitxInputController.closeWindow("advanced")
+              ConfigWindowController.closeWindow("advanced")
             })
         }
       }.padding([.top], 1)

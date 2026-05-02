@@ -295,13 +295,13 @@ struct PluginView: View {
             Fcitx.imAddToCurrentGroup(im)
           }
         }
-        FcitxInputController.refreshAll()
+        ConfigWindowController.refreshAll()
       }
     }
   }
 
   private func restart() {
-    FcitxInputController.closeWindow("plugin")
+    ConfigWindowController.closeWindow("plugin")
     DispatchQueue.main.async {
       restartProcess()
     }

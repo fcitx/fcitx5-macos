@@ -119,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @MainActor
   @objc func hide() {
     Fcitx.setConfig("fcitx://config/addon/macosfrontend", "{\"StatusBar\": \"Hidden\"}")
-    FcitxInputController.refreshAll()  // Refresh Advanced.
+    ConfigWindowController.refreshAll()  // Refresh Advanced.
     sendNotification(
       "status-item-hidden", "", NSLocalizedString("Status bar is hidden", comment: ""),
       NSLocalizedString("You may re-enable it in Advanced → macOS Frontend.", comment: ""), [], 8000
