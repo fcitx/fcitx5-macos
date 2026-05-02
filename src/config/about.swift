@@ -414,7 +414,7 @@ struct AboutView: View {
   }
 }
 
-class FcitxAboutController: ConfigWindowController {
+public class FcitxAboutController: ConfigWindowController {
   let view = AboutView()
 
   convenience init() {

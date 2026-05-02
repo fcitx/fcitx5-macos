@@ -1,5 +1,6 @@
 import Cocoa
 import Fcitx
+import FcitxConfigUI
 
 extension FcitxInputController {
   @MainActor

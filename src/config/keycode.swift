@@ -1,7 +1,7 @@
 import Cocoa
 import Keycode
 
-func keyToUnicode(_ key: String) -> UInt32 {
+public func keyToUnicode(_ key: String) -> UInt32 {
   if key.isEmpty {
     return 0
   }

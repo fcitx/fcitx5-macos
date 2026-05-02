@@ -175,7 +175,7 @@ func writeUTF8(_ file: URL, _ s: String) -> Bool {
   }
 }
 
-func decodeJSON<T: Decodable>(_ s: String, _ defaultValue: T) -> T {
+public func decodeJSON<T: Decodable>(_ s: String, _ defaultValue: T) -> T {
   guard let data = s.data(using: .utf8),
     let decoded = try? JSONDecoder().decode(T.self, from: data)
   else {

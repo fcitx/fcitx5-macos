@@ -2,7 +2,7 @@ import Fcitx
 import Logging
 import SwiftUI
 
-class AdvancedController: ConfigWindowController {
+public class AdvancedController: ConfigWindowController {
   let view = AdvancedView()
 
   convenience init() {

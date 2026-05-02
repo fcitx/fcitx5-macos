@@ -40,6 +40,18 @@ target_link_libraries(Fcitx5Objs
     WebviewCandidateWindow
 )
 
+# Config UI library - compiled once, linked by both Fcitx5 and Fcitx5TestApp
+add_library(FcitxConfigUI STATIC
+    ${CONFIG_UI_FILES}
+)
+
+target_link_libraries(FcitxConfigUI PUBLIC
+    Fcitx5Objs
+    Logging
+    AlertToast
+    SwiftFrontend
+)
+
 add_executable(Fcitx5
     MACOSX_BUNDLE
     server.swift
@@ -48,15 +60,11 @@ add_executable(Fcitx5
     menu.swift
     secure.swift
     status.swift
-    ${CONFIG_UI_FILES}
 )
 
 target_link_libraries(Fcitx5
-    Fcitx5Objs
-    AlertToast
-    SwiftFrontend
+    FcitxConfigUI
     SwiftNotify
-    Logging
 )
 
 fcitx5_import_addons(Fcitx5

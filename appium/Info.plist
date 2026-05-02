@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Must have a bundle identifier so that Accessibility Inspector can detect its window. -->
+  <key>CFBundleIdentifier</key>
+  <string>org.fcitx.FcitxTestApp</string>
+</dict>
+</plist>

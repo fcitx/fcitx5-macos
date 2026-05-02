@@ -4,13 +4,13 @@ import Fcitx
 /// All config window controllers should subclass this. It sets up
 /// application states so that the config windows can receive user
 /// input.
-class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDelegate {
+public class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDelegate {
   static var controllers = [String: ConfigWindowController]()
 
   var key: String = ""
 
   @MainActor
-  static func openWindow(_ key: String, _ type: ConfigWindowController.Type) {
+  static public func openWindow(_ key: String, _ type: ConfigWindowController.Type) {
     var controller = controllers[key]
     if controller == nil {
       controller = type.init()
@@ -26,7 +26,7 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
   }
 
   @MainActor
-  static func refreshAll() {
+  static public func refreshAll() {
     for controller in controllers.values {
       controller.refresh()
     }
@@ -43,7 +43,7 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
     super.init(coder: coder)
   }
 
-  override func showWindow(_ sender: Any? = nil) {
+  public override func showWindow(_ sender: Any? = nil) {
     if let window = window {
       // Switch to normal activation policy so that the config windows
       // can receive key events.
@@ -56,7 +56,7 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
     }
   }
 
-  func windowShouldClose(_ sender: NSWindow) -> Bool {
+  public func windowShouldClose(_ sender: NSWindow) -> Bool {
     sender.orderOut(nil)
     // Free memory and reset state.
     Self.controllers.removeValue(forKey: key)
@@ -82,7 +82,7 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
     window.toolbarStyle = .unified
   }
 
-  func toolbar(
+  public func toolbar(
     _ toolbar: NSToolbar, itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
     willBeInsertedIntoToolbar flag: Bool
   ) -> NSToolbarItem? {
@@ -98,11 +98,11 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
     return nil
   }
 
-  func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+  public func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
     return [.toggleSidebar, .flexibleSpace]
   }
 
-  func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
+  public func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
     return [.toggleSidebar, .flexibleSpace]
   }
 
@@ -119,7 +119,7 @@ class ConfigWindowController: NSWindowController, NSWindowDelegate, NSToolbarDel
 
 // Don't call it synchronously in SwiftUI as it will make IM temporarily unavailable in focused client.
 @MainActor
-func restartProcess() {
+public func restartProcess() {
   // Sheets prevent Fcitx5 from normal termination.
   for window in NSApp.windows {
     for sheet in window.sheets {

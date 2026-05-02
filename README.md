@@ -8,6 +8,11 @@ English
 
 Please download [installer](https://github.com/fcitx-contrib/fcitx5-macos-installer) and read [documentation](https://fcitx-contrib.github.io/docs/).
 
+## Plugins
+Fcitx5 only packages keyboard engine.
+To install other [engines or tables](https://github.com/fcitx-contrib/fcitx5-plugins),
+use the built-in Plugin Manager.
+
 ## Build
 Native and cross build on macOS ≥ 26.2 is supported.
 
@@ -76,10 +81,20 @@ When Fcitx5 crashes, it creates a ~10GB core file under `/cores`.
 (lldb) bt
 ```
 
-## Plugins
-Fcitx5 only packages keyboard engine.
-To install other [engines or tables](https://github.com/fcitx-contrib/fcitx5-plugins),
-use the built-in Plugin Manager.
+## Test
+### Unit test
+```sh
+ctest --test-dir build/$(uname -m) --output-on-failure
+```
+
+### E2E test
+```sh
+npm i -g appium
+appium driver install mac2
+pip install -r appium/requirements.txt
+pytest appium
+```
+Use `/Applications/Xcode.app/Contents/Applications/Accessibility Inspector.app` to check identifier of UI elements.
 
 ## Translation
 

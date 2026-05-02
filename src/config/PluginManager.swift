@@ -475,7 +475,7 @@ struct PluginView: View {
   }
 }
 
-class PluginManager: ConfigWindowController {
+public class PluginManager: ConfigWindowController {
   let view = PluginView()
   convenience init() {
     let window = NSWindow(

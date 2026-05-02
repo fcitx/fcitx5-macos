@@ -2,7 +2,7 @@ import SwiftUI
 
 let webpanelUri = "fcitx://config/addon/webpanel"
 
-class ThemeEditorController: ConfigWindowController {
+public class ThemeEditorController: ConfigWindowController {
   let view = SplitConfigView(uri: webpanelUri, key: "theme")
 
   convenience init() {

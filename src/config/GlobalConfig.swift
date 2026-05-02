@@ -1,6 +1,6 @@
 import SwiftUI
 
-class GlobalConfigController: ConfigWindowController {
+public class GlobalConfigController: ConfigWindowController {
   let view = SplitConfigView(uri: "fcitx://config/global", key: "global")
 
   convenience init() {

@@ -2,7 +2,7 @@ import Fcitx
 import Logging
 import SwiftUI
 
-class InputMethodConfigController: ConfigWindowController {
+public class InputMethodConfigController: ConfigWindowController {
   let view = InputMethodConfigView()
 
   convenience init() {
@@ -367,9 +367,9 @@ struct InputMethodConfigView: View {
   }
 }
 
-struct InputMethod: Codable, Hashable {
-  let name: String
-  let displayName: String
+public struct InputMethod: Codable, Hashable {
+  public let name: String
+  public let displayName: String
   let languageCode: String
   let isKeyboard: Bool
 }

@@ -14,5 +14,6 @@ struct BooleanView: OptionViewProtocol {
         })
     )
     .toggleStyle(.switch)
+    .accessibilityIdentifier(data["Option"] as? String ?? "")
   }
 }

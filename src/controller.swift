@@ -1,5 +1,6 @@
 import CxxFrontend
 import Fcitx
+import FcitxConfigUI
 import InputMethodKit
 import Logging
 import SwiftFrontend

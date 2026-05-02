@@ -1,0 +1,4 @@
+Appium-Python-Client
+pytest
+ruff
+selenium

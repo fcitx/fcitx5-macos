@@ -133,3 +133,5 @@ add_subdirectory(po)
 
 enable_testing()
 add_subdirectory(tests)
+
+add_subdirectory(appium)
