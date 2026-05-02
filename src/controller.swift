@@ -15,11 +15,6 @@ struct SyncResponse: Codable {
 let capsLock = NSEvent.ModifierFlags.capsLock.rawValue
 let shift = NSEvent.ModifierFlags.shift.rawValue
 
-@MainActor class ModifierState: ObservableObject {
-  static let shared = ModifierState()
-  @Published var shift = false
-}
-
 class FcitxInputController: IMKInputController {
   let uuid: ICUUID
   let appId: String

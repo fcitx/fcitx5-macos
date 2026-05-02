@@ -38,6 +38,11 @@ private func getBackground(_ colorScheme: ColorScheme, _ fixed: Bool) -> Color {
   }
 }
 
+@MainActor public class ModifierState: ObservableObject {
+  static public let shared = ModifierState()
+  @Published public var shift = false
+}
+
 struct KeyboardViewer: View {
   @ObservedObject private var modifierState = ModifierState.shared
   @State private var symbolsCache = [String: [[String]]]()

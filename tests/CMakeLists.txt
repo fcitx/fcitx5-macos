@@ -41,7 +41,7 @@ add_executable(TagSwift testtag.swift
 add_test(NAME TagSwift COMMAND TagSwift)
 
 add_executable(ColorSwift testcolor.swift
-    ${PROJECT_SOURCE_DIR}/src/color.swift
+    ${PROJECT_SOURCE_DIR}/src/config/color.swift
 )
 add_test(NAME ColorSwift COMMAND ColorSwift)
 

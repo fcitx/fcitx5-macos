@@ -46,7 +46,6 @@ add_executable(Fcitx5
     locale.swift
     controller.swift
     menu.swift
-    color.swift
     secure.swift
     status.swift
     ${CONFIG_UI_FILES}

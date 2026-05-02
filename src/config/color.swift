@@ -1,6 +1,6 @@
 import AppKit
 
-public func nsColorToString(_ color: NSColor) -> String? {
+func nsColorToString(_ color: NSColor) -> String? {
   guard let rgbColor = color.usingColorSpace(.sRGB) else {
     return nil
   }
@@ -14,7 +14,7 @@ public func nsColorToString(_ color: NSColor) -> String? {
 nonisolated(unsafe) private var colorMap = [String: String]()
 
 // The caller is actually @MainActor but can't be marked that way given it's an override of non-@MainActor method.
-func getAccentColor(_ id: String) -> String {
+public func getAccentColor(_ id: String) -> String {
   if let cachedColor = colorMap[id] {
     return cachedColor
   }
