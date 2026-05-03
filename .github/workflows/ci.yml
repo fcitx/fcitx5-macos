@@ -18,7 +18,9 @@ jobs:
           submodules: true # needs fcitx5/.clang-format
 
       - name: Install dependencies
-        run: brew install clang-format swift-format
+        run: |
+          brew install clang-format swift-format
+          pip install ruff
 
       - name: Lint
         run: ./scripts/lint.sh

@@ -31,18 +31,15 @@ def check_appium_server() -> bool:
 
 def launch_app(driver: WebDriver, session_config_dir: str, test_name: str) -> str:
     """Launch the test app."""
+    config_home = os.path.join(session_config_dir, test_name)
+    os.makedirs(config_home, exist_ok=True)
     app_path = os.path.join(
         project_root, "build", platform.machine(), "appium/FcitxTestApp.app"
     )
-    if not os.path.exists(app_path):
-        pytest.fail(f"App not found at {app_path}")
-
-    config_home = os.path.join(session_config_dir, test_name)
-    os.makedirs(config_home, exist_ok=True)
     driver.execute_script(
         "macos: launchApp",
         {
-            "bundleId": BUNDLE_ID,
+            "path": app_path,
             "arguments": [],
             "environment": {
                 "FCITX_CONFIG_HOME": config_home,
@@ -71,7 +68,7 @@ def appium_server() -> Generator[str, None, None]:
             break
         time.sleep(1)
     else:
-        pytest.fail("Appium server did not start within 30 seconds")
+        pytest.fail("Appium server did not start within 5 seconds")
 
     yield APPIUM_SERVER
 
