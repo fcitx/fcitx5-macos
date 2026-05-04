@@ -85,6 +85,7 @@ struct EnumView: OptionViewProtocol {
           Text(options[i].1).tag(options[i].0)
         }
       }
+      .accessibilityIdentifier(data["Option"] as? String ?? "")
     }
   }
 }

@@ -8,7 +8,12 @@ def read_config(base_path: str, filename: str) -> dict[str, Any]:
     config = configparser.ConfigParser()
     config.optionxform = str
     path = os.path.join(base_path, filename)
-    config.read(path)
+    with open(path, "r") as f:
+        content = f.read()
+    # Handle config files without section headers
+    if not content.startswith("["):
+        content = "[Global]\n" + content
+    config.read_string(content)
     return {section: dict(config[section]) for section in config.sections()}
 
 

@@ -58,7 +58,7 @@ struct AdvancedView: View {
         ForEach(viewModel.categories) { category in
           Section(header: Text(category.name)) {
             ForEach(category.addons) { addon in
-              let text = Text(addon.name)
+              let text = Text(addon.name).accessibilityIdentifier(addon.id)
               if !addon.comment.isEmpty {
                 text.tooltip(addon.comment)
               } else {

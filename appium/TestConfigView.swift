@@ -10,8 +10,10 @@ struct TestConfigView: View {
       }
       Button("Input Method") {}
       Button("Theme") {}
-      Button("Addon") {}
-      Button("Advanced") {}
+      Button("Advanced") {
+        NSApp.mainWindow?.close()
+        ConfigWindowController.openWindow("advanced", AdvancedController.self)
+      }
       Button("About") {}
     }
   }

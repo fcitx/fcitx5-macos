@@ -21,7 +21,11 @@ def find_element_by_id(driver: WebDriver, identifier: str) -> WebElement:
     return driver.find_element(AppiumBy.ACCESSIBILITY_ID, identifier)
 
 
-def open_global_config(driver: WebDriver) -> None:
+def open_global_config(driver: WebDriver):
     """Open the Global Config window."""
-    btn = find_button(driver, "Global Config")
-    btn.click()
+    find_button(driver, "Global Config").click()
+
+
+def open_advanced_config(driver: WebDriver):
+    """Open the Advanced Config window."""
+    find_button(driver, "Advanced").click()
