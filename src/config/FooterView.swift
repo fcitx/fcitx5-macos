@@ -26,7 +26,7 @@ struct FooterView: View {
             "Reset current page. To reset a single item/group, right click on its label.",
             comment: ""
           ))
-      }
+      }.accessibilityIdentifier("ResetPage")
 
       Spacer()
 

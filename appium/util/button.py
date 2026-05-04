@@ -1,16 +1,18 @@
-from appium.webdriver.common.appiumby import AppiumBy
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from util.message import BUTTON_SHOULD_BE_DISABLED
+from util.window import find_element_by_id
 
 
-def get_undo(driver: WebDriver) -> WebElement:
-    """Find the undo button by its accessibility identifier."""
-    return driver.find_element(AppiumBy.ACCESSIBILITY_ID, "arrow.uturn.left")
+def get_undo_redo(driver: WebDriver) -> tuple[WebElement, WebElement]:
+    """Get undo and redo buttons, asserting they are initially disabled."""
+    undo = find_element_by_id(driver, "arrow.uturn.left")
+    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
 
+    redo = find_element_by_id(driver, "arrow.uturn.right")
+    assert is_enabled(redo) is False, BUTTON_SHOULD_BE_DISABLED
 
-def get_redo(driver: WebDriver) -> WebElement:
-    """Find the redo button by its accessibility identifier."""
-    return driver.find_element(AppiumBy.ACCESSIBILITY_ID, "arrow.uturn.right")
+    return undo, redo
 
 
 def is_enabled(element: WebElement) -> bool:

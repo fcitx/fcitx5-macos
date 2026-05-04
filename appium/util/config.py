@@ -10,3 +10,8 @@ def read_config(base_path: str, filename: str) -> dict[str, Any]:
     path = os.path.join(base_path, filename)
     config.read(path)
     return {section: dict(config[section]) for section in config.sections()}
+
+
+def read_global_config(app_config_dir: str) -> dict[str, Any]:
+    """Read the global config file from the app config directory."""
+    return read_config(app_config_dir, "config")

@@ -1,3 +1,4 @@
+from appium.webdriver.common.appiumby import AppiumBy
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
@@ -13,6 +14,11 @@ def find_button(driver: WebDriver, label: str) -> WebElement | None:
         if label in name:
             return btn
     return None
+
+
+def find_element_by_id(driver: WebDriver, identifier: str) -> WebElement:
+    """Find an element by its accessibility identifier."""
+    return driver.find_element(AppiumBy.ACCESSIBILITY_ID, identifier)
 
 
 def open_global_config(driver: WebDriver) -> None:

@@ -33,9 +33,11 @@ struct IntegerView: OptionViewProtocol {
   var body: some View {
     let minValue = Int(data["IntMin"] as? String ?? "")
     let maxValue = Int(data["IntMax"] as? String ?? "")
+    let option = data["Option"] as? String ?? ""
     HStack {
       TextField("", value: $number, formatter: numberFormatter)
         .focused($isFocused)
+        .accessibilityIdentifier(option)
         .onChange(of: isFocused) { focused in
           if !focused, let minValue = minValue, let maxValue = maxValue {
             if number < minValue {
@@ -46,12 +48,14 @@ struct IntegerView: OptionViewProtocol {
           }
         }
       if #available(macOS 26.0, *) {
+        let stepperId = option + "_stepper"
         if let minValue = minValue, let maxValue = maxValue {
           Stepper(
             value: $number,
             in: minValue...maxValue,
             step: 1
           ) {}
+          .accessibilityIdentifier(stepperId)
         } else {
           Stepper {
           } onIncrement: {
@@ -59,6 +63,7 @@ struct IntegerView: OptionViewProtocol {
           } onDecrement: {
             number -= 1
           }
+          .accessibilityIdentifier(stepperId)
         }
       } else {
         // Stepper is too narrow.
