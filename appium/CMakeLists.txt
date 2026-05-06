@@ -6,6 +6,12 @@ add_executable(FcitxTestApp
 
 target_link_libraries(FcitxTestApp
     FcitxConfigUI
+    SwiftFrontend
+)
+
+fcitx5_import_addons(FcitxTestApp
+    REGISTRY_VARNAME getStaticAddon
+    ADDONS webpanel macosfrontend
 )
 
 set_target_properties(FcitxTestApp PROPERTIES
