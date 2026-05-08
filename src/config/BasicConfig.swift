@@ -24,6 +24,7 @@ struct BasicConfigView: View {
             type == "External"
             ? Text(description) as any View
             : Text(description)
+              .accessibilityIdentifier("\(option)_label")
               .help(
                 isGroup
                   ? NSLocalizedString("Right click to reset this group", comment: "")
@@ -33,7 +34,7 @@ struct BasicConfigView: View {
                   onUpdate(mergeChild(value, option, extractValue(child, reset: true)))
                 } label: {
                   Text("Reset to default")
-                }
+                }.accessibilityIdentifier("\(option)_reset")
               }
           let view = optionView(
             data: child,

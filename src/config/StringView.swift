@@ -23,6 +23,7 @@ struct StringView: View, OptionViewProtocol {
     // which is buggy in punctuation map.
     TextField("", text: $text)
       .focused($isFocused)
+      .accessibilityIdentifier(data["Option"] as? String ?? "")
       .overlay(alignment: .trailing) {
         if isFocused {
           Button {

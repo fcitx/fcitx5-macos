@@ -20,3 +20,8 @@ def read_config(base_path: str, filename: str) -> dict[str, Any]:
 def read_global_config(app_config_dir: str) -> dict[str, Any]:
     """Read the global config file from the app config directory."""
     return read_config(app_config_dir, "config")
+
+
+def read_theme_config(app_config_dir: str) -> dict[str, Any]:
+    """Read the theme config file from the app config directory."""
+    return read_config(app_config_dir, "conf/webpanel.conf")
