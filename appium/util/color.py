@@ -29,8 +29,8 @@ def set_color_value(element: WebElement, value: str):
     find_element_by_id(driver, "showRGBView:").click()
 
     # Type hex
-    hex = find_element_by_id(driver, "hex")
-    hex.send_keys(value)
+    hex_field = find_element_by_id(driver, "hex")
+    hex_field.send_keys(value)
     press(driver, "\n")  # Without it, below may throw StaleElementReferenceException.
 
     # Close
