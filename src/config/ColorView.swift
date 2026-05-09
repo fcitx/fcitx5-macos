@@ -54,14 +54,17 @@ struct ColorView: OptionViewProtocol {
     HStack {
       if #available(macOS 14.0, *) {
         ColorPicker("", selection: $rgb, supportsOpacity: true)
+          .accessibilityIdentifier(data["Option"] as? String ?? "")
       } else {
         ColorPicker("", selection: $rgb, supportsOpacity: false)
         Text("Alpha (0-255)")
         TextField("", value: $alpha, formatter: numberFormatter)
       }
     }
-    .onChange(of: rgb) { _ in
-      if rgb != stringToColor(value as? String ?? "") {
+    .onChange(of: rgb) { newValue in
+      // value's initial value is affected by fcitx's serialization rule (lower case, omit 255 alpha).
+      // Compare full string to avoid unnecessary setConfig.
+      if colorToString(newValue) != colorToString(stringToColor(value as? String ?? "")) {
         colorSubject.send()
       }
     }

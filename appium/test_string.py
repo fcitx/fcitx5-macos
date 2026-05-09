@@ -9,14 +9,14 @@ from util.message import (
     UI_NOT_UPDATED,
 )
 from util.string import get_string_value
-from util.window import find_button, find_element_by_id, reset_option
+from util.window import find_element_by_id, open_theme_config, reset_option
 
 CARET_SECTION = "Caret"
 STRING_ID = "Text"
 
 
 def test_theme_caret(driver: WebDriver, app: str):
-    find_button(driver, "Theme").click()
+    open_theme_config(driver)
     find_element_by_id(driver, CARET_SECTION).click()
 
     def read_config_value() -> str:
