@@ -1,6 +1,6 @@
 import pytest
 from appium.webdriver.webdriver import WebDriver
-from util.button import get_undo_redo, is_enabled
+from util.button import get_undo_redo
 from util.config import read_config
 from util.enum import get_enum_value, select_enum_option
 from util.message import (
@@ -50,24 +50,24 @@ def test_enum_selection(
 
     assert get_enum_value(picker) == target_value, UI_NOT_UPDATED
     assert read_config_value() == target_config_value, CHANGE_NOT_SAVED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
-    assert is_enabled(redo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
+    assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
     undo.click()
     assert get_enum_value(picker) == initial_value, UI_NOT_UPDATED
     assert read_config_value() == initial_config_value, CHANGE_NOT_SAVED
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
-    assert is_enabled(redo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
+    assert redo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
 
     # Re-select current value
     select_enum_option(picker, initial_value)
     assert get_enum_value(picker) == initial_value, UI_WRONGLY_UPDATED
     assert read_config_value() == initial_config_value, CHANGE_WRONGLY_SAVED
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
-    assert is_enabled(redo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
+    assert redo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
 
     redo.click()
     assert get_enum_value(picker) == target_value, UI_NOT_UPDATED
     assert read_config_value() == target_config_value, CHANGE_NOT_SAVED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
-    assert is_enabled(redo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
+    assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED

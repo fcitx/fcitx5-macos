@@ -1,5 +1,6 @@
-from selenium.webdriver.remote.webelement import WebElement
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webelement import WebElement
 from util.key import press
 from util.window import find_element_by_id
 
@@ -31,7 +32,9 @@ def set_color_value(element: WebElement, value: str):
     # Type hex
     hex_field = find_element_by_id(driver, "hex")
     hex_field.send_keys(value)
-    press(driver, "\n")  # Without it, below may throw StaleElementReferenceException.
+    press(
+        driver, [Keys.ENTER]
+    )  # Without it, below may throw StaleElementReferenceException.
 
     # Close
     buttons = driver.find_elements(AppiumBy.CLASS_NAME, "XCUIElementTypeButton")

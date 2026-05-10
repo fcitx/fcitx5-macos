@@ -1,5 +1,5 @@
 from appium.webdriver.webdriver import WebDriver
-from util.button import get_undo_redo, is_enabled
+from util.button import get_undo_redo
 from util.config import read_global_config
 from util.integer import (
     click_stepper_decrement,
@@ -36,24 +36,24 @@ def test_default_page_size(driver: WebDriver, app: str) -> None:
 
     new_value = get_integer_value(field)
     assert new_value == initial_value + 1, UI_NOT_UPDATED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
-    assert is_enabled(redo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
+    assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
     assert read_config_value() == str(new_value), CHANGE_NOT_SAVED
 
     undo.click()
     undo_value = get_integer_value(field)
     assert undo_value == initial_value, UI_NOT_UPDATED
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
-    assert is_enabled(redo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
+    assert redo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
 
     assert read_config_value() == str(initial_value), CHANGE_NOT_SAVED
 
     redo.click()
     redo_value = get_integer_value(field)
     assert redo_value == initial_value + 1, UI_NOT_UPDATED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
-    assert is_enabled(redo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
+    assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert read_config_value() == str(redo_value), CHANGE_NOT_SAVED
 
     click_stepper_decrement(driver, stepper)

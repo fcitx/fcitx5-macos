@@ -1,5 +1,6 @@
 from appium.webdriver.webdriver import WebDriver
-from util.button import get_undo_redo, is_enabled
+from selenium.webdriver.common.keys import Keys
+from util.button import get_undo_redo
 from util.config import read_theme_config
 from util.key import press
 from util.message import (
@@ -34,36 +35,36 @@ def test_theme_caret(driver: WebDriver, app: str):
 
     update()
     undo, _ = get_undo_redo(driver)
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
-    press(driver, "\n")
+    press(driver, [Keys.ENTER])
     assert get_string_value(field) == new_value, UI_NOT_UPDATED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert read_config_value() == new_value, CHANGE_NOT_SAVED
 
     undo.click()
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert get_string_value(field) == initial_value, UI_NOT_UPDATED
     assert read_config_value() == initial_value, CHANGE_NOT_SAVED
 
     update()
-    press(driver, "\t")
+    press(driver, [Keys.TAB])
     assert get_string_value(field) == new_value, UI_NOT_UPDATED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert read_config_value() == new_value, CHANGE_NOT_SAVED
 
     undo.click()
-    assert is_enabled(undo) is False, BUTTON_SHOULD_BE_DISABLED
+    assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert get_string_value(field) == initial_value, UI_NOT_UPDATED
     assert read_config_value() == initial_value, CHANGE_NOT_SAVED
 
     update()
     find_element_by_id(driver, "checkmark").click()
     assert get_string_value(field) == new_value, UI_NOT_UPDATED
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert read_config_value() == new_value, CHANGE_NOT_SAVED
 
     reset_option(driver, STRING_ID)
-    assert is_enabled(undo) is True, BUTTON_SHOULD_BE_ENABLED
+    assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert get_string_value(field) == initial_value, UI_NOT_UPDATED
     assert read_config_value() == initial_value, CHANGE_NOT_SAVED

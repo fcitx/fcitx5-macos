@@ -20,7 +20,8 @@ struct KeyView: OptionViewProtocol {
   @State private var recordedCode: UInt16 = 0
 
   var body: some View {
-    Button {
+    let optionId = data["Option"] as? String ?? ""
+    return Button {
       recordedShortcut = ("", nil)
       recordedKey = ""
       recordedModifiers = NSEvent.ModifierFlags()
@@ -41,22 +42,26 @@ struct KeyView: OptionViewProtocol {
               recordedModifiers: $recordedModifiers, recordedCode: $recordedCode)
           )
           .frame(minWidth: 200, minHeight: 50)
+          .accessibilityIdentifier("\(optionId)_key")
         HStack {
           Button {
             showRecorder = false
           } label: {
             Text("Cancel")
-          }
+          }.accessibilityIdentifier("\(optionId)_cancel")
           Button {
             value = macKeyToFcitxString(recordedKey, recordedModifiers, recordedCode)
             showRecorder = false
           } label: {
             Text("OK")
           }.buttonStyle(.borderedProminent)
+            .accessibilityIdentifier("\(optionId)_ok")
         }
       }.padding()
     }.help(
       value as? String == ""
-        ? NSLocalizedString("Click to record", comment: "") : value as? String ?? "")
+        ? NSLocalizedString("Click to record", comment: "") : value as? String ?? ""
+    )
+    .accessibilityIdentifier(data["Option"] as? String ?? "")
   }
 }

@@ -3,10 +3,18 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 
+def find_elements_by_id(driver: WebDriver, identifier: str) -> list[WebElement]:
+    """Find elements by their accessibility identifier."""
+    elements = driver.find_elements(AppiumBy.ACCESSIBILITY_ID, identifier)
+    return [element for element in elements if element.tag_name == identifier]
+
+
 def find_element_by_id(driver: WebDriver, identifier: str) -> WebElement:
     """Find an element by its accessibility identifier."""
-    elements = driver.find_elements(AppiumBy.ACCESSIBILITY_ID, identifier)
-    return [element for element in elements if element.tag_name == identifier][0]
+    elements = find_elements_by_id(driver, identifier)
+    if len(elements) != 1:
+        raise ValueError(f"{len(elements)} elements match identifier {identifier}")
+    return elements[0]
 
 
 def open_global_config(driver: WebDriver):

@@ -8,10 +8,10 @@ from datetime import datetime
 from typing import Generator
 
 import pytest
-from appium import webdriver
 from appium.options.mac import Mac2Options
 from appium.webdriver.webdriver import WebDriver
 
+from appium import webdriver
 
 APPIUM_SERVER = "http://127.0.0.1:4723"
 BUNDLE_ID = "org.fcitx.FcitxTestApp"
