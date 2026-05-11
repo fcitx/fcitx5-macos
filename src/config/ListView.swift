@@ -113,13 +113,10 @@ struct ListView: OptionViewProtocol {
       .frame(maxWidth: .infinity, alignment: .trailing)
       .accessibilityIdentifier("\(optionId)_plus")
     }
-    // Most cases.
-    .onChange(of: value as? [String: String]) { newValue in
-      list = deserialize(newValue ?? [:])
-    }
-    // Punctuation map.
-    .onChange(of: value as? [String: [String: String]]) { newValue in
-      list = deserialize(newValue ?? [:])
+    .onChange(of: value as? NSDictionary) { newValue in
+      Task {
+        list = deserialize(newValue ?? [:])
+      }
     }
   }
 }
