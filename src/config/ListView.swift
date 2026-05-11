@@ -49,7 +49,8 @@ struct ListView: OptionViewProtocol {
     let type = data["Type"] as? String ?? ""
     let childType = String(type.suffix(type.count - "List|".count))
     let childData = mergeChild(data, "Type", childType)
-    VStack {
+    let optionId = data["Option"] as? String ?? ""
+    return VStack {
       if childType.starts(with: "Entries") {
         HStack {
           ForEach(Array((data["Children"] as? [[String: String]] ?? []).enumerated()), id: \.0) {
@@ -64,6 +65,7 @@ struct ListView: OptionViewProtocol {
         }
       }
       ForEach(Array(list.enumerated()), id: \.1.id) { i, item in
+        let prefix = "\(optionId)_\(i)_"
         HStack {
           Spacer()
           optionView(
@@ -82,6 +84,7 @@ struct ListView: OptionViewProtocol {
           }
           .disabled(i == 0)
           .buttonStyle(BorderlessButtonStyle())
+          .accessibilityIdentifier("\(prefix)up")
 
           Button {
             remove(at: i)
@@ -89,6 +92,7 @@ struct ListView: OptionViewProtocol {
             Image(systemName: "minus").square()
           }
           .buttonStyle(BorderlessButtonStyle())
+          .accessibilityIdentifier("\(prefix)minus")
 
           Button {
             add(at: i)
@@ -96,6 +100,7 @@ struct ListView: OptionViewProtocol {
             Image(systemName: "plus").square()
           }
           .buttonStyle(BorderlessButtonStyle())
+          .accessibilityIdentifier("\(prefix)plus")
         }
       }
 
@@ -106,6 +111,7 @@ struct ListView: OptionViewProtocol {
       }
       .buttonStyle(BorderlessButtonStyle())
       .frame(maxWidth: .infinity, alignment: .trailing)
+      .accessibilityIdentifier("\(optionId)_plus")
     }
     // Most cases.
     .onChange(of: value as? [String: String]) { newValue in
