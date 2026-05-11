@@ -32,6 +32,12 @@ def open_advanced_config(driver: WebDriver):
     find_element_by_id(driver, "Advanced").click()
 
 
+def open_input_method_config(driver: WebDriver, im: str):
+    """Open the Input Methods window and select an input method."""
+    find_element_by_id(driver, "Input Method").click()
+    find_element_by_id(driver, im).click()
+
+
 def reset_option(driver: WebDriver, option_id: str):
     label = find_element_by_id(driver, f"{option_id}_label")
     driver.execute_script(

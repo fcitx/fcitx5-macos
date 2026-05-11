@@ -158,7 +158,7 @@ struct InputMethodConfigView: View {
 
             ForEach($group.inputMethods) { $inputMethod in
               HStack {
-                Text(inputMethod.displayName)
+                Text(inputMethod.displayName).accessibilityIdentifier(inputMethod.name)
                 Spacer()
                 if mouseHoverIMID == inputMethod.id {
                   if inputMethod.isKeyboard {
@@ -250,6 +250,7 @@ struct InputMethodConfigView: View {
             )
             .padding()
           }.padding([.top], 1)  // Cannot be 0 otherwise content overlaps with title bar.
+            .accessibilityIdentifier("detailScrollView")
           FooterView(
             manager: manager,
             onClose: {
