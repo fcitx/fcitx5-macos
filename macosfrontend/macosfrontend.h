@@ -115,6 +115,7 @@ private:
     std::vector<std::unique_ptr<HandlerTableEntry<EventHandler>>>
         eventHandlers_;
     std::string statusItemText;
+    std::unordered_map<std::string, std::string> appDefaultIMCache_;
     void updateStatusItemText();
 
     inline MacosInputContext *findIC(ICUUID);

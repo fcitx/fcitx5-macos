@@ -137,6 +137,20 @@ void MacosFrontend::updateConfig() {
     simulateKeyReleaseDelay_ =
         static_cast<long>(config_.simulateKeyReleaseDelay.value()) * 1000L;
     pollPasteboard();
+    appDefaultIMCache_.clear();
+    for (const auto &item : config_.appDefaultIM.value()) {
+        try {
+            auto j = nlohmann::json::parse(item);
+            auto app = j["appId"];
+            auto im = j["imName"];
+            if (app.is_string() && im.is_string()) {
+                appDefaultIMCache_[app.get<std::string>()] =
+                    im.get<std::string>();
+            }
+        } catch (const std::exception &e) {
+            FCITX_WARN() << "Failed to parse appDefaultIM: " << item;
+        }
+    }
 }
 
 void MacosFrontend::reloadConfig() {
@@ -251,22 +265,9 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
 }
 
 void MacosFrontend::useAppDefaultIM(const std::string &appId) {
-    auto appDefaultIM = config_.appDefaultIM.value();
-    for (const auto &item : appDefaultIM) {
-        try {
-            auto j = nlohmann::json::parse(item);
-            auto app = j["appId"];
-            auto im = j["imName"];
-            if (app.is_string() && app.get<std::string>() == appId) {
-                if (im.is_string()) {
-                    auto imName = im.get<std::string>();
-                    imSetCurrentIM(imName.c_str());
-                }
-                return;
-            }
-        } catch (const std::exception &e) {
-            FCITX_WARN() << "Failed to parse appDefaultIM: " << item;
-        }
+    auto it = appDefaultIMCache_.find(appId);
+    if (it != appDefaultIMCache_.end()) {
+        imSetCurrentIM(it->second.c_str());
     }
 }
 
