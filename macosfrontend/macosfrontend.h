@@ -116,6 +116,7 @@ private:
         eventHandlers_;
     std::string statusItemText;
     std::unordered_map<std::string, std::string> appDefaultIMCache_;
+    std::string lastFocusedApp_;
     void updateStatusItemText();
 
     inline MacosInputContext *findIC(ICUUID);

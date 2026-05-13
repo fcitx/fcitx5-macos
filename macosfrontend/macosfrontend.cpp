@@ -287,7 +287,12 @@ void MacosFrontend::focusIn(ICUUID uuid, bool isPassword) {
     auto program = ic->program();
     FCITX_INFO() << "Focus in " << program;
     if (!program.empty()) {
-        useAppDefaultIM(program);
+        // Focusing on another input field in the same app shouldn't activate
+        // default im.
+        if (program != lastFocusedApp_) {
+            useAppDefaultIM(program);
+            lastFocusedApp_ = program;
+        }
         useVimMode(program, ic);
     }
 }
