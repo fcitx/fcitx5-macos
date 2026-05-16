@@ -1,8 +1,8 @@
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
-from util.button import get_undo_redo
+from util.button import get_label, get_undo_redo
 from util.config import read_global_config
-from util.key import get_label, press
+from util.key import press
 from util.message import (
     BUTTON_SHOULD_BE_DISABLED,
     BUTTON_SHOULD_BE_ENABLED,

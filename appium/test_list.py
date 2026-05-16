@@ -1,9 +1,8 @@
 from appium.webdriver.webdriver import WebDriver
-from util.button import get_undo_redo
+from util.button import get_label, get_undo_redo
 from util.config import read_config, read_global_config
 from util.enum import get_enum_value, select_enum_option
-from util.key import get_label
-from util.list import click_minus, click_plus
+from util.list import click_minus, click_plus, click_up
 from util.message import (
     ASSUMPTION_OUTDATED,
     BUTTON_SHOULD_BE_DISABLED,
@@ -79,6 +78,14 @@ def test_spell_backend_list(driver: WebDriver, app: str):
     provider_values.pop(1)
     assert get_provider_values() == provider_values, UI_NOT_UPDATED
     assert read_config_value() == config_after_minus, CHANGE_NOT_SAVED
+
+    click_up(driver, PROVIDER_ORDER, 1)
+    provider_values.reverse()
+    assert get_provider_values() == provider_values, UI_NOT_UPDATED
+    assert read_config_value() == {
+        "0": config_after_minus["1"],
+        "1": config_after_minus["0"],
+    }, CHANGE_NOT_SAVED
 
 
 def test_clear_list_and_reset(driver: WebDriver, app: str):

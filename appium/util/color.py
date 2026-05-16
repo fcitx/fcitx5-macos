@@ -1,6 +1,7 @@
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
+from util.button import get_label
 from util.key import press
 from util.window import find_element_by_id
 
@@ -20,7 +21,7 @@ def set_color_value(element: WebElement, value: str):
     # Slider mode
     buttons = driver.find_elements(AppiumBy.CLASS_NAME, "XCUIElementTypeButton")
     for button in buttons:
-        if button.get_attribute("label") == "Color Sliders":
+        if get_label(button) == "Color Sliders":
             button.click()
             break
 
