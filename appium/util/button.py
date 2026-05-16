@@ -13,3 +13,8 @@ def get_undo_redo(driver: WebDriver) -> tuple[WebElement, WebElement]:
     assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
     return undo, redo
+
+
+def get_label(button: WebElement) -> str:
+    """Get the label attribute of a button."""
+    return button.get_attribute("label")

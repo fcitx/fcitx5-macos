@@ -58,11 +58,13 @@ struct FontView: OptionViewProtocol {
           Text(localize(font))
         }
       }
+      .accessibilityIdentifier(data["Option"] as? String ?? "")
       .sheet(isPresented: $selectorIsOpen) {
         VStack {
           TabView {
             VStack {
               TextField(NSLocalizedString("Search", comment: ""), text: $searchInput)
+                .accessibilityIdentifier("search")
               TextField(NSLocalizedString("Preview", comment: ""), text: $previewInput)
               Text(previewInput).font(Font.custom(selectedFontFamily ?? font, size: 32)).frame(
                 height: 64)
@@ -73,6 +75,8 @@ struct FontView: OptionViewProtocol {
                     Spacer()
                     Text(localize(family))
                   }
+                  .accessibilityElement(children: .combine)
+                  .accessibilityIdentifier(family)
                 }
               }.contextMenu(forSelectionType: String.self) { items in
               } primaryAction: { items in
@@ -80,12 +84,16 @@ struct FontView: OptionViewProtocol {
                 select()
               }
             }.padding()
-              .tabItem { Text("Font family") }
+              .tabItem {
+                Text("Font family")
+                  .accessibilityIdentifier("FontFamilyTab")
+              }
 
             VStack {
               List(selection: $selectedFontFamily) {
                 ForEach(genericFamilies, id: \.self) { family in
                   Text(family)
+                    .accessibilityIdentifier(family)
                 }
               }.contextMenu(forSelectionType: String.self) { items in
               } primaryAction: { items in
@@ -93,7 +101,10 @@ struct FontView: OptionViewProtocol {
                 select()
               }
             }.padding()
-              .tabItem { Text("Generic font families") }
+              .tabItem {
+                Text("Generic font families")
+                  .accessibilityIdentifier("GenericFontFamiliesTab")
+              }
           }
 
           HStack {
@@ -102,13 +113,16 @@ struct FontView: OptionViewProtocol {
             } label: {
               Text("Cancel")
             }
+            .accessibilityIdentifier("cancel")
             Spacer()
             Button {
               select()
             } label: {
               Text("Select")
-            }.buttonStyle(.borderedProminent)
-              .disabled(selectedFontFamily == nil)
+            }
+            .accessibilityIdentifier("select")
+            .buttonStyle(.borderedProminent)
+            .disabled(selectedFontFamily == nil)
           }.padding([.leading, .trailing, .bottom])
         }
         .padding(.top)
