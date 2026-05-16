@@ -30,6 +30,34 @@ struct IntegerView: OptionViewProtocol {
     )
   }
 
+  private var isFontWeight: Bool {
+    data["FontWeight"] as? String == "True"
+  }
+
+  private func incrementValue(_ value: Int, maxValue: Int?) -> Int {
+    let next = isFontWeight ? ((value / 100) + 1) * 100 : value + 1
+    return min(next, maxValue ?? next)
+  }
+
+  private func decrementValue(_ value: Int, minValue: Int?) -> Int {
+    let previous = isFontWeight ? ((value - 1) / 100) * 100 : value - 1
+    return max(previous, minValue ?? previous)
+  }
+
+  private func canIncrement(maxValue: Int?) -> Bool {
+    guard let maxValue = maxValue else {
+      return true
+    }
+    return number < maxValue
+  }
+
+  private func canDecrement(minValue: Int?) -> Bool {
+    guard let minValue = minValue else {
+      return true
+    }
+    return number > minValue
+  }
+
   var body: some View {
     let minValue = Int(data["IntMin"] as? String ?? "")
     let maxValue = Int(data["IntMax"] as? String ?? "")
@@ -49,7 +77,16 @@ struct IntegerView: OptionViewProtocol {
         }
       if #available(macOS 26.0, *) {
         let stepperId = option + "_stepper"
-        if let minValue = minValue, let maxValue = maxValue {
+        if isFontWeight {
+          Stepper {
+          } onIncrement: {
+            number = incrementValue(number, maxValue: maxValue)
+          } onDecrement: {
+            number = decrementValue(number, minValue: minValue)
+          }
+          .accessibilityIdentifier(stepperId)
+          .disabled(!canIncrement(maxValue: maxValue) && !canDecrement(minValue: minValue))
+        } else if let minValue = minValue, let maxValue = maxValue {
           Stepper(
             value: $number,
             in: minValue...maxValue,
@@ -59,9 +96,9 @@ struct IntegerView: OptionViewProtocol {
         } else {
           Stepper {
           } onIncrement: {
-            number += 1
+            number = incrementValue(number, maxValue: maxValue)
           } onDecrement: {
-            number -= 1
+            number = decrementValue(number, minValue: minValue)
           }
           .accessibilityIdentifier(stepperId)
         }
@@ -69,15 +106,15 @@ struct IntegerView: OptionViewProtocol {
         // Stepper is too narrow.
         HStack(spacing: 0) {
           Button {
-            number -= 1
+            number = decrementValue(number, minValue: minValue)
           } label: {
             Image(systemName: "minus")
-          }.disabled(minValue != nil && number <= minValue ?? 0)
+          }.disabled(!canDecrement(minValue: minValue))
           Button {
-            number += 1
+            number = incrementValue(number, maxValue: maxValue)
           } label: {
             Image(systemName: "plus")
-          }.disabled(maxValue != nil && number >= maxValue ?? 0)
+          }.disabled(!canIncrement(maxValue: maxValue))
         }
       }
     }
