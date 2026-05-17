@@ -7,7 +7,12 @@ from util.message import (
     UI_NOT_UPDATED,
     UI_WRONGLY_UPDATED,
 )
-from util.window import find_element_by_id, open_input_method_config, reset_option
+from util.window import (
+    find_element_by_id,
+    open_input_method_config,
+    reset_option,
+    scroll,
+)
 
 SWITCH_IDS = ["VAsQuickphrase", "VE_UE", "NG_GN"]
 
@@ -23,16 +28,10 @@ def test_reset_group(driver: WebDriver, app: str):
             cfg["Fuzzy"][SWITCH_IDS[2]],
         ]
 
-    page_size = find_element_by_id(driver, "PageSize")
-    scroll = find_element_by_id(driver, "detailScrollView")
-    delta_y = page_size.rect["y"] - find_element_by_id(driver, SWITCH_IDS[0]).rect["y"]
-    driver.execute_script(
-        "macos: scroll",
-        {
-            "elementId": scroll.id,
-            "deltaX": 0,
-            "deltaY": delta_y,
-        },
+    scroll(
+        find_element_by_id(driver, "detailScrollView"),
+        find_element_by_id(driver, SWITCH_IDS[0]),
+        find_element_by_id(driver, "PageSize"),
     )
 
     for switch_id in SWITCH_IDS:

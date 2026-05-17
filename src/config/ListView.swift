@@ -114,8 +114,12 @@ struct ListView: OptionViewProtocol {
       .accessibilityIdentifier("\(optionId)_plus")
     }
     .onChange(of: value as? NSDictionary) { newValue in
-      Task {
-        list = deserialize(newValue ?? [:])
+      let newList = deserialize(newValue ?? [:])
+      // Avoid reset focus on press tab for punctuation map.
+      if "\(serialize(list))" != "\(serialize(newList))" {
+        Task {
+          list = newList
+        }
       }
     }
   }

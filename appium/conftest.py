@@ -30,10 +30,21 @@ def check_appium_server() -> bool:
         return False
 
 
-def launch_app(driver: WebDriver, session_config_dir: str, test_name: str) -> str:
+def launch_app(driver: WebDriver, session_base_dir: str, test_name: str) -> str:
     """Launch the test app."""
-    config_home = os.path.join(session_config_dir, test_name)
-    os.makedirs(config_home, exist_ok=True)
+    config_home = os.path.join(session_base_dir, test_name, "config")
+    os.makedirs(config_home)
+    data_home = os.path.join(session_base_dir, test_name, "data")
+    os.makedirs(data_home)
+
+    # Too many entries. Reduce to accelerate.
+    if test_name == "test_punctuation_map":
+        punctuation = os.path.join(data_home, "punctuation")
+        mb = os.path.join(punctuation, "punc.mb.zh_CN")
+        os.makedirs(punctuation)
+        with open(mb, "w") as f:
+            f.write(". 。\n, ，")
+
     profile_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile")
     shutil.copy2(profile_src, os.path.join(config_home, "profile"))
     app_path = os.path.join(
@@ -46,6 +57,7 @@ def launch_app(driver: WebDriver, session_config_dir: str, test_name: str) -> st
             "arguments": [],
             "environment": {
                 "FCITX_CONFIG_HOME": config_home,
+                "FCITX_DATA_HOME": data_home,
             },
         },
     )
@@ -95,7 +107,7 @@ def driver(appium_server: str) -> Generator[WebDriver, None, None]:
 
 
 @pytest.fixture(scope="session")
-def session_config_dir() -> Generator[str, None, None]:
+def session_base_dir() -> Generator[str, None, None]:
     """Create a unique base config directory for this test session."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     base_dir = os.path.join(project_root, "build/appium", timestamp)
@@ -107,11 +119,11 @@ def session_config_dir() -> Generator[str, None, None]:
 def app(
     request: pytest.FixtureRequest,
     driver: WebDriver,
-    session_config_dir: str,
+    session_base_dir: str,
 ) -> Generator[str, None, None]:
     """Manage test app lifecycle for a single test case."""
     # Launch fresh app
-    config_home = launch_app(driver, session_config_dir, request.node.name)
+    config_home = launch_app(driver, session_base_dir, request.node.name)
     yield config_home
     # Clean up after test
     terminate_app(driver)
