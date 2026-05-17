@@ -95,6 +95,7 @@ struct ExternalView: OptionViewProtocol {
         } label: {
           Image(systemName: "gear")
         }
+        .accessibilityIdentifier(option ?? "")
         .sheet(isPresented: $showDialog) {
           VStack {
             ScrollView([.vertical]) {  // ScrollView is useful for punctuation map.
