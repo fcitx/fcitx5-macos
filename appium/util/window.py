@@ -40,7 +40,7 @@ def open_input_method_config(driver: WebDriver, im: str):
 
 def scroll(container: WebElement, target: WebElement, first: WebElement):
     """Scroll the container to show the target element relative to the first element."""
-    delta_y = target.rect["y"] - first.rect["y"]
+    delta_y = first.rect["y"] - target.rect["y"]
     container.parent.execute_script(
         "macos: scroll",
         {
