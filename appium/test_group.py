@@ -14,6 +14,7 @@ from util.window import (
     scroll,
 )
 
+FUZZY = "Fuzzy"
 SWITCH_IDS = ["VAsQuickphrase", "VE_UE", "NG_GN"]
 
 
@@ -24,8 +25,8 @@ def test_reset_group(driver: WebDriver, app: str):
         cfg = read_config(app, "conf/pinyin.conf")
         return [
             cfg["Global"][SWITCH_IDS[0]],
-            cfg["Fuzzy"][SWITCH_IDS[1]],
-            cfg["Fuzzy"][SWITCH_IDS[2]],
+            cfg[FUZZY][SWITCH_IDS[1]],
+            cfg[FUZZY][SWITCH_IDS[2]],
         ]
 
     scroll(
@@ -39,7 +40,7 @@ def test_reset_group(driver: WebDriver, app: str):
     toggled = read_config_values()
     toggled_ui = [get_switch_state(find_element_by_id(driver, id)) for id in SWITCH_IDS]
 
-    reset_option(driver, "Fuzzy")
+    reset_option(driver, FUZZY)
     for i, switch_id in enumerate(SWITCH_IDS):
         ui_state = get_switch_state(find_element_by_id(driver, switch_id))
         if i == 0:

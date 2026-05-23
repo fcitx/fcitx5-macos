@@ -4,6 +4,7 @@ from util.button import get_undo_redo
 from util.config import read_config
 from util.enum import get_enum_value, select_enum_option
 from util.message import (
+    ASSUMPTION_OUTDATED,
     BUTTON_SHOULD_BE_DISABLED,
     BUTTON_SHOULD_BE_ENABLED,
     CHANGE_NOT_SAVED,
@@ -44,7 +45,7 @@ def test_enum_selection(
     undo, redo = get_undo_redo(driver)
 
     picker = find_element_by_id(driver, enum_id)
-    assert get_enum_value(picker) == initial_value, "Initial value mismatch"
+    assert get_enum_value(picker) == initial_value, ASSUMPTION_OUTDATED
 
     select_enum_option(picker, target_value)
 
