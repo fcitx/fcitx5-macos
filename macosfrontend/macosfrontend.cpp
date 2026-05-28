@@ -288,8 +288,13 @@ void MacosFrontend::focusIn(ICUUID uuid, bool isPassword) {
     FCITX_INFO() << "Focus in " << program;
     if (!program.empty()) {
         // Focusing on another input field in the same app shouldn't activate
-        // default IM.
-        if (program != lastFocusedApp_) {
+        // default IM. But if global config says reset state on focus change,
+        // must also activate default IM, otherwise a different globally-active
+        // IM will be activated. Test it with Apps that have different
+        // InputContext for different input fields, such as Chrome and iTerm.
+        if (program != lastFocusedApp_ ||
+            instance_->globalConfig().resetStateWhenFocusIn() ==
+                PropertyPropagatePolicy::All) {
             useAppDefaultIM(program);
         }
         useVimMode(program, ic);
