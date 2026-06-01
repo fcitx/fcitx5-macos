@@ -163,7 +163,7 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
   let totalLength = client.length()
   // currentPreedit is inserted at location - u16pos
   let preeditStart = max(0, location - u16pos)
-  let preeditEnd = preeditStart + currentPreedit.count
+  let preeditEnd = preeditStart + currentPreedit.utf16.count
 
   var actual = NSRange(location: 0, length: 0)
   let beforeStr =
@@ -174,6 +174,7 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
       from: NSRange(location: preeditEnd, length: max(0, totalLength - preeditEnd)),
       actualRange: &actual) ?? "")
 
+  // fcitx5 expects Unicode code point count for anchor and cursor in surrounding text.
   let anchor = UInt32(beforeStr.unicodeScalars.count)
   if currentPreedit.isEmpty && length > 0 {
     let selectionStr =

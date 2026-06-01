@@ -175,7 +175,9 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
     ic->focusIn();
     KeyEvent keyEvent(ic, key, isRelease);
     ic->isSyncEvent = true;
-    ic->setSurroundingText(text, cursor, anchor);
+    if (!isPassword) {
+        ic->setSurroundingText(text, cursor, anchor);
+    }
     ic->keyEvent(keyEvent);
     ic->isSyncEvent = false;
 
