@@ -156,6 +156,33 @@ public func commitAsync(_ commit: String) {
   }
 }
 
+public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt32, UInt32) {
+  guard let client = client, location != NSNotFound else {
+    return ("", 0, 0)
+  }
+  let totalLength = client.length()
+  // currentPreedit is inserted at location - u16pos
+  let preeditStart = max(0, location - u16pos)
+  let preeditEnd = preeditStart + currentPreedit.count
+
+  var actual = NSRange(location: 0, length: 0)
+  let beforeStr =
+    client.string(from: NSRange(location: 0, length: preeditStart), actualRange: &actual) ?? ""
+  let fullText =
+    beforeStr
+    + (client.string(
+      from: NSRange(location: preeditEnd, length: max(0, totalLength - preeditEnd)),
+      actualRange: &actual) ?? "")
+
+  let anchor = UInt32(beforeStr.unicodeScalars.count)
+  if currentPreedit.isEmpty && length > 0 {
+    let selectionStr =
+      client.string(from: NSRange(location: location, length: length), actualRange: &actual) ?? ""
+    return (fullText, anchor + UInt32(selectionStr.unicodeScalars.count), anchor)
+  }
+  return (fullText, anchor, anchor)
+}
+
 // It's called from C++ within dispatch_async(dispatch_get_main_queue())
 // so we can mark corresponding variables as nonisolated(unsafe).
 public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {

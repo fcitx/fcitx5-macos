@@ -165,7 +165,8 @@ void MacosFrontend::save() {
 }
 
 std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
-                                    bool isPassword) {
+                                    bool isPassword, const char *text,
+                                    unsigned int cursor, unsigned int anchor) {
     auto *ic = this->findIC(uuid);
     if (!ic) {
         return "{}";
@@ -174,6 +175,7 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
     ic->focusIn();
     KeyEvent keyEvent(ic, key, isRelease);
     ic->isSyncEvent = true;
+    ic->setSurroundingText(text, cursor, anchor);
     ic->keyEvent(keyEvent);
     ic->isSyncEvent = false;
 
@@ -334,6 +336,28 @@ void MacosFrontend::focusOut(ICUUID uuid) {
     ic->focusOut();
 }
 
+void MacosInputContext::setSurroundingText(const std::string &text,
+                                           unsigned int cursor,
+                                           unsigned int anchor) {
+    if (lastSurroundingText_ == text && lastSurroundingCursor_ == cursor &&
+        lastSurroundingAnchor_ == anchor) {
+        return;
+    }
+    lastSurroundingText_ = text;
+    lastSurroundingCursor_ = cursor;
+    lastSurroundingAnchor_ = anchor;
+    // Defensive: don't interrupt user input.
+    if (inputPanel().empty()) {
+        // Since system doesn't send selection change event, must reset IC
+        // manually so that when moving caret to the next position of
+        // alphanumeric and typing period/comma, they aren't converted to
+        // Chinese punctuations.
+        reset();
+    }
+    surroundingText().setText(text, cursor, anchor);
+    updateSurroundingText();
+}
+
 MacosInputContext::MacosInputContext(MacosFrontend *frontend,
                                      InputContextManager &inputContextManager,
                                      const std::string &program,
@@ -420,6 +444,8 @@ void MacosInputContext::setPassword(bool isPassword) {
     CapabilityFlags flags = CapabilityFlag::Preedit;
     if (isPassword) {
         flags |= CapabilityFlag::Password;
+    } else {
+        flags |= CapabilityFlag::SurroundingText;
     }
     setCapabilityFlags(flags);
 }
@@ -429,13 +455,15 @@ void MacosInputContext::setPassword(bool isPassword) {
 FCITX_ADDON_FACTORY_V2(macosfrontend, fcitx::MacosFrontendFactory);
 
 std::string process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
-                        uint16_t osxKeycode, bool isRelease,
-                        bool isPassword) noexcept {
+                        uint16_t osxKeycode, bool isRelease, bool isPassword,
+                        const char *text, unsigned int cursor,
+                        unsigned int anchor) noexcept {
     const fcitx::Key parsedKey =
         osx_key_to_fcitx_key(unicode, osxModifiers, osxKeycode);
     return with_fcitx([=](Fcitx &fcitx) {
         auto that = dynamic_cast<fcitx::MacosFrontend *>(fcitx.frontend());
-        return that->keyEvent(uuid, parsedKey, isRelease, isPassword);
+        return that->keyEvent(uuid, parsedKey, isRelease, isPassword, text,
+                              cursor, anchor);
     });
 }
 

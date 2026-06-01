@@ -95,7 +95,8 @@ public:
                               const std::string &accentColor);
     void destroyInputContext(ICUUID);
     std::string keyEvent(ICUUID, const Key &key, bool isRelease,
-                         bool isPassword);
+                         bool isPassword, const char *text, unsigned int cursor,
+                         unsigned int anchor);
     void focusIn(ICUUID, bool isPassword);
     std::string commitComposition(ICUUID uuid);
     void focusOut(ICUUID);
@@ -170,11 +171,18 @@ public:
     void setVimMode(bool vimMode) { vimMode_ = vimMode; }
     bool vimMode() const { return vimMode_; }
 
+    void setSurroundingText(const std::string &text, unsigned int cursor,
+                            unsigned int anchor);
+
 private:
     MacosFrontend *frontend_;
     InputContextState state_;
     std::string accentColor_;
     bool vimMode_ = false;
+
+    std::string lastSurroundingText_;
+    unsigned int lastSurroundingCursor_ = 0;
+    unsigned int lastSurroundingAnchor_ = 0;
 };
 
 class MacosFrontendFactory : public AddonFactory {

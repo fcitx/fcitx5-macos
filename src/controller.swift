@@ -102,6 +102,8 @@ class FcitxInputController: IMKInputController {
       return false
     }
     let newSelection = client.selectedRange()
+    let (surroundingText, cursor, anchor) = getSurroundingText(
+      newSelection.location, newSelection.length)
     let selectionChanged: Bool = selection != newSelection
     selection = newSelection
     var isShiftPress = false
@@ -111,7 +113,7 @@ class FcitxInputController: IMKInputController {
       } else if (modsVal == 0 || modsVal == capsLock) && lastEventIsShiftPress && selectionChanged {
         // Shift release following press when text selection is changed.
         // Send a no-op key event to fcitx so that Shift+Click doesn't trigger im toggle.
-        process_key(uuid, 0, 0, 0, false, false)
+        process_key(uuid, 0, 0, 0, false, false, surroundingText, cursor, anchor)
       }
       Task { @MainActor in
         ModifierState.shared.shift = isShiftPress
@@ -120,7 +122,9 @@ class FcitxInputController: IMKInputController {
     lastEventIsShiftPress = isShiftPress
     // It can change within an IMKInputController (e.g. sudo in Terminal), so must reevaluate before each key sent to IM.
     let isPassword = getSecureInputInfo(isOnFocus: false)
-    let res = String(process_key(uuid, unicode, modsVal, code, isRelease, isPassword))
+    let res = String(
+      process_key(
+        uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor))
     return processRes(client, res)
   }
 
