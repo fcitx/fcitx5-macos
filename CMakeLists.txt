@@ -101,7 +101,7 @@ set(WEBVIEW_WWW_PATH ".local/share/fcitx5/www")
 
 include_directories(
     fcitx5-webview/include
-    fcitx5-webview/webview
+    fcitx5-webview/webview/core/include
     "${PREBUILDER_INCLUDE_DIR}" # nlohmann-json
 )
 
