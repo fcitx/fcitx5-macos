@@ -482,19 +482,26 @@ void WebPanel::update(UserInterfaceComponent component,
                 auto icon = action->icon(inputContext);
                 chinesePunctuation = icon == "fcitx-punc-active";
                 needUpdate = true;
-            } else if (name.starts_with("fcitx-rime-") &&
-                       name.ends_with("-ascii_punct")) {
-                auto text = action->shortText(inputContext);
-                auto dotIndex = text.find("．");
-                auto dollarIndex = text.find("$");
-                auto enIndex = text.find("英");
-                rimePunctuation =
-                    dotIndex != std::string::npos &&
-                        text.find("。") < dotIndex ||
-                    dollarIndex != std::string::npos &&
-                        text.find("¥") < dollarIndex ||
-                    enIndex != std::string::npos && text.find("中") < enIndex;
-                needUpdate = true;
+                break;
+            } else if (name.starts_with("fcitx-rime-")) {
+                if (action->menu() && action->shortText(inputContext) == "A") {
+                    rimePunctuation = false;
+                    needUpdate = true;
+                    break;
+                } else if (name.ends_with("-ascii_punct")) {
+                    auto text = action->shortText(inputContext);
+                    auto dotIndex = text.find("．");
+                    auto dollarIndex = text.find("$");
+                    auto enIndex = text.find("英");
+                    rimePunctuation = dotIndex != std::string::npos &&
+                                          text.find("。") < dotIndex ||
+                                      dollarIndex != std::string::npos &&
+                                          text.find("¥") < dollarIndex ||
+                                      enIndex != std::string::npos &&
+                                          text.find("中") < enIndex;
+                    needUpdate = true;
+                    // Don't break as ascii_mode has higher priority.
+                }
             }
         }
         if (needUpdate) {
