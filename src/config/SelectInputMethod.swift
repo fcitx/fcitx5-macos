@@ -215,12 +215,14 @@ struct AvailableInputMethodView: View {
             onAdd(items)
             enabled.formUnion(items.map { $0.name })
             viewModel.refresh(enabled)
+            selection.removeAll()
           }
           .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
-          .padding([.top, .leading, .trailing])
+          .frame(width: keyboardWidth)
+          .padding(.top)
 
           if selection.count == 1, let im = selection.first, im.isKeyboard {
-            KeyboardViewer(layout: $layout).padding([.leading, .trailing])
+            KeyboardViewer(layout: $layout)
           } else {
             Text("Keyboard layout not available")
               .frame(height: keyboardHeight)
@@ -255,7 +257,9 @@ struct AvailableInputMethodView: View {
           }.buttonStyle(.borderedProminent)
             .disabled(selection.isEmpty)
             .accessibilityIdentifier("Add")
-        }.padding([.horizontal, .bottom])
+        }
+        .frame(width: keyboardWidth)
+        .padding(.bottom)
       }
     }
     .frame(width: sheetWidth, height: sheetHeight)
