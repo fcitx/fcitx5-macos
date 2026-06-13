@@ -2,12 +2,19 @@ import Cocoa
 import Logging
 import UniformTypeIdentifiers
 
+func envDir(_ key: String, _ fallback: String) -> URL {
+  if let value = ProcessInfo.processInfo.environment[key] {
+    return URL(fileURLWithPath: value)
+  }
+  return homeDir.appendingPathComponent(fallback)
+}
+
 let homeDir = FileManager.default.homeDirectoryForCurrentUser
 let libraryDir = homeDir.appendingPathComponent("Library/fcitx5")
 let cacheDir = libraryDir.appendingPathComponent("cache")
 let pluginDir = libraryDir.appendingPathComponent("plugin")
-let configDir = homeDir.appendingPathComponent(".config/fcitx5")
-let localDir = homeDir.appendingPathComponent(".local/share/fcitx5")
+let configDir = envDir("FCITX_CONFIG_HOME", ".config/fcitx5")
+let localDir = envDir("FCITX_DATA_HOME", ".local/share/fcitx5")
 let wwwDir = localDir.appendingPathComponent("www")
 let jsPluginDir = wwwDir.appendingPathComponent("plugin")
 let imLocalDir = localDir.appendingPathComponent("inputmethod")

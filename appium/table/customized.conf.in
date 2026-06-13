@@ -1,0 +1,9 @@
+[InputMethod]
+Name=Customized
+Label=码
+LangCode=zh_CN
+Addon=table
+Configurable=True
+
+[Table]
+File=table/customized.main.dict
