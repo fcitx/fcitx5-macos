@@ -154,7 +154,7 @@ struct InputMethodConfigView: View {
               addingInputMethod = true
             } label: {
               Text("Add input methods")
-            }
+            }.accessibilityIdentifier("AddInputMethods")
 
             ForEach($group.inputMethods) { $inputMethod in
               HStack {

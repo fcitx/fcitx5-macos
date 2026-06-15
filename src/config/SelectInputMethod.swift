@@ -190,9 +190,10 @@ struct AvailableInputMethodView: View {
     NavigationSplitView {
       List(selection: $viewModel.selectedLanguageCode) {
         ForEach(languages(viewModel: viewModel), id: \.code) { language in
-          Text(language.localized)
+          Text(language.localized).accessibilityIdentifier(language.code)
         }
       }.frame(minWidth: columnWidth)
+        .accessibilityIdentifier("LanguageList")
       Toggle(
         NSLocalizedString("Only show current language", comment: ""),
         isOn: Binding(
@@ -207,6 +208,7 @@ struct AvailableInputMethodView: View {
             ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
               Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
                 .listRowSeparator(.hidden)
+                .accessibilityIdentifier("Add:\(im.name)")
             }
           }.contextMenu(forSelectionType: InputMethod.self) { _ in
           } primaryAction: { items in
@@ -222,9 +224,11 @@ struct AvailableInputMethodView: View {
           } else {
             Text("Keyboard layout not available")
               .frame(height: keyboardHeight)
+              .accessibilityIdentifier("KeyboardLayoutPrompt")
           }
         } else {
           Text("Select a language from the left list.").frame(maxHeight: .infinity)
+            .accessibilityIdentifier("SelectLanguagePrompt")
         }
 
         HStack {
@@ -250,6 +254,7 @@ struct AvailableInputMethodView: View {
             Text("Add")
           }.buttonStyle(.borderedProminent)
             .disabled(selection.isEmpty)
+            .accessibilityIdentifier("Add")
         }.padding([.horizontal, .bottom])
       }
     }

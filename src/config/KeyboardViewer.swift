@@ -164,7 +164,7 @@ struct KeyboardViewer: View {
             Key("⇧", width: shiftWidth)
           }
           HStack(spacing: spacing) {
-            Key("fn")
+            Key("fn").accessibilityIdentifier("KeyFn")
             Key("⌃")
             Key("⌥")
             Key("⌘", width: commandWidth)
