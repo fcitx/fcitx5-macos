@@ -1,5 +1,6 @@
 from appium.webdriver.common.appiumby import AppiumBy
 from appium.webdriver.webdriver import WebDriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -21,12 +22,11 @@ def find_element_by_id(
         wait.until(
             EC.presence_of_element_located((AppiumBy.ACCESSIBILITY_ID, identifier))
         )
-        # Use our filtering logic to pick the best candidate
         elements = find_elements_by_id(driver, identifier)
         if len(elements) != 1:
             raise ValueError(f"{len(elements)} elements match identifier {identifier}")
         return elements[0]
-    except Exception:
+    except TimeoutException:
         raise ValueError(f"Timeout after {timeout}s: element {identifier} not found")
 
 

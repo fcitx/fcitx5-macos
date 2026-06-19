@@ -3,7 +3,7 @@ import Logging
 import UniformTypeIdentifiers
 
 func envDir(_ key: String, _ fallback: String) -> URL {
-  if let value = ProcessInfo.processInfo.environment[key] {
+  if let value = ProcessInfo.processInfo.environment[key], !value.isEmpty {
     return URL(fileURLWithPath: value)
   }
   return homeDir.appendingPathComponent(fallback)

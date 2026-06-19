@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from appium.webdriver.webdriver import WebDriver
 from util.file import go_inside, select_files
@@ -16,7 +17,7 @@ def test_import_customized_table(driver: WebDriver, app: str):
     assert import_button.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
     find_element_by_id(driver, "DragAndDrop").click()
-    table_path = os.path.abspath(os.path.join(os.getcwd(), "appium/table"))
+    table_path = str((Path(__file__).resolve().parent / "table").resolve())
     go_inside(driver, table_path)
     select_files(driver, ["customized.conf.in", "customized.dict", "customized.txt"])
     assert (
