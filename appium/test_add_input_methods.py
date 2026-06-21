@@ -1,4 +1,5 @@
 from appium.webdriver.webdriver import WebDriver
+from util.button import double_click
 from util.config import read_config
 from util.message import (
     BUTTON_SHOULD_BE_DISABLED,
@@ -37,7 +38,7 @@ def test_add_input_methods(driver: WebDriver, app: str):
 
     # Add Hallelujah by double click
     hallelujah = find_element_by_id(driver, "Add:hallelujah")
-    driver.execute_script("macos: doubleClick", {"elementId": hallelujah.id})
+    double_click(hallelujah)
     assert find_element_by_id(driver, "KeyboardLayoutPrompt"), UI_NOT_UPDATED
     assert find_element_by_id(driver, "Add").is_enabled() is False, (
         BUTTON_SHOULD_BE_DISABLED

@@ -1,5 +1,5 @@
 from appium.webdriver.webdriver import WebDriver
-from util.boolean import get_switch_state
+from util.boolean import get_boolean_value
 from util.button import get_undo_redo
 from util.config import read_global_config
 from util.message import (
@@ -23,21 +23,21 @@ def test_toggle_enumerate_switch(driver: WebDriver, app: str) -> None:
     undo, redo = get_undo_redo(driver)
 
     switch = find_element_by_id(driver, SWITCH_ID)
-    is_on = get_switch_state(switch)
+    is_on = get_boolean_value(switch)
     switch.click()
-    assert get_switch_state(switch) != is_on, UI_NOT_UPDATED
+    assert get_boolean_value(switch) != is_on, UI_NOT_UPDATED
     assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert read_config_value() == str(not is_on), CHANGE_NOT_SAVED
 
     undo.click()
-    assert get_switch_state(switch) == is_on, UI_NOT_UPDATED
+    assert get_boolean_value(switch) == is_on, UI_NOT_UPDATED
     assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert redo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert read_config_value() == str(is_on), CHANGE_NOT_SAVED
 
     redo.click()
-    assert get_switch_state(switch) != is_on, UI_NOT_UPDATED
+    assert get_boolean_value(switch) != is_on, UI_NOT_UPDATED
     assert undo.is_enabled() is True, BUTTON_SHOULD_BE_ENABLED
     assert redo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert read_config_value() == str(not is_on), CHANGE_NOT_SAVED

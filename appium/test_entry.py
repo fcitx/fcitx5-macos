@@ -6,6 +6,7 @@ from util.key import press
 from util.message import CHANGE_NOT_SAVED, UI_NOT_UPDATED, UI_WRONGLY_UPDATED
 from util.string import get_string_value, is_focused
 from util.window import (
+    close_sheet,
     find_element_by_id,
     find_elements_by_id,
     open_input_method_config,
@@ -70,3 +71,4 @@ def test_punctuation_map(driver: WebDriver, app: str) -> None:
         UI_NOT_UPDATED
     )
     assert read_config_value() == r"* \times", CHANGE_NOT_SAVED
+    close_sheet(driver)

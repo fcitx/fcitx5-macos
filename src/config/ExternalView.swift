@@ -61,8 +61,9 @@ struct ExternalView: OptionViewProtocol {
         Image(systemName: "gear")
       }
       .sheet(isPresented: $showCustomPhrase) {
-        CustomPhraseView().refreshItems()
+        CustomPhraseView()
       }
+      .accessibilityIdentifier("CustomPhrase")
     case "DictManager":
       Button {
         showDictManager = true
@@ -107,7 +108,8 @@ struct ExternalView: OptionViewProtocol {
               manager: manager,
               onClose: {
                 showDialog = false
-              })
+              },
+              isSheet: true)
           }
         }
         .alert(
