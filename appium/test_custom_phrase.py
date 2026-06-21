@@ -7,6 +7,7 @@ from util.integer import get_integer_value
 from util.message import CHANGE_NOT_SAVED, UI_NOT_UPDATED, UI_WRONGLY_UPDATED
 from util.string import get_string_value
 from util.window import (
+    close_sheet,
     find_element_by_id,
     find_elements_by_id,
     open_input_method_config,
@@ -104,5 +105,5 @@ def test_custom_phrase(driver: WebDriver, app: str):
     assert get_string_value(bar) == "bar", UI_NOT_UPDATED
     assert get_integer_value(two) == 2, UI_NOT_UPDATED
 
-    find_element_by_id(driver, "CloseSheet").click()
+    close_sheet(driver)
     assert len(find_elements_by_id(driver, "Keyword")) == 0, UI_NOT_UPDATED
