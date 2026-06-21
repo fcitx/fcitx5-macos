@@ -65,10 +65,11 @@ struct CustomPhraseView: View {
   }
 
   private var currentPageSlice: Binding<[CustomPhrase]> {
-    Binding(
-      get: { Array(self.customphraseVM.customPhrases[self.currentPageItems]) },
+    let range = currentPageItems
+    return Binding(
+      get: { Array(self.customphraseVM.customPhrases[range]) },
       set: { newValue in
-        for (i, item) in zip(self.currentPageItems, newValue) {
+        for (i, item) in zip(range, newValue) {
           self.customphraseVM.customPhrases[i] = item
         }
       }
