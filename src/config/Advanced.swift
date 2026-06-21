@@ -93,7 +93,7 @@ struct AdvancedView: View {
             manager: manager,
             onClose: {
               ConfigWindowController.closeWindow("advanced")
-            })
+            }, isSheet: false)
         }
       }.padding([.top], 1)
     }.onChange(of: selectedItem) { newValue in

@@ -90,3 +90,7 @@ def reset_option(driver: WebDriver, option_id: str):
         },
     )
     find_element_by_id(driver, f"{option_id}_reset").click()
+
+
+def close_sheet(driver: WebDriver):
+    find_element_by_id(driver, "CloseSheet").click()

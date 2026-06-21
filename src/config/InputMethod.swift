@@ -255,7 +255,7 @@ struct InputMethodConfigView: View {
             manager: manager,
             onClose: {
               ConfigWindowController.closeWindow("im")
-            })
+            }, isSheet: false)
         }
       } else {
         Text("Select an input method from the side bar.")

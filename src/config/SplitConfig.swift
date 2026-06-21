@@ -58,7 +58,7 @@ struct SplitConfigView: View {
         manager: manager,
         onClose: {
           ConfigWindowController.closeWindow(key)
-        })
+        }, isSheet: false)
     }
   }
 }
