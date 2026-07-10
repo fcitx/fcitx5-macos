@@ -328,7 +328,7 @@ msgstr "Выбрать слово-кандидат"
 
 #: webpanel/webpanel.h:240
 msgid "Use main keyboard number keys to select candidate"
-msgstr "Используйте основные цифровые клавиши основного блока клавиш клавиатуры для выбора слова-кандидата"
+msgstr "Используйте основные цифровые клавиши основных клавиш клавиатуры для выбора слова-кандидата"
 
 #: webpanel/webpanel.h:243
 msgid "Use keypad number keys to select candidate"
