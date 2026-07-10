@@ -176,7 +176,7 @@ msgstr "Переопределить значение по умолчанию"
 
 #: webpanel/webpanel.h:101 webpanel/webpanel.h:156
 msgid "Highlight color"
-msgstr "Выделить цветом"
+msgstr "Цвет выделения"
 
 #: webpanel/webpanel.h:104 webpanel/webpanel.h:159
 msgid "Highlight color on hover"
@@ -184,11 +184,11 @@ msgstr "Подсветка цветом при наведении курсора
 
 #: webpanel/webpanel.h:107 webpanel/webpanel.h:162
 msgid "Highlight text color"
-msgstr "Выделить цветом текст"
+msgstr "Выделить цвет текста"
 
 #: webpanel/webpanel.h:110 webpanel/webpanel.h:165
 msgid "Highlight text color on press"
-msgstr "Выделить цвет текста при печати"
+msgstr "Выделить цвет текста при нажатии"
 
 #: webpanel/webpanel.h:113 webpanel/webpanel.h:168
 msgid "Highlight label color"
