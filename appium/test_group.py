@@ -11,7 +11,7 @@ from util.window import (
     find_element_by_id,
     open_input_method_config,
     reset_option,
-    scroll,
+    scroll_to,
 )
 
 FUZZY = "Fuzzy"
@@ -29,10 +29,9 @@ def test_reset_group(driver: WebDriver, app: str):
             cfg[FUZZY][SWITCH_IDS[2]],
         ]
 
-    scroll(
+    scroll_to(
         find_element_by_id(driver, "detailScrollView"),
-        find_element_by_id(driver, SWITCH_IDS[0]),
-        find_element_by_id(driver, "PageSize"),
+        SWITCH_IDS[0],
     )
 
     for switch_id in SWITCH_IDS:

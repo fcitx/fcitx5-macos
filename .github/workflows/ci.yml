@@ -13,7 +13,7 @@ jobs:
   lint:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true # needs fcitx5/.clang-format
 
@@ -38,18 +38,18 @@ jobs:
           - { arch: x86_64, type: Debug, postfix: -debug }
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Need history for commit count since last tag.
           submodules: recursive
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 24.x
+          node-version: 26.x
 
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: 26.4
+          xcode-version: 26.6
 
       - name: Install dependencies
         env:
