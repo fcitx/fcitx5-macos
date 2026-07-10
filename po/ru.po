@@ -296,11 +296,11 @@ msgstr "Вниз"
 
 #: webpanel/webpanel.h:226
 msgid "Left"
-msgstr "Слева"
+msgstr "Влево"
 
 #: webpanel/webpanel.h:227
 msgid "Right"
-msgstr "Справа"
+msgstr "Вправо"
 
 #: webpanel/webpanel.h:229
 msgid "Row start"
