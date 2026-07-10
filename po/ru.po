@@ -192,11 +192,11 @@ msgstr "Выделить цвет текста при нажатии"
 
 #: webpanel/webpanel.h:113 webpanel/webpanel.h:168
 msgid "Highlight label color"
-msgstr "Выделить метку цветом"
+msgstr "Выделить цвет метки"
 
 #: webpanel/webpanel.h:116 webpanel/webpanel.h:171
 msgid "Highlight comment color"
-msgstr "Выделить комментарий цветом"
+msgstr "Выделить цвет комментария"
 
 #: webpanel/webpanel.h:119 webpanel/webpanel.h:174
 msgid "Highlight mark color"
@@ -220,7 +220,7 @@ msgstr "Цвет комментария"
 
 #: webpanel/webpanel.h:130 webpanel/webpanel.h:185
 msgid "Paging button color"
-msgstr "Цвет кнопки \"Прокрутка вверх\""
+msgstr "Цвет кнопки "Прокрутка вверх""
 
 #: webpanel/webpanel.h:133 webpanel/webpanel.h:188
 msgid "Disabled paging button color"
