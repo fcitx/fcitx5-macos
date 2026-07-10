@@ -59,7 +59,7 @@ msgstr "Удалить параметры отслеживания"
 
 #: macosfrontend/macosfrontend.h:71
 msgid "Poll Pasteboard interval (s)"
-msgstr "Интервал(ы) опроса буфера обмена"
+msgstr "Интервал опроса буфера обмена (c)"
 
 #: macosnotifications/macosnotifications.h:20
 msgid "Hidden Notifications"
