@@ -10,7 +10,7 @@ from util.window import (
     find_element_by_id,
     find_elements_by_id,
     open_input_method_config,
-    scroll,
+    scroll_to,
 )
 
 KEY = "Key"
@@ -20,10 +20,9 @@ ALT_MAPPING = "AltMapping"
 
 def test_punctuation_map(driver: WebDriver, app: str) -> None:
     open_input_method_config(driver, "pinyin")
-    scroll(
+    scroll_to(
         find_element_by_id(driver, "detailScrollView"),
-        find_element_by_id(driver, "Punctuation"),
-        find_element_by_id(driver, "PageSize"),
+        "Punctuation",
     )
     punctuation = find_element_by_id(driver, "Punctuation")
     punctuation.click()

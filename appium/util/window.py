@@ -51,31 +51,28 @@ def open_input_method_config(driver: WebDriver, im: str):
     find_element_by_id(driver, im).click()
 
 
-def scroll(container: WebElement, target: WebElement, first: WebElement):
-    """Scroll the container to show the target element relative to the first element."""
-    delta_y = first.rect["y"] - target.rect["y"]
-    container.parent.execute_script(
-        "macos: scroll",
-        {
-            "elementId": container.id,
-            "deltaX": 0,
-            "deltaY": delta_y,
-        },
-    )
-
-
-def scrollTo(container: WebElement, id: str) -> WebElement:
+def scroll_to(container: WebElement, id: str) -> WebElement:
+    y = container.rect["y"]
     driver = container.parent
     while True:
         elements = find_elements_by_id(driver, id)
         if elements:
-            return elements[0]
+            element = elements[0]
+            driver.execute_script(
+                "macos: scroll",
+                {
+                    "elementId": container.id,
+                    "deltaX": 0,
+                    "deltaY": y - element.rect["y"],
+                },
+            )
+            return element
         driver.execute_script(
             "macos: scroll",
             {
                 "elementId": container.id,
                 "deltaX": 0,
-                "deltaY": -100,
+                "deltaY": -200,
             },
         )
 

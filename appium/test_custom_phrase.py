@@ -11,7 +11,7 @@ from util.window import (
     find_element_by_id,
     find_elements_by_id,
     open_input_method_config,
-    scroll,
+    scroll_to,
 )
 
 
@@ -23,10 +23,9 @@ def test_custom_phrase(driver: WebDriver, app: str):
             return f.read()
 
     open_input_method_config(driver, "pinyin")
-    scroll(
+    scroll_to(
         find_element_by_id(driver, "detailScrollView"),
-        find_element_by_id(driver, "CustomPhrase"),
-        find_element_by_id(driver, "PageSize"),
+        "CustomPhrase",
     )
     find_element_by_id(driver, "CustomPhrase").click()
     j = find_elements_by_id(driver, "Keyword")[-1]

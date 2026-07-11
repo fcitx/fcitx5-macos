@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from appium.webdriver.webdriver import WebDriver
-from util.file import go_inside, select_files
+from util.file import select_files
 from util.message import BUTTON_SHOULD_BE_DISABLED, CHANGE_NOT_SAVED, UI_NOT_UPDATED
 from util.string import get_string_value
 from util.window import find_element_by_id, find_elements_by_id
@@ -16,10 +16,10 @@ def test_import_customized_table(driver: WebDriver, app: str):
     import_button = find_element_by_id(driver, "Import")
     assert import_button.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
 
-    find_element_by_id(driver, "DragAndDrop").click()
     table_path = str((Path(__file__).resolve().parent / "table").resolve())
-    go_inside(driver, table_path)
-    select_files(driver, ["customized.conf.in", "customized.dict", "customized.txt"])
+    select_files(
+        driver, table_path, ["customized.conf.in", "customized.dict", "customized.txt"]
+    )
     assert (
         get_string_value(find_element_by_id(driver, "SelectedFile_0"))
         == "customized.conf.in"
