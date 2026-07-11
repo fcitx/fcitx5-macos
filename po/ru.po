@@ -108,7 +108,7 @@ msgstr "Размытие"
 
 #: webpanel/webpanel.h:24
 msgid "Liquid Glass"
-msgstr "Жидкое стекло"
+msgstr "Liquid Glass"
 
 #: webpanel/webpanel.h:28
 msgid "macOS 26"
