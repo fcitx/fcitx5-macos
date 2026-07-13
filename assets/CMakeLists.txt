@@ -65,7 +65,7 @@ install(DIRECTORY "${PREBUILDER_SHARE_DIR}/locale"
 # Swift i18n through Localizable.strings
 # Use 'GenerateStrings' to update .strings files.
 #
-set(LOCALES en zh-Hans zh-Hant)
+set(LOCALES en ru zh-Hans zh-Hant)
 
 list(TRANSFORM LOCALES APPEND ".lproj" OUTPUT_VARIABLE LPROJS)
 list(TRANSFORM LPROJS PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/" OUTPUT_VARIABLE LPROJ_DIRS)
