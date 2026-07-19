@@ -10,5 +10,6 @@ ruff format --check appium
 
 localizables=$(find assets -name 'Localizable.strings')
 for localizable in $localizables; do
-  file $localizable | grep UTF-16
+  file $localizable | grep "UTF-16, little-endian text"
 done
+echo "$localizables" | xargs python3 scripts/validate-strings.py
