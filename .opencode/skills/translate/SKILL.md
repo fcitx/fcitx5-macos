@@ -120,7 +120,7 @@ When adding a language that doesn't exist yet (e.g. `vi`):
 
 Standard GNU gettext format. Each entry:
 
-```
+```po
 #: source/file.h:line_number
 msgid "English text"
 msgstr "Translated text"
@@ -156,7 +156,7 @@ msgstr "Translated text"
 
 Use this as the header when creating a new `.po` file, adapting the fields:
 
-```
+```po
 msgid ""
 msgstr ""
 "Project-Id-Version: fcitx 5\n"
