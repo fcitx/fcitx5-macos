@@ -6,15 +6,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx 5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-25 21:53+0200\n"
-"PO-Revision-Date: 2026-07-10 04:05+0700\n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-18 14:10-0400\n"
 "Last-Translator: Gostsdmitry <dmitrydmitry761@gmail.com>\n"
 "Language-Team: \n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 3.0\n"
 
 #: macosfrontend/macosfrontend.h:27
@@ -29,35 +30,35 @@ msgstr "Переключить метод ввода"
 msgid "Menu"
 msgstr "Меню"
 
-#: macosfrontend/macosfrontend.h:53
+#: macosfrontend/macosfrontend.h:57
 msgid "Status bar"
 msgstr "Строка состояния"
 
-#: macosfrontend/macosfrontend.h:56
+#: macosfrontend/macosfrontend.h:60
 msgid "App default IM"
 msgstr "Применить метод ввода по умолчанию"
 
-#: macosfrontend/macosfrontend.h:58
+#: macosfrontend/macosfrontend.h:62
 msgid "Vim mode"
 msgstr "Режим Vim"
 
-#: macosfrontend/macosfrontend.h:60
+#: macosfrontend/macosfrontend.h:64
 msgid "Simulate key release"
 msgstr "Имитация отпускания клавиши"
 
-#: macosfrontend/macosfrontend.h:63
+#: macosfrontend/macosfrontend.h:67
 msgid "Delay of simulated key release in milliseconds"
 msgstr "Задержка имитируемого отпускания клавиши в миллисекундах"
 
-#: macosfrontend/macosfrontend.h:66
+#: macosfrontend/macosfrontend.h:70
 msgid "Monitor Pasteboard"
 msgstr "Мониторинг буфера обмена"
 
-#: macosfrontend/macosfrontend.h:68
+#: macosfrontend/macosfrontend.h:72
 msgid "Remove tracking parameters"
 msgstr "Удалить параметры отслеживания"
 
-#: macosfrontend/macosfrontend.h:71
+#: macosfrontend/macosfrontend.h:75
 msgid "Poll Pasteboard interval (s)"
 msgstr "Интервал опроса буфера обмена (c)"
 
@@ -102,7 +103,7 @@ msgstr "Вертикально, слева направо"
 msgid "None"
 msgstr "Нет"
 
-#: webpanel/webpanel.h:23 webpanel/webpanel.h:277
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
 msgid "Blur"
 msgstr "Размытие"
 
@@ -112,11 +113,11 @@ msgstr "Liquid Glass"
 
 #: webpanel/webpanel.h:28
 msgid "macOS 26"
-msgstr ""
+msgstr "macOS 26"
 
 #: webpanel/webpanel.h:29
 msgid "macOS 15"
-msgstr ""
+msgstr "macOS 15"
 
 #: webpanel/webpanel.h:32
 msgid "Arrow"
@@ -134,7 +135,7 @@ msgstr "Мерцание"
 msgid "Static"
 msgstr "Неподвижно"
 
-#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:322
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
 msgid "Text"
 msgstr "Текст"
 
@@ -150,411 +151,415 @@ msgstr "Переместить"
 msgid "Add"
 msgstr "Добавить"
 
-#: webpanel/webpanel.h:87
+#: webpanel/webpanel.h:83
 msgid "Follow caret"
 msgstr "Следовать за курсором"
 
-#: webpanel/webpanel.h:90
+#: webpanel/webpanel.h:86
 msgid "Theme"
 msgstr "Тема"
 
-#: webpanel/webpanel.h:92
+#: webpanel/webpanel.h:88
 msgid "Default theme"
 msgstr "Тема по умолчанию"
 
-#: webpanel/webpanel.h:94
+#: webpanel/webpanel.h:89
 msgid "User theme"
 msgstr "Тема пользователя"
 
-#: webpanel/webpanel.h:96
+#: webpanel/webpanel.h:91
 msgid "Export current theme"
 msgstr "Экспорт текущей темы"
 
-#: webpanel/webpanel.h:100 webpanel/webpanel.h:153 webpanel/webpanel.h:335
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
 msgid "Override default"
 msgstr "Переопределить значение по умолчанию"
 
-#: webpanel/webpanel.h:101 webpanel/webpanel.h:156
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
 msgid "Highlight color"
 msgstr "Цвет выделения"
 
-#: webpanel/webpanel.h:104 webpanel/webpanel.h:159
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
 msgid "Highlight color on hover"
 msgstr "Подсветка цветом при наведении курсора"
 
-#: webpanel/webpanel.h:107 webpanel/webpanel.h:162
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
 msgid "Highlight text color"
 msgstr "Выделить цвет текста"
 
-#: webpanel/webpanel.h:110 webpanel/webpanel.h:165
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
 msgid "Highlight text color on press"
 msgstr "Выделить цвет текста при нажатии"
 
-#: webpanel/webpanel.h:113 webpanel/webpanel.h:168
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
 msgid "Highlight label color"
 msgstr "Выделить цвет метки"
 
-#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
 msgid "Highlight comment color"
 msgstr "Выделить цвет комментария"
 
-#: webpanel/webpanel.h:119 webpanel/webpanel.h:174
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
 msgid "Highlight mark color"
 msgstr "Цвет выделения"
 
-#: webpanel/webpanel.h:121 webpanel/webpanel.h:176
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
 msgid "Panel color"
 msgstr "Цвет панели"
 
-#: webpanel/webpanel.h:123 webpanel/webpanel.h:178
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
 msgid "Text color"
 msgstr "Цвет текста"
 
-#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
 msgid "Label color"
 msgstr "Цвет метки"
 
-#: webpanel/webpanel.h:127 webpanel/webpanel.h:182
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
 msgid "Comment color"
 msgstr "Цвет комментария"
 
-#: webpanel/webpanel.h:130 webpanel/webpanel.h:185
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
 msgid "Paging button color"
 msgstr "Цвет кнопки постраничной навигации"
 
-#: webpanel/webpanel.h:133 webpanel/webpanel.h:188
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
 msgid "Disabled paging button color"
 msgstr "Отключенный цвет кнопки постраничной навигации"
 
-#: webpanel/webpanel.h:135 webpanel/webpanel.h:191
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
 msgid "Indicator text color"
 msgstr "Цвет текста индикатора"
 
-#: webpanel/webpanel.h:138 webpanel/webpanel.h:194
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
 msgid "Preedit color pre-caret"
 msgstr "Предварительно отредактированный цвет перед курсором"
 
-#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
 msgid "Preedit caret color"
 msgstr "Цвет курсора предварительного редактирования"
 
-#: webpanel/webpanel.h:144 webpanel/webpanel.h:200
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
 msgid "Preedit color post-caret"
 msgstr "Предварительно отредактированный цвет после курсора"
 
-#: webpanel/webpanel.h:146 webpanel/webpanel.h:202
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
 msgid "Border color"
 msgstr "Цвет границы"
 
-#: webpanel/webpanel.h:148 webpanel/webpanel.h:204
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
 msgid "Divider color"
 msgstr "Цвет разделителя"
 
-#: webpanel/webpanel.h:155
+#: webpanel/webpanel.h:150
 msgid "Same with light mode"
 msgstr "То же самое со световым режимом"
 
-#: webpanel/webpanel.h:209
+#: webpanel/webpanel.h:204
 msgid "Enable scroll"
 msgstr "Включить прокрутку"
 
-#: webpanel/webpanel.h:210
+#: webpanel/webpanel.h:205
 msgid "Auto expand"
 msgstr "Авторасширение"
 
-#: webpanel/webpanel.h:211
+#: webpanel/webpanel.h:206
 msgid "Show scroll bar"
 msgstr "Показать полосу прокрутки"
 
-#: webpanel/webpanel.h:213
+#: webpanel/webpanel.h:208
 msgid "Animation"
 msgstr "Анимация"
 
-#: webpanel/webpanel.h:215
+#: webpanel/webpanel.h:210
 msgid "Max row count"
 msgstr "Максимальное количество строк"
 
-#: webpanel/webpanel.h:217
+#: webpanel/webpanel.h:212
 msgid "Max column count"
 msgstr "Максимальное количество столбцов"
 
-#: webpanel/webpanel.h:219
+#: webpanel/webpanel.h:214
 msgid "Expand"
 msgstr "Расширить"
 
-#: webpanel/webpanel.h:221
+#: webpanel/webpanel.h:216
 msgid "Collapse"
 msgstr "Свернуть"
 
-#: webpanel/webpanel.h:223
+#: webpanel/webpanel.h:218
 msgid "Up"
 msgstr "Вверх"
 
-#: webpanel/webpanel.h:225
+#: webpanel/webpanel.h:220
 msgid "Down"
 msgstr "Вниз"
 
-#: webpanel/webpanel.h:226
+#: webpanel/webpanel.h:221
 msgid "Left"
 msgstr "Влево"
 
-#: webpanel/webpanel.h:227
+#: webpanel/webpanel.h:222
 msgid "Right"
 msgstr "Вправо"
 
-#: webpanel/webpanel.h:229
+#: webpanel/webpanel.h:224
 msgid "Row start"
 msgstr "Начало строки"
 
-#: webpanel/webpanel.h:230
+#: webpanel/webpanel.h:225
 msgid "Row end"
 msgstr "Конец строки"
 
-#: webpanel/webpanel.h:232
+#: webpanel/webpanel.h:227
 msgid "Page up"
 msgstr "Страница вверх"
 
-#: webpanel/webpanel.h:234
+#: webpanel/webpanel.h:229
 msgid "Page down"
 msgstr "Страница вниз"
 
-#: webpanel/webpanel.h:235
+#: webpanel/webpanel.h:230
 msgid "Commit"
 msgstr "Фиксировать"
 
-#: webpanel/webpanel.h:237
+#: webpanel/webpanel.h:232
 msgid "Select candidate"
 msgstr "Выбрать слово-кандидат"
 
-#: webpanel/webpanel.h:240
+#: webpanel/webpanel.h:235
 msgid "Use main keyboard number keys to select candidate"
-msgstr "Используйте основные цифровые клавиши основных клавиш клавиатуры для выбора слова-кандидата"
+msgstr ""
+"Используйте основные цифровые клавиши основных клавиш клавиатуры для выбора "
+"слова-кандидата"
 
-#: webpanel/webpanel.h:243
+#: webpanel/webpanel.h:238
 msgid "Use keypad number keys to select candidate"
-msgstr "Используйте цифровые клавиши цифрового блока на клавиатуре для выбора слова-кандидата"
+msgstr ""
+"Используйте цифровые клавиши цифрового блока на клавиатуре для выбора слова-"
+"кандидата"
 
-#: webpanel/webpanel.h:245
+#: webpanel/webpanel.h:240
 msgid "Optimize for Hyper key"
 msgstr "Оптимизировать для клавиши Hyper"
 
-#: webpanel/webpanel.h:251
+#: webpanel/webpanel.h:246
 msgid "Layout"
 msgstr "Раскладка"
 
-#: webpanel/webpanel.h:255
+#: webpanel/webpanel.h:250
 msgid "Writing mode"
 msgstr "Режим письма"
 
-#: webpanel/webpanel.h:258
+#: webpanel/webpanel.h:253
 msgid "Typography awareness for IM"
 msgstr "Учет типографики для метода ввода"
 
-#: webpanel/webpanel.h:261
+#: webpanel/webpanel.h:256
 msgid "Vertical comments align right"
 msgstr "Вертикальные комментарии выровнены по правому краю"
 
-#: webpanel/webpanel.h:265
+#: webpanel/webpanel.h:260
 msgid "Paging buttons style"
 msgstr "Стиль кнопок постраничной навигации"
 
-#: webpanel/webpanel.h:271
+#: webpanel/webpanel.h:266
 msgid "Image"
 msgstr "Изображение"
 
-#: webpanel/webpanel.h:274
+#: webpanel/webpanel.h:269
 msgid "Keep panel color when has image"
 msgstr "Сохраняйте цвет панели при наличии изображения"
 
-#: webpanel/webpanel.h:278
+#: webpanel/webpanel.h:273
 msgid "Shadow"
 msgstr "Тень"
 
-#: webpanel/webpanel.h:286
+#: webpanel/webpanel.h:283
 msgid "Text font family"
 msgstr "Семейство текстовых шрифтов"
 
-#: webpanel/webpanel.h:288
+#: webpanel/webpanel.h:285
 msgid "Text font size"
 msgstr "Размер шрифта текста"
 
-#: webpanel/webpanel.h:290
+#: webpanel/webpanel.h:287
 msgid "Text font weight"
 msgstr "Вес шрифта текста"
 
-#: webpanel/webpanel.h:293
+#: webpanel/webpanel.h:290
 msgid "Label font family"
 msgstr "Семейство шрифтов меток"
 
-#: webpanel/webpanel.h:295
+#: webpanel/webpanel.h:292
 msgid "Label font size"
 msgstr "Размер шрифта метки"
 
-#: webpanel/webpanel.h:297
+#: webpanel/webpanel.h:294
 msgid "Label font weight"
 msgstr "Вес шрифта метки"
 
-#: webpanel/webpanel.h:300
+#: webpanel/webpanel.h:297
 msgid "Comment font family"
 msgstr "Семейство шрифтов комментариев"
 
-#: webpanel/webpanel.h:302
+#: webpanel/webpanel.h:299
 msgid "Comment font size"
 msgstr "Размер шрифта комментария"
 
-#: webpanel/webpanel.h:305
+#: webpanel/webpanel.h:302
 msgid "Comment font weight"
 msgstr "Вес шрифта комментария"
 
-#: webpanel/webpanel.h:308
+#: webpanel/webpanel.h:305
 msgid "Preedit font family"
 msgstr "Семейство шрифтов предварительного редактирования"
 
-#: webpanel/webpanel.h:310
+#: webpanel/webpanel.h:307
 msgid "Preedit font size"
 msgstr "Размер шрифта предварительного редактирования"
 
-#: webpanel/webpanel.h:313
+#: webpanel/webpanel.h:310
 msgid "Preedit font weight"
 msgstr "Вес шрифта предварительного редактирования"
 
-#: webpanel/webpanel.h:315
+#: webpanel/webpanel.h:312
 msgid "User font dir"
 msgstr "Каталог пользовательских шрифтов"
 
-#: webpanel/webpanel.h:316
+#: webpanel/webpanel.h:313
 msgid "System font dir"
 msgstr "Каталог системных шрифтов"
 
-#: webpanel/webpanel.h:321
+#: webpanel/webpanel.h:318
 msgid "Style"
 msgstr "Стиль"
 
-#: webpanel/webpanel.h:327
+#: webpanel/webpanel.h:324
 msgid "Mark style"
 msgstr "Стиль разметки"
 
-#: webpanel/webpanel.h:328
+#: webpanel/webpanel.h:325
 msgid "Mark text"
 msgstr "Отметить текст"
 
-#: webpanel/webpanel.h:330
+#: webpanel/webpanel.h:327
 msgid "Hover behavior"
 msgstr "Поведение при наведении курсора"
 
-#: webpanel/webpanel.h:337
+#: webpanel/webpanel.h:334
 msgid "Border width (px)"
 msgstr "Ширина границы (px)"
 
-#: webpanel/webpanel.h:340
+#: webpanel/webpanel.h:337
 msgid "Border radius (px)"
 msgstr "Радиус границы (px)"
 
-#: webpanel/webpanel.h:341
+#: webpanel/webpanel.h:338
 msgid "Margin (px)"
 msgstr "Поля (px)"
 
-#: webpanel/webpanel.h:344
+#: webpanel/webpanel.h:341
 msgid "Highlight radius (px)"
 msgstr "Радиус подсветки (px)"
 
-#: webpanel/webpanel.h:347
+#: webpanel/webpanel.h:344
 msgid "Top padding (px)"
 msgstr "Отступ сверху (px)"
 
-#: webpanel/webpanel.h:349
+#: webpanel/webpanel.h:346
 msgid "Right padding (px)"
 msgstr "Отступ справа (px)"
 
-#: webpanel/webpanel.h:351
+#: webpanel/webpanel.h:348
 msgid "Bottom padding (px)"
 msgstr "Отступ снизу (px)"
 
-#: webpanel/webpanel.h:354
+#: webpanel/webpanel.h:351
 msgid "Left padding (px)"
 msgstr "Отступ слева (px)"
 
-#: webpanel/webpanel.h:356
+#: webpanel/webpanel.h:353
 msgid "Gap between label, text and comment (px)"
 msgstr "Расстояние между меткой, текстом и комментарием (px)"
 
-#: webpanel/webpanel.h:359
+#: webpanel/webpanel.h:356
 msgid "Vertical minimum width (px)"
 msgstr "Минимальная вертикальная ширина (px)"
 
-#: webpanel/webpanel.h:362
+#: webpanel/webpanel.h:359
 msgid "Scroll cell width (px)"
 msgstr "Ширина ячейки прокрутки (px)"
 
-#: webpanel/webpanel.h:365
+#: webpanel/webpanel.h:362
 msgid "Horizontal divider width (px)"
 msgstr "Ширина горизонтального разделителя (px)"
 
-#: webpanel/webpanel.h:374
+#: webpanel/webpanel.h:371
 msgid "User CSS"
 msgstr "Пользовательский CSS"
 
-#: webpanel/webpanel.h:375
+#: webpanel/webpanel.h:372
 msgid "Copy HTML"
 msgstr "Скопировать HTML"
 
-#: webpanel/webpanel.h:376
+#: webpanel/webpanel.h:373
 msgid "Plugin dir"
 msgstr "Каталог плагинов"
 
-#: webpanel/webpanel.h:378
+#: webpanel/webpanel.h:375
 msgid "I know there may be risks for using plugins"
 msgstr "Я понимаю, что использование плагинов может быть сопряжено с рисками"
 
-#: webpanel/webpanel.h:381
+#: webpanel/webpanel.h:378
 msgid "Plugins"
 msgstr "Плагины"
 
-#: webpanel/webpanel.h:383
+#: webpanel/webpanel.h:380
 msgid "Dangerous API for JavaScript plugins"
 msgstr "Опасный API для плагинов JavaScript"
 
-#: webpanel/webpanel.h:386
+#: webpanel/webpanel.h:383
 msgid "Basic"
 msgstr "Основной"
 
-#: webpanel/webpanel.h:387
+#: webpanel/webpanel.h:384
 msgid "Light mode"
 msgstr "Светлый режим"
 
-#: webpanel/webpanel.h:388
+#: webpanel/webpanel.h:385
 msgid "Dark mode"
 msgstr "Тёмный режим"
 
-#: webpanel/webpanel.h:389
+#: webpanel/webpanel.h:386
 msgid "Typography"
 msgstr "Формат"
 
-#: webpanel/webpanel.h:390
+#: webpanel/webpanel.h:387
 msgid "Scroll mode"
 msgstr "Режим прокрутки"
 
-#: webpanel/webpanel.h:391
+#: webpanel/webpanel.h:388
 msgid "Background"
 msgstr "Фон"
 
-#: webpanel/webpanel.h:392
+#: webpanel/webpanel.h:389
 msgid "Font"
 msgstr "Шрифт"
 
-#: webpanel/webpanel.h:393
+#: webpanel/webpanel.h:390
 msgid "Caret"
 msgstr "Курсор"
 
-#: webpanel/webpanel.h:394
+#: webpanel/webpanel.h:391
 msgid "Highlight"
 msgstr "Выделение"
 
-#: webpanel/webpanel.h:395
+#: webpanel/webpanel.h:392
 msgid "Size"
 msgstr "Размер"
 
-#: webpanel/webpanel.h:396
+#: webpanel/webpanel.h:393
 msgid "Advanced"
 msgstr "Расширенное"
 
