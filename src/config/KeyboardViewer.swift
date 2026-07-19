@@ -189,6 +189,7 @@ struct KeyboardViewer: View {
           }
         }
         .padding(spacing)
+        .environment(\.layoutDirection, .leftToRight)  // Keep layout on RTL locales (e.g. Hebrew).
 
         if colorScheme == .dark {
           keyboard.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))
