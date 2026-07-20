@@ -134,24 +134,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   @MainActor
   private func showStatusItem() {
-    let statusItem = ensureStatusItem()
-    guard !statusItem.isVisible else { return }
-    if let position = AppDelegate.cachedStatusItemPosition {
-      UserDefaults.standard.set(position, forKey: AppDelegate.statusItemPositionKey)
+    let statusItem: NSStatusItem
+    if let existing = AppDelegate.statusItem {
+      statusItem = existing
+    } else {
+      // NSStatusItem.variableLength causes layout shift of icons on the left when switching between en and 拼.
+      let newItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+      newItem.autosaveName = AppDelegate.statusItemAutosaveName
+      AppDelegate.statusItem = newItem
+      statusItem = newItem
     }
-    statusItem.isVisible = true
-  }
 
-  @MainActor
-  private func ensureStatusItem() -> NSStatusItem {
-    if let statusItem = AppDelegate.statusItem {
-      return statusItem
+    if !statusItem.isVisible {
+      if let position = AppDelegate.cachedStatusItemPosition {
+        UserDefaults.standard.set(position, forKey: AppDelegate.statusItemPositionKey)
+      }
+      statusItem.isVisible = true
     }
-    // NSStatusItem.variableLength causes layout shift of icons on the left when switching between en and 拼.
-    let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    statusItem.autosaveName = AppDelegate.statusItemAutosaveName
-    AppDelegate.statusItem = statusItem
-    return statusItem
+    statusItem.menu = nil
+
+    if let button = statusItem.button {
+      button.title = AppDelegate.statusItemText
+      button.target = self
+      button.action = nil
+      if AppDelegate.statusItemMode == 1 {
+        button.action = #selector(self.toggle)
+      } else {
+        statusItem.menu = makeStatusItemMenu()
+      }
+    }
   }
 
   @MainActor
@@ -181,21 +192,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       hideStatusItem()
       return
     }
-
     showStatusItem()
-    let statusItem = AppDelegate.statusItem!
-    statusItem.menu = nil
-
-    if let button = statusItem.button {
-      button.title = AppDelegate.statusItemText
-      button.target = self
-      button.action = nil
-      if AppDelegate.statusItemMode == 1 {  // Toggle input method
-        button.action = #selector(self.toggle)
-      } else {  // Menu
-        statusItem.menu = makeStatusItemMenu()
-      }
-    }
   }
 
   @MainActor
