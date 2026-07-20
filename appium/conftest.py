@@ -45,6 +45,13 @@ def launch_app(driver: WebDriver, session_base_dir: str, test_name: str) -> str:
         with open(mb, "w") as f:
             f.write(". 。\n, ，")
 
+    if test_name == "test_custom_phrase":
+        pinyin = os.path.join(data_home, "pinyin")
+        custom_phrase = os.path.join(pinyin, "customphrase")
+        os.makedirs(pinyin)
+        with open(custom_phrase, "w") as f:
+            f.write("".join(f"{chr(ord('a') + i)},{i + 1}=w{i}\n" for i in range(21)))
+
     profile_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile")
     shutil.copy2(profile_src, os.path.join(config_home, "profile"))
     app_path = os.path.join(
@@ -71,6 +78,7 @@ def terminate_app(driver: WebDriver) -> None:
 
 @pytest.fixture(scope="session")
 def appium_server() -> Generator[str, None, None]:
+    subprocess.run(["pkill", "-9", "FcitxTestApp"])
     """Start Appium server at session start and stop it at session end."""
     proc = subprocess.Popen(
         ["appium"],

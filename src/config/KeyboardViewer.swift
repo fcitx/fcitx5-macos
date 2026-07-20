@@ -9,13 +9,14 @@ private let keyCornerRadius: CGFloat = 4
 
 // Fixed
 private let deleteWidth: CGFloat = keyWidth * 1.5 + spacing / 2
-private let keyboardWidth: CGFloat = 13 * keyWidth + deleteWidth + 13 * spacing
-private let returnWidth: CGFloat = (keyboardWidth - 11 * keyWidth - 12 * spacing) / 2
-private let shiftWidth: CGFloat = (keyboardWidth - 10 * keyWidth - 11 * spacing) / 2
+private let totalKeysWidth: CGFloat = 13 * keyWidth + deleteWidth + 13 * spacing
+private let returnWidth: CGFloat = (totalKeysWidth - 11 * keyWidth - 12 * spacing) / 2
+private let shiftWidth: CGFloat = (totalKeysWidth - 10 * keyWidth - 11 * spacing) / 2
 private let spaceWidth: CGFloat = 5 * keyWidth + 4 * spacing
-private let commandWidth: CGFloat = (keyboardWidth - spaceWidth - 7 * keyWidth - 9 * spacing) / 2
+private let commandWidth: CGFloat = (totalKeysWidth - spaceWidth - 7 * keyWidth - 9 * spacing) / 2
 private let arrowKeyHeight: CGFloat = (keyWidth - spacing / 2) / 2
 let keyboardHeight: CGFloat = 5 * keyWidth + 4 * spacing + spacing * 2
+let keyboardWidth: CGFloat = totalKeysWidth + spacing * 2
 
 private func getForeground(_ colorScheme: ColorScheme) -> Color {
   return colorScheme == .dark
@@ -164,7 +165,7 @@ struct KeyboardViewer: View {
             Key("⇧", width: shiftWidth)
           }
           HStack(spacing: spacing) {
-            Key("fn")
+            Key("fn").accessibilityIdentifier("KeyFn")
             Key("⌃")
             Key("⌥")
             Key("⌘", width: commandWidth)
@@ -188,6 +189,7 @@ struct KeyboardViewer: View {
           }
         }
         .padding(spacing)
+        .environment(\.layoutDirection, .leftToRight)  // Keep layout on RTL locales (e.g. Hebrew).
 
         if colorScheme == .dark {
           keyboard.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))

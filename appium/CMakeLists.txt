@@ -11,7 +11,7 @@ target_link_libraries(FcitxTestApp
 
 fcitx5_import_addons(FcitxTestApp
     REGISTRY_VARNAME getStaticAddon
-    ADDONS webpanel macosfrontend
+    ADDONS keyboard webpanel macosfrontend
 )
 
 set_target_properties(FcitxTestApp PROPERTIES

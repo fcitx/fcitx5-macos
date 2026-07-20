@@ -12,7 +12,7 @@ struct CssView: OptionViewProtocol {
     let strValue = value as? String ?? ""
     SelectFileButton(
       directory: cssDir,
-      allowedContentTypes: [UTType.init(filenameExtension: "css")!],
+      allowedContentTypes: fileTypes(["css"]),
       onFinish: { fileName in
         if !fileName.isEmpty {
           value = fcitxPrefix + fileName

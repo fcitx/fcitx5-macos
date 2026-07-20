@@ -1,0 +1,565 @@
+# German translation for fcitx5-macos
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the fcitx5-macos package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx5-macos\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-18 23:00+0200\n"
+"Last-Translator: \n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: macosfrontend/macosfrontend.h:27
+msgid "Hidden"
+msgstr "Versteckt"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Toggle input method"
+msgstr "Eingabemethode umschalten"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Menu"
+msgstr "Menü"
+
+#: macosfrontend/macosfrontend.h:57
+msgid "Status bar"
+msgstr "Statusleiste"
+
+#: macosfrontend/macosfrontend.h:60
+msgid "App default IM"
+msgstr "Standard-Eingabemethode der App"
+
+#: macosfrontend/macosfrontend.h:62
+msgid "Vim mode"
+msgstr "Vim-Modus"
+
+#: macosfrontend/macosfrontend.h:64
+msgid "Simulate key release"
+msgstr "Tastenlösung simulieren"
+
+#: macosfrontend/macosfrontend.h:67
+msgid "Delay of simulated key release in milliseconds"
+msgstr "Verzögerung der simulierten Tastenlösung in Millisekunden"
+
+#: macosfrontend/macosfrontend.h:70
+msgid "Monitor Pasteboard"
+msgstr "Zwischenablage überwachen"
+
+#: macosfrontend/macosfrontend.h:72
+msgid "Remove tracking parameters"
+msgstr "Tracking-Parameter entfernen"
+
+#: macosfrontend/macosfrontend.h:75
+msgid "Poll Pasteboard interval (s)"
+msgstr "Zwischenablage-Intervall (s)"
+
+#: macosnotifications/macosnotifications.h:20
+msgid "Hidden Notifications"
+msgstr "Versteckte Benachrichtigungen"
+
+#: webpanel/webpanel.h:17 webpanel/webpanel.h:23 webpanel/webpanel.h:28
+msgid "System"
+msgstr "System"
+
+#: webpanel/webpanel.h:17
+msgid "Light"
+msgstr "Hell"
+
+#: webpanel/webpanel.h:17
+msgid "Dark"
+msgstr "Dunkel"
+
+#: webpanel/webpanel.h:18
+msgid "Horizontal"
+msgstr "Horizontal"
+
+#: webpanel/webpanel.h:18
+msgid "Vertical"
+msgstr "Vertikal"
+
+#: webpanel/webpanel.h:19
+msgid "Horizontal top-bottom"
+msgstr "Horizontal von oben nach unten"
+
+#: webpanel/webpanel.h:20
+msgid "Vertical right-left"
+msgstr "Vertikal von rechts nach links"
+
+#: webpanel/webpanel.h:21
+msgid "Vertical left-right"
+msgstr "Vertikal von links nach rechts"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:32 webpanel/webpanel.h:40
+#: webpanel/webpanel.h:44
+msgid "None"
+msgstr "Keine"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+msgid "Blur"
+msgstr "Unschärfe"
+
+#: webpanel/webpanel.h:24
+msgid "Liquid Glass"
+msgstr "Liquid Glass"
+
+#: webpanel/webpanel.h:28
+msgid "macOS 26"
+msgstr "macOS 26"
+
+#: webpanel/webpanel.h:29
+msgid "macOS 15"
+msgstr "macOS 15"
+
+#: webpanel/webpanel.h:32
+msgid "Arrow"
+msgstr "Pfeil"
+
+#: webpanel/webpanel.h:33
+msgid "Triangle"
+msgstr "Dreieck"
+
+#: webpanel/webpanel.h:36
+msgid "Blink"
+msgstr "Blinken"
+
+#: webpanel/webpanel.h:36
+msgid "Static"
+msgstr "Statisch"
+
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+msgid "Text"
+msgstr "Text"
+
+#: webpanel/webpanel.h:40
+msgid "Bar"
+msgstr "Leiste"
+
+#: webpanel/webpanel.h:44
+msgid "Move"
+msgstr "Verschieben"
+
+#: webpanel/webpanel.h:45
+msgid "Add"
+msgstr "Hinzufügen"
+
+#: webpanel/webpanel.h:83
+msgid "Follow caret"
+msgstr "Caret folgen"
+
+#: webpanel/webpanel.h:86
+msgid "Theme"
+msgstr "Thema"
+
+#: webpanel/webpanel.h:88
+msgid "Default theme"
+msgstr "Standardthema"
+
+#: webpanel/webpanel.h:89
+msgid "User theme"
+msgstr "Benutzerthema"
+
+#: webpanel/webpanel.h:91
+msgid "Export current theme"
+msgstr "Aktuelles Thema exportieren"
+
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+msgid "Override default"
+msgstr "Standard überschreiben"
+
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
+msgid "Highlight color"
+msgstr "Hervorhebungsfarbe"
+
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
+msgid "Highlight color on hover"
+msgstr "Hervorhebungsfarbe beim Überfahren"
+
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
+msgid "Highlight text color"
+msgstr "Hervorgehobene Textfarbe"
+
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
+msgid "Highlight text color on press"
+msgstr "Hervorgehobene Textfarbe beim Drücken"
+
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
+msgid "Highlight label color"
+msgstr "Hervorgehobene Beschriftungsfarbe"
+
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
+msgid "Highlight comment color"
+msgstr "Hervorgehobene Kommentarfarbe"
+
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
+msgid "Highlight mark color"
+msgstr "Hervorgehobene Markierungsfarbe"
+
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+msgid "Panel color"
+msgstr "Panel-Farbe"
+
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
+msgid "Text color"
+msgstr "Textfarbe"
+
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
+msgid "Label color"
+msgstr "Beschriftungsfarbe"
+
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
+msgid "Comment color"
+msgstr "Kommentarfarbe"
+
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+msgid "Paging button color"
+msgstr "Schaltflächenfarbe für Seitennavigation"
+
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
+msgid "Disabled paging button color"
+msgstr "Deaktivierte Schaltflächenfarbe für Seitennavigation"
+
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
+msgid "Indicator text color"
+msgstr "Indikator-Textfarbe"
+
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
+msgid "Preedit color pre-caret"
+msgstr "Voredigations-Farbe vor Caret"
+
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
+msgid "Preedit caret color"
+msgstr "Voredigations-Caret-Farbe"
+
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
+msgid "Preedit color post-caret"
+msgstr "Voredigations-Farbe nach Caret"
+
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+msgid "Border color"
+msgstr "Rahmenfarbe"
+
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
+msgid "Divider color"
+msgstr "Trennlinienfarbe"
+
+#: webpanel/webpanel.h:150
+msgid "Same with light mode"
+msgstr "Gleich wie Hellmodus"
+
+#: webpanel/webpanel.h:204
+msgid "Enable scroll"
+msgstr "Scrollen aktivieren"
+
+#: webpanel/webpanel.h:205
+msgid "Auto expand"
+msgstr "Automatisch erweitern"
+
+#: webpanel/webpanel.h:206
+msgid "Show scroll bar"
+msgstr "Scrollleiste anzeigen"
+
+#: webpanel/webpanel.h:208
+msgid "Animation"
+msgstr "Animation"
+
+#: webpanel/webpanel.h:210
+msgid "Max row count"
+msgstr "Maximale Zeilenanzahl"
+
+#: webpanel/webpanel.h:212
+msgid "Max column count"
+msgstr "Maximale Spaltenanzahl"
+
+#: webpanel/webpanel.h:214
+msgid "Expand"
+msgstr "Erweitern"
+
+#: webpanel/webpanel.h:216
+msgid "Collapse"
+msgstr "Einklappen"
+
+#: webpanel/webpanel.h:218
+msgid "Up"
+msgstr "Aufwärts"
+
+#: webpanel/webpanel.h:220
+msgid "Down"
+msgstr "Abwärts"
+
+#: webpanel/webpanel.h:221
+msgid "Left"
+msgstr "Links"
+
+#: webpanel/webpanel.h:222
+msgid "Right"
+msgstr "Rechts"
+
+#: webpanel/webpanel.h:224
+msgid "Row start"
+msgstr "Zeilenanfang"
+
+#: webpanel/webpanel.h:225
+msgid "Row end"
+msgstr "Zeilenende"
+
+#: webpanel/webpanel.h:227
+msgid "Page up"
+msgstr "Seite aufwärts"
+
+#: webpanel/webpanel.h:229
+msgid "Page down"
+msgstr "Seite abwärts"
+
+#: webpanel/webpanel.h:230
+msgid "Commit"
+msgstr "Übernehmen"
+
+#: webpanel/webpanel.h:232
+msgid "Select candidate"
+msgstr "Kandidat auswählen"
+
+#: webpanel/webpanel.h:235
+msgid "Use main keyboard number keys to select candidate"
+msgstr "Zifferntasten der Haupttastatur zum Auswählen verwenden"
+
+#: webpanel/webpanel.h:238
+msgid "Use keypad number keys to select candidate"
+msgstr "Zifferntasten des Ziffernblocks zum Auswählen verwenden"
+
+#: webpanel/webpanel.h:240
+msgid "Optimize for Hyper key"
+msgstr "Für Hyper-Taste optimieren"
+
+#: webpanel/webpanel.h:246
+msgid "Layout"
+msgstr "Layout"
+
+#: webpanel/webpanel.h:250
+msgid "Writing mode"
+msgstr "Schreibmodus"
+
+#: webpanel/webpanel.h:253
+msgid "Typography awareness for IM"
+msgstr "Typografie-Erkennung für Eingabemethode"
+
+#: webpanel/webpanel.h:256
+msgid "Vertical comments align right"
+msgstr "Vertikale Kommentare rechtsbündig"
+
+#: webpanel/webpanel.h:260
+msgid "Paging buttons style"
+msgstr "Stil der Navigations-Schaltflächen"
+
+#: webpanel/webpanel.h:266
+msgid "Image"
+msgstr "Bild"
+
+#: webpanel/webpanel.h:269
+msgid "Keep panel color when has image"
+msgstr "Panel-Farbe bei Bilddarstellung beibehalten"
+
+#: webpanel/webpanel.h:273
+msgid "Shadow"
+msgstr "Schatten"
+
+#: webpanel/webpanel.h:283
+msgid "Text font family"
+msgstr "Text-Schriftart"
+
+#: webpanel/webpanel.h:285
+msgid "Text font size"
+msgstr "Text-Schriftgröße"
+
+#: webpanel/webpanel.h:287
+msgid "Text font weight"
+msgstr "Text-Schnittstärke"
+
+#: webpanel/webpanel.h:290
+msgid "Label font family"
+msgstr "Beschriftungs-Schriftart"
+
+#: webpanel/webpanel.h:292
+msgid "Label font size"
+msgstr "Beschriftungs-Schriftgröße"
+
+#: webpanel/webpanel.h:294
+msgid "Label font weight"
+msgstr "Beschriftungs-Schnittstärke"
+
+#: webpanel/webpanel.h:297
+msgid "Comment font family"
+msgstr "Kommentar-Schriftart"
+
+#: webpanel/webpanel.h:299
+msgid "Comment font size"
+msgstr "Kommentar-Schriftgröße"
+
+#: webpanel/webpanel.h:302
+msgid "Comment font weight"
+msgstr "Kommentar-Schnittstärke"
+
+#: webpanel/webpanel.h:305
+msgid "Preedit font family"
+msgstr "Voredigations-Schriftart"
+
+#: webpanel/webpanel.h:307
+msgid "Preedit font size"
+msgstr "Voredigations-Schriftgröße"
+
+#: webpanel/webpanel.h:310
+msgid "Preedit font weight"
+msgstr "Voredigations-Schnittstärke"
+
+#: webpanel/webpanel.h:312
+msgid "User font dir"
+msgstr "Benutzer-Schriftartenverzeichnis"
+
+#: webpanel/webpanel.h:313
+msgid "System font dir"
+msgstr "System-Schriftartenverzeichnis"
+
+#: webpanel/webpanel.h:318
+msgid "Style"
+msgstr "Stil"
+
+#: webpanel/webpanel.h:324
+msgid "Mark style"
+msgstr "Markierungsstil"
+
+#: webpanel/webpanel.h:325
+msgid "Mark text"
+msgstr "Markierungstext"
+
+#: webpanel/webpanel.h:327
+msgid "Hover behavior"
+msgstr "Verhalten beim Überfahren"
+
+#: webpanel/webpanel.h:334
+msgid "Border width (px)"
+msgstr "Rahmenbreite (px)"
+
+#: webpanel/webpanel.h:337
+msgid "Border radius (px)"
+msgstr "Rahmenradius (px)"
+
+#: webpanel/webpanel.h:338
+msgid "Margin (px)"
+msgstr "Rand (px)"
+
+#: webpanel/webpanel.h:341
+msgid "Highlight radius (px)"
+msgstr "Hervorhebungsradius (px)"
+
+#: webpanel/webpanel.h:344
+msgid "Top padding (px)"
+msgstr "Oberer Innenabstand (px)"
+
+#: webpanel/webpanel.h:346
+msgid "Right padding (px)"
+msgstr "Rechter Innenabstand (px)"
+
+#: webpanel/webpanel.h:348
+msgid "Bottom padding (px)"
+msgstr "Unterer Innenabstand (px)"
+
+#: webpanel/webpanel.h:351
+msgid "Left padding (px)"
+msgstr "Linker Innenabstand (px)"
+
+#: webpanel/webpanel.h:353
+msgid "Gap between label, text and comment (px)"
+msgstr "Abstand zwischen Beschriftung, Text und Kommentar (px)"
+
+#: webpanel/webpanel.h:356
+msgid "Vertical minimum width (px)"
+msgstr "Vertikale Mindestbreite (px)"
+
+#: webpanel/webpanel.h:359
+msgid "Scroll cell width (px)"
+msgstr "Scroll-Zellenbreite (px)"
+
+#: webpanel/webpanel.h:362
+msgid "Horizontal divider width (px)"
+msgstr "Horizontale Trennlinienbreite (px)"
+
+#: webpanel/webpanel.h:371
+msgid "User CSS"
+msgstr "Benutzer-CSS"
+
+#: webpanel/webpanel.h:372
+msgid "Copy HTML"
+msgstr "HTML kopieren"
+
+#: webpanel/webpanel.h:373
+msgid "Plugin dir"
+msgstr "Plugin-Verzeichnis"
+
+#: webpanel/webpanel.h:375
+msgid "I know there may be risks for using plugins"
+msgstr "Ich bin mir bewusst, dass die Verwendung von Plugins Risiken bergen kann"
+
+#: webpanel/webpanel.h:378
+msgid "Plugins"
+msgstr "Plugins"
+
+#: webpanel/webpanel.h:380
+msgid "Dangerous API for JavaScript plugins"
+msgstr "Gefährliche API für JavaScript-Plugins"
+
+#: webpanel/webpanel.h:383
+msgid "Basic"
+msgstr "Grundlegend"
+
+#: webpanel/webpanel.h:384
+msgid "Light mode"
+msgstr "Hellmodus"
+
+#: webpanel/webpanel.h:385
+msgid "Dark mode"
+msgstr "Dunkelmodus"
+
+#: webpanel/webpanel.h:386
+msgid "Typography"
+msgstr "Typografie"
+
+#: webpanel/webpanel.h:387
+msgid "Scroll mode"
+msgstr "Scrollmodus"
+
+#: webpanel/webpanel.h:388
+msgid "Background"
+msgstr "Hintergrund"
+
+#: webpanel/webpanel.h:389
+msgid "Font"
+msgstr "Schriftart"
+
+#: webpanel/webpanel.h:390
+msgid "Caret"
+msgstr "Caret"
+
+#: webpanel/webpanel.h:391
+msgid "Highlight"
+msgstr "Hervorhebung"
+
+#: webpanel/webpanel.h:392
+msgid "Size"
+msgstr "Größe"
+
+#: webpanel/webpanel.h:393
+msgid "Advanced"
+msgstr "Erweitert"
+
+#: macosfrontend/macosfrontend.conf.in.in:2
+msgid "macOS Frontend"
+msgstr "macOS-Frontend"
+
+#: macosnotifications/notifications.conf.in.in:2
+msgid "macOS Notification"
+msgstr "macOS-Benachrichtigung"

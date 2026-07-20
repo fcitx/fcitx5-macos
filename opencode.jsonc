@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "translate": {
+      "description": "Translate fcitx5-macos localization files",
+      "template": "Load the translate skill first. The argument is: $ARGUMENTS\n\nIf no argument was provided, print ONLY this usage text and stop:\n\nUsage: /translate <mode>\n  sync     Update source strings, translate new entries to Simplified Chinese\n  all      Translate all other languages (requires corrected zh-Hans first)\n  <lang>   Add a new language or translate an existing one (e.g. ja, ko, de)\n\nIf the argument is \"sync\", run these shell commands then translate new/changed entries to Simplified Chinese and report a summary:\ncmake --build build/$(uname -m) --target GenerateStrings\ncmake --build build/$(uname -m) --target pot\ncd po && msgmerge -U zh_CN.po base.pot\ncd fcitx5-beast && bash scripts/translate.sh\nAfter translating, validate: python3 scripts/validate-strings.py assets/zh-Hans.lproj/Localizable.strings\n\nIf the argument is \"all\", do NOT run sync. Read English + corrected Simplified Chinese, translate all other locales using both as context.\n\nIf the argument is a language code like ja, ko, de, fr, es, ru, zh_CN, or zh_TW, check if translation files exist. If not, create po/<lang>.po and assets/<lproj>/Localizable.strings (mapping POSIX to Apple locale names per the skill), update po/LINGUAS and assets/CMakeLists.txt LOCALES, then do full translation. If they exist, sync first then do incremental translation.\nAfter translating, validate: python3 scripts/validate-strings.py assets/<lproj>/Localizable.strings"
+    }
+  }
+}

@@ -18,3 +18,7 @@ def get_undo_redo(driver: WebDriver) -> tuple[WebElement, WebElement]:
 def get_label(button: WebElement) -> str:
     """Get the label attribute of a button."""
     return button.get_attribute("label")
+
+
+def double_click(button: WebElement):
+    button.parent.execute_script("macos: doubleClick", {"elementId": button.id})

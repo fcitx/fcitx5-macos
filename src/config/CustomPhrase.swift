@@ -31,6 +31,8 @@ struct CustomPhraseView: View {
   @Environment(\.dismiss) private var dismiss
 
   @State private var selectedRows = Set<UUID>()
+  private let pageSize = 10
+  @State private var currentPage = 0
   @ObservedObject private var customphraseVM = CustomPhraseVM()
   @State private var showReloaded = false
   @State private var importedPhrases = 0
@@ -40,20 +42,43 @@ struct CustomPhraseView: View {
   @State private var showSavedFailure = false
   @State private var showCreateFailed = false
 
-  func refreshItems() -> some View {
+  func refreshItems() {
     selectedRows = []
+    currentPage = 0
     customphraseVM.refreshItems()
-    return self
   }
 
   func reloadCustomPhrase() {
-    _ = refreshItems()
+    refreshItems()
     Fcitx.setConfig("fcitx://config/addon/pinyin/customphrase", "{}")
+  }
+
+  private var totalPages: Int {
+    max(1, (customphraseVM.customPhrases.count + pageSize - 1) / pageSize)
+  }
+
+  private var currentPageItems: Range<Int> {
+    let start = currentPage * pageSize
+    let end = min(start + pageSize, customphraseVM.customPhrases.count)
+    guard start < end else { return 0..<0 }
+    return start..<end
+  }
+
+  private var currentPageSlice: Binding<[CustomPhrase]> {
+    let range = currentPageItems
+    return Binding(
+      get: { Array(self.customphraseVM.customPhrases[range]) },
+      set: { newValue in
+        for (i, item) in zip(range, newValue) {
+          self.customphraseVM.customPhrases[i] = item
+        }
+      }
+    )
   }
 
   private func save() -> Bool {
     mkdirP(pinyinPath)
-    guard let json = encodeJSON(customphraseVM.customPhrases),
+    guard let json = encodeJSON(customphraseVM.customPhrases.filter { !$0.keyword.isEmpty }),
       customphrase_set(customphrase.localPath(), json)
     else { return false }
     reloadCustomPhrase()
@@ -62,27 +87,59 @@ struct CustomPhraseView: View {
 
   var body: some View {
     HStack {
-      List(selection: $selectedRows) {
-        HStack {
-          Text("").frame(width: checkboxColumnWidth)
-          Text("Keyword").frame(
-            minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
-          Text("Phrase").frame(
-            minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
-          Text("Order").frame(
-            minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
-        }
-        .font(.headline)
-        ForEach($customphraseVM.customPhrases) { $customPhrase in
-          HStack(alignment: .center) {
-            Toggle("", isOn: $customPhrase.enabled).frame(width: checkboxColumnWidth)
-            TextField("Keyword", text: $customPhrase.keyword).frame(
+      VStack {
+        List(selection: $selectedRows) {
+          HStack {
+            Text("").frame(width: checkboxColumnWidth)
+            Text("Keyword").frame(
               minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
-            TextField("Phrase", text: $customPhrase.phrase).frame(
+            Text("Phrase").frame(
               minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
-            TextField("Order", value: $customPhrase.order, formatter: numberFormatter).frame(
+            Text("Order").frame(
               minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
           }
+          .font(.headline)
+          ForEach(currentPageSlice) { $customPhrase in
+            HStack(alignment: .center) {
+              Toggle("", isOn: $customPhrase.enabled).frame(width: checkboxColumnWidth)
+                .accessibilityIdentifier("Checkbox")
+              TextField("Keyword", text: $customPhrase.keyword).frame(
+                minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading
+              )
+              .accessibilityIdentifier("Keyword")
+              TextField("Phrase", text: $customPhrase.phrase).frame(
+                minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading
+              )
+              .accessibilityIdentifier("Phrase")
+              TextField("Order", value: $customPhrase.order, formatter: numberFormatter)
+                .multilineTextAlignment(.center)
+                .accessibilityIdentifier("Order")
+            }
+          }
+        }
+        HStack {
+          Button {
+            currentPage = max(0, currentPage - 1)
+          } label: {
+            Image(systemName: "chevron.left")
+          }.disabled(currentPage == 0)
+          TextField(
+            "",
+            value: Binding(
+              get: { currentPage + 1 },
+              set: { currentPage = max(0, min(totalPages - 1, $0 - 1)) }
+            ), formatter: numberFormatter
+          )
+          .frame(width: 50)
+          .multilineTextAlignment(.center)
+          .accessibilityIdentifier("Page")
+          Text("/ \(totalPages)")
+            .accessibilityIdentifier("TotalPages")
+          Button {
+            currentPage = min(totalPages - 1, currentPage + 1)
+          } label: {
+            Image(systemName: "chevron.right")
+          }.disabled(currentPage >= totalPages - 1)
         }
       }
 
@@ -92,7 +149,7 @@ struct CustomPhraseView: View {
           showReloaded = true
         } label: {
           Text("Reload")
-        }
+        }.accessibilityIdentifier("Reload")
 
         Button {
           mkdirP(cacheDir.localPath())
@@ -127,19 +184,24 @@ struct CustomPhraseView: View {
         Button {
           let newItem = CustomPhrase(keyword: "", phrase: "", order: 1, enabled: true)
           customphraseVM.customPhrases.append(newItem)
+          currentPage = totalPages - 1
           selectedRows = [newItem.id]
         } label: {
           Text("Add item")
-        }
+        }.accessibilityIdentifier("AddItem")
 
         Button {
           customphraseVM.customPhrases.removeAll {
             selectedRows.contains($0.id)
           }
           selectedRows.removeAll()
+          if currentPage >= totalPages {
+            currentPage = totalPages - 1
+          }
         } label: {
           Text("Remove items")
         }.disabled(selectedRows.isEmpty)
+          .accessibilityIdentifier("RemoveItems")
 
         Button {
           if save() {
@@ -150,6 +212,7 @@ struct CustomPhraseView: View {
         } label: {
           Text("Save")
         }.buttonStyle(.borderedProminent)
+          .accessibilityIdentifier("Save")
 
         Button {
           mkdirP(pinyinPath)
@@ -168,10 +231,10 @@ struct CustomPhraseView: View {
           dismiss()
         } label: {
           Text("Close")
-        }
+        }.accessibilityIdentifier("CloseSheet")
       }
     }.padding()
-      .frame(minWidth: 600, minHeight: 300)
+      .frame(minWidth: 600, minHeight: 400)
       .toast(isPresenting: $showReloaded) {
         AlertToast(
           displayMode: .hud, type: .complete(Color.green),
@@ -200,6 +263,9 @@ struct CustomPhraseView: View {
         AlertToast(
           displayMode: .hud, type: .error(Color.red),
           title: NSLocalizedString("Failed to create", comment: ""))
+      }
+      .onAppear {
+        refreshItems()
       }
   }
 }

@@ -165,7 +165,6 @@ void Fcitx::setupEnv() {
     if (dot_pos != std::string::npos) {
         val = val.substr(0, dot_pos);
     }
-    val += ":C";
     // For config items.
     setenv("LANGUAGE", val.c_str(), 1);
     // For addon names.

@@ -33,7 +33,7 @@ pnpm --prefix=fcitx5-webview i
 
 ### Build with CMake
 ```sh
-git apply --directory=fcitx5 patches/*
+./scripts/patch.sh
 cmake -B build/$(uname -m) -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/$(uname -m)
 sudo cmake --install build/$(uname -m)

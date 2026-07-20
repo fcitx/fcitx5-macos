@@ -1,0 +1,565 @@
+# Georgian translations for fcitx5-macos package
+# ფციტქს 5-ის პაკეტის ქართული თარგმანი
+# Copyright (C) 2024 fcitx5-macos's contributors
+# This file is distributed under the same license as the fcitx5-macos package.
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx 5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-19 12:00+0400\n"
+"Last-Translator: opencode <opencode@opencode.ai>\n"
+"Language-Team: \n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: macosfrontend/macosfrontend.h:27
+msgid "Hidden"
+msgstr "დამალული"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Toggle input method"
+msgstr "შეყვანის მეთოდის გადართვა"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Menu"
+msgstr "მენიუ"
+
+#: macosfrontend/macosfrontend.h:57
+msgid "Status bar"
+msgstr "სტატუსის ზოლი"
+
+#: macosfrontend/macosfrontend.h:60
+msgid "App default IM"
+msgstr "აპის ნაგულისხმევი შეყვანის მეთოდი"
+
+#: macosfrontend/macosfrontend.h:62
+msgid "Vim mode"
+msgstr "Vim რეჟიმი"
+
+#: macosfrontend/macosfrontend.h:64
+msgid "Simulate key release"
+msgstr "ღილაკის გათავისუფლების სიმულაცია"
+
+#: macosfrontend/macosfrontend.h:67
+msgid "Delay of simulated key release in milliseconds"
+msgstr "სიმულირებული ღილაკის გათავისუფლების დაყოვნება მილიწამში"
+
+#: macosfrontend/macosfrontend.h:70
+msgid "Monitor Pasteboard"
+msgstr "ბუფერის მონიტორინგი"
+
+#: macosfrontend/macosfrontend.h:72
+msgid "Remove tracking parameters"
+msgstr "თვალთვალის პარამეტრების წაშლა"
+
+#: macosfrontend/macosfrontend.h:75
+msgid "Poll Pasteboard interval (s)"
+msgstr "ბუფერის გამოკითხვის ინტერვალი (წმ)"
+
+#: macosnotifications/macosnotifications.h:20
+msgid "Hidden Notifications"
+msgstr "დამალული შეტყობინებები"
+
+#: webpanel/webpanel.h:17 webpanel/webpanel.h:23 webpanel/webpanel.h:28
+msgid "System"
+msgstr "სისტემა"
+
+#: webpanel/webpanel.h:17
+msgid "Light"
+msgstr "ნათელი"
+
+#: webpanel/webpanel.h:17
+msgid "Dark"
+msgstr "მუქი"
+
+#: webpanel/webpanel.h:18
+msgid "Horizontal"
+msgstr "ჰორიზონტალური"
+
+#: webpanel/webpanel.h:18
+msgid "Vertical"
+msgstr "ვერტიკალური"
+
+#: webpanel/webpanel.h:19
+msgid "Horizontal top-bottom"
+msgstr "ჰორიზონტალური ზემოდან ქვემოთ"
+
+#: webpanel/webpanel.h:20
+msgid "Vertical right-left"
+msgstr "ვერტიკალური მარჯვნიდან მარცხნივ"
+
+#: webpanel/webpanel.h:21
+msgid "Vertical left-right"
+msgstr "ვერტიკალური მარცხნიდან მარჯვნივ"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:32 webpanel/webpanel.h:40
+#: webpanel/webpanel.h:44
+msgid "None"
+msgstr "არცერთი"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+msgid "Blur"
+msgstr "ბუნდოვანება"
+
+#: webpanel/webpanel.h:24
+msgid "Liquid Glass"
+msgstr "თხევადი მინა"
+
+#: webpanel/webpanel.h:28
+msgid "macOS 26"
+msgstr "macOS 26"
+
+#: webpanel/webpanel.h:29
+msgid "macOS 15"
+msgstr "macOS 15"
+
+#: webpanel/webpanel.h:32
+msgid "Arrow"
+msgstr "ისარი"
+
+#: webpanel/webpanel.h:33
+msgid "Triangle"
+msgstr "სამკუთხედი"
+
+#: webpanel/webpanel.h:36
+msgid "Blink"
+msgstr "ციმციმი"
+
+#: webpanel/webpanel.h:36
+msgid "Static"
+msgstr "სტატიკური"
+
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+msgid "Text"
+msgstr "ტექსტი"
+
+#: webpanel/webpanel.h:40
+msgid "Bar"
+msgstr "ზოლი"
+
+#: webpanel/webpanel.h:44
+msgid "Move"
+msgstr "გადაადგილება"
+
+#: webpanel/webpanel.h:45
+msgid "Add"
+msgstr "დამატება"
+
+#: webpanel/webpanel.h:83
+msgid "Follow caret"
+msgstr "კურსორის მიყოლა"
+
+#: webpanel/webpanel.h:86
+msgid "Theme"
+msgstr "თემა"
+
+#: webpanel/webpanel.h:88
+msgid "Default theme"
+msgstr "ნაგულისხმევი თემა"
+
+#: webpanel/webpanel.h:89
+msgid "User theme"
+msgstr "მომხმარებლის თემა"
+
+#: webpanel/webpanel.h:91
+msgid "Export current theme"
+msgstr "მიმდინარე თემის ექსპორტი"
+
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+msgid "Override default"
+msgstr "ნაგულისხმევის გადათქმა"
+
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
+msgid "Highlight color"
+msgstr "გამოყოფილის ფერი"
+
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
+msgid "Highlight color on hover"
+msgstr "გამოყოფილის ფერი გადატარებისას"
+
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
+msgid "Highlight text color"
+msgstr "გამოყოფილი ტექსტის ფერი"
+
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
+msgid "Highlight text color on press"
+msgstr "გამოყოფილი ტექსტის ფერი დაწოლისას"
+
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
+msgid "Highlight label color"
+msgstr "გამოყოფილი წარწერის ფერი"
+
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
+msgid "Highlight comment color"
+msgstr "გამოყოფილი კომენტარის ფერი"
+
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
+msgid "Highlight mark color"
+msgstr "გამოყოფილი ნიშნის ფერი"
+
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+msgid "Panel color"
+msgstr "პანელის ფერი"
+
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
+msgid "Text color"
+msgstr "ტექსტის ფერი"
+
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
+msgid "Label color"
+msgstr "წარწერის ფერი"
+
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
+msgid "Comment color"
+msgstr "კომენტარის ფერი"
+
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+msgid "Paging button color"
+msgstr "გვერდის ღილაკის ფერი"
+
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
+msgid "Disabled paging button color"
+msgstr "გამორთული გვერდის ღილაკის ფერი"
+
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
+msgid "Indicator text color"
+msgstr "ინდიკატორის ტექსტის ფერი"
+
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
+msgid "Preedit color pre-caret"
+msgstr "წინასწარი რედაქტირების ფერი კურსორამდე"
+
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
+msgid "Preedit caret color"
+msgstr "წინასწარი რედაქტირების კურსორის ფერი"
+
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
+msgid "Preedit color post-caret"
+msgstr "წინასწარი რედაქტირების ფერი კურსორის შემდეგ"
+
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+msgid "Border color"
+msgstr "საზღვრის ფერი"
+
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
+msgid "Divider color"
+msgstr "გამყოფის ფერი"
+
+#: webpanel/webpanel.h:150
+msgid "Same with light mode"
+msgstr "იგივე ნათელ რეჟიმთან"
+
+#: webpanel/webpanel.h:204
+msgid "Enable scroll"
+msgstr "გადახვევის ჩართვა"
+
+#: webpanel/webpanel.h:205
+msgid "Auto expand"
+msgstr "ავტომატური გაშლა"
+
+#: webpanel/webpanel.h:206
+msgid "Show scroll bar"
+msgstr "გადახვევის ზოლის ჩვენება"
+
+#: webpanel/webpanel.h:208
+msgid "Animation"
+msgstr "ანიმაცია"
+
+#: webpanel/webpanel.h:210
+msgid "Max row count"
+msgstr "მაქსიმალური მწკრივთა რაოდენობა"
+
+#: webpanel/webpanel.h:212
+msgid "Max column count"
+msgstr "მაქსიმალური სვეტთა რაოდენობა"
+
+#: webpanel/webpanel.h:214
+msgid "Expand"
+msgstr "გაშლა"
+
+#: webpanel/webpanel.h:216
+msgid "Collapse"
+msgstr "შეკუმშვა"
+
+#: webpanel/webpanel.h:218
+msgid "Up"
+msgstr "ზემოთ"
+
+#: webpanel/webpanel.h:220
+msgid "Down"
+msgstr "ქვემოთ"
+
+#: webpanel/webpanel.h:221
+msgid "Left"
+msgstr "მარცხნივ"
+
+#: webpanel/webpanel.h:222
+msgid "Right"
+msgstr "მარჯვნივ"
+
+#: webpanel/webpanel.h:224
+msgid "Row start"
+msgstr "მწკრივის დასაწყისი"
+
+#: webpanel/webpanel.h:225
+msgid "Row end"
+msgstr "მწკრივის დასასრული"
+
+#: webpanel/webpanel.h:227
+msgid "Page up"
+msgstr "გვერდი ზემოთ"
+
+#: webpanel/webpanel.h:229
+msgid "Page down"
+msgstr "გვერდი ქვემოთ"
+
+#: webpanel/webpanel.h:230
+msgid "Commit"
+msgstr "დადასტურება"
+
+#: webpanel/webpanel.h:232
+msgid "Select candidate"
+msgstr "კანდიდატის არჩევა"
+
+#: webpanel/webpanel.h:235
+msgid "Use main keyboard number keys to select candidate"
+msgstr "კანდიდატის ასარჩევად გამოიყენეთ მთავარი კლავიატურის ციფრები"
+
+#: webpanel/webpanel.h:238
+msgid "Use keypad number keys to select candidate"
+msgstr "კანდიდატის ასარჩევად გამოიყენეთ ციფრების პანელი"
+
+#: webpanel/webpanel.h:240
+msgid "Optimize for Hyper key"
+msgstr "Hyper ღილაკის ოპტიმიზაცია"
+
+#: webpanel/webpanel.h:246
+msgid "Layout"
+msgstr "განლაგება"
+
+#: webpanel/webpanel.h:250
+msgid "Writing mode"
+msgstr "წერის რეჟიმი"
+
+#: webpanel/webpanel.h:253
+msgid "Typography awareness for IM"
+msgstr "ტიპოგრაფიული ცნობიერება შეყვანის მეთოდისთვის"
+
+#: webpanel/webpanel.h:256
+msgid "Vertical comments align right"
+msgstr "ვერტიკალური კომენტარების სწორ მიმართულება"
+
+#: webpanel/webpanel.h:260
+msgid "Paging buttons style"
+msgstr "გვერდის ღილაკების სტილი"
+
+#: webpanel/webpanel.h:266
+msgid "Image"
+msgstr "სურათი"
+
+#: webpanel/webpanel.h:269
+msgid "Keep panel color when has image"
+msgstr "სურათის არსებობისას პანელის ფერის შენარჩუნება"
+
+#: webpanel/webpanel.h:273
+msgid "Shadow"
+msgstr "ჩრდილი"
+
+#: webpanel/webpanel.h:283
+msgid "Text font family"
+msgstr "ტექსტის შრიფტის ოჯახი"
+
+#: webpanel/webpanel.h:285
+msgid "Text font size"
+msgstr "ტექსტის შრიფტის ზომა"
+
+#: webpanel/webpanel.h:287
+msgid "Text font weight"
+msgstr "ტექსტის შრიფტის სისქე"
+
+#: webpanel/webpanel.h:290
+msgid "Label font family"
+msgstr "წარწერის შრიფტის ოჯახი"
+
+#: webpanel/webpanel.h:292
+msgid "Label font size"
+msgstr "წარწერის შრიფტის ზომა"
+
+#: webpanel/webpanel.h:294
+msgid "Label font weight"
+msgstr "წარწერის შრიფტის სისქე"
+
+#: webpanel/webpanel.h:297
+msgid "Comment font family"
+msgstr "კომენტარის შრიფტის ოჯახი"
+
+#: webpanel/webpanel.h:299
+msgid "Comment font size"
+msgstr "კომენტარის შრიფტის ზომა"
+
+#: webpanel/webpanel.h:302
+msgid "Comment font weight"
+msgstr "კომენტარის შრიფტის სისქე"
+
+#: webpanel/webpanel.h:305
+msgid "Preedit font family"
+msgstr "წინასწარი რედაქტირების შრიფტის ოჯახი"
+
+#: webpanel/webpanel.h:307
+msgid "Preedit font size"
+msgstr "წინასწარი რედაქტირების შრიფტის ზომა"
+
+#: webpanel/webpanel.h:310
+msgid "Preedit font weight"
+msgstr "წინასწარი რედაქტირების შრიფტის სისქე"
+
+#: webpanel/webpanel.h:312
+msgid "User font dir"
+msgstr "მომხმარებლის შრიფტების საქაღალდე"
+
+#: webpanel/webpanel.h:313
+msgid "System font dir"
+msgstr "სისტემის შრიფტების საქაღალდე"
+
+#: webpanel/webpanel.h:318
+msgid "Style"
+msgstr "სტილი"
+
+#: webpanel/webpanel.h:324
+msgid "Mark style"
+msgstr "ნიშნის სტილი"
+
+#: webpanel/webpanel.h:325
+msgid "Mark text"
+msgstr "ნიშნის ტექსტი"
+
+#: webpanel/webpanel.h:327
+msgid "Hover behavior"
+msgstr "გადატარების ქცევა"
+
+#: webpanel/webpanel.h:334
+msgid "Border width (px)"
+msgstr "საზღვრის სიგანე (px)"
+
+#: webpanel/webpanel.h:337
+msgid "Border radius (px)"
+msgstr "საზღვრის რადიუსი (px)"
+
+#: webpanel/webpanel.h:338
+msgid "Margin (px)"
+msgstr "გარე საზღვარი (px)"
+
+#: webpanel/webpanel.h:341
+msgid "Highlight radius (px)"
+msgstr "გამოყოფის რადიუსი (px)"
+
+#: webpanel/webpanel.h:344
+msgid "Top padding (px)"
+msgstr "ზედა შევსება (px)"
+
+#: webpanel/webpanel.h:346
+msgid "Right padding (px)"
+msgstr "მარჯვენა შევსება (px)"
+
+#: webpanel/webpanel.h:348
+msgid "Bottom padding (px)"
+msgstr "ქვედა შევსება (px)"
+
+#: webpanel/webpanel.h:351
+msgid "Left padding (px)"
+msgstr "მარცხენა შევსება (px)"
+
+#: webpanel/webpanel.h:353
+msgid "Gap between label, text and comment (px)"
+msgstr "წარწერას, ტექსტსა და კომენტარს შორის მანძილი (px)"
+
+#: webpanel/webpanel.h:356
+msgid "Vertical minimum width (px)"
+msgstr "ვერტიკალური მინიმალური სიგანე (px)"
+
+#: webpanel/webpanel.h:359
+msgid "Scroll cell width (px)"
+msgstr "გადახვევის უჯრის სიგანე (px)"
+
+#: webpanel/webpanel.h:362
+msgid "Horizontal divider width (px)"
+msgstr "ჰორიზონტალური გამყოფის სიგანე (px)"
+
+#: webpanel/webpanel.h:371
+msgid "User CSS"
+msgstr "მომხმარებლის CSS"
+
+#: webpanel/webpanel.h:372
+msgid "Copy HTML"
+msgstr "HTML-ის კოპირება"
+
+#: webpanel/webpanel.h:373
+msgid "Plugin dir"
+msgstr "მოდულის საქაღალდე"
+
+#: webpanel/webpanel.h:375
+msgid "I know there may be risks for using plugins"
+msgstr "ვიცი, რომ მოდულების გამოყენება რისკებთან არის დაკავშირებული"
+
+#: webpanel/webpanel.h:378
+msgid "Plugins"
+msgstr "მოდულები"
+
+#: webpanel/webpanel.h:380
+msgid "Dangerous API for JavaScript plugins"
+msgstr "საშიში API JavaScript მოდულებისთვის"
+
+#: webpanel/webpanel.h:383
+msgid "Basic"
+msgstr "ძირითადი"
+
+#: webpanel/webpanel.h:384
+msgid "Light mode"
+msgstr "ნათელი რეჟიმი"
+
+#: webpanel/webpanel.h:385
+msgid "Dark mode"
+msgstr "მუქი რეჟიმი"
+
+#: webpanel/webpanel.h:386
+msgid "Typography"
+msgstr "ტიპოგრაფია"
+
+#: webpanel/webpanel.h:387
+msgid "Scroll mode"
+msgstr "გადახვევის რეჟიმი"
+
+#: webpanel/webpanel.h:388
+msgid "Background"
+msgstr "ფონი"
+
+#: webpanel/webpanel.h:389
+msgid "Font"
+msgstr "შრიფტი"
+
+#: webpanel/webpanel.h:390
+msgid "Caret"
+msgstr "კურსორი"
+
+#: webpanel/webpanel.h:391
+msgid "Highlight"
+msgstr "გამოყოფა"
+
+#: webpanel/webpanel.h:392
+msgid "Size"
+msgstr "ზომა"
+
+#: webpanel/webpanel.h:393
+msgid "Advanced"
+msgstr "დამატებითი"
+
+#: macosfrontend/macosfrontend.conf.in.in:2
+msgid "macOS Frontend"
+msgstr "macOS ინტერფეისი"
+
+#: macosnotifications/notifications.conf.in.in:2
+msgid "macOS Notification"
+msgstr "macOS შეტყობინება"

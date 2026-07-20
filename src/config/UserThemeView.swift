@@ -10,7 +10,7 @@ struct UserThemeView: View {
   var body: some View {
     SelectFileButton(
       directory: themeDir,
-      allowedContentTypes: [UTType.init(filenameExtension: "conf")!],
+      allowedContentTypes: fileTypes(["conf"]),
       onFinish: { fileName in
         themeName = String(fileName.dropLast(5))
         Fcitx.setConfig(

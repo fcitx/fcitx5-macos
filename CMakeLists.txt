@@ -9,7 +9,7 @@ if(NOT CMAKE_OSX_ARCHITECTURES)
 endif()
 set(CMAKE_Swift_COMPILER_TARGET "${CMAKE_OSX_ARCHITECTURES}-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET}")
 
-project(fcitx5-macos VERSION 0.3.4 LANGUAGES CXX Swift)
+project(fcitx5-macos VERSION 0.3.5 LANGUAGES CXX Swift)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -101,7 +101,7 @@ set(WEBVIEW_WWW_PATH ".local/share/fcitx5/www")
 
 include_directories(
     fcitx5-webview/include
-    fcitx5-webview/webview
+    fcitx5-webview/webview/core/include
     "${PREBUILDER_INCLUDE_DIR}" # nlohmann-json
 )
 
