@@ -108,7 +108,10 @@ class FcitxInputController: IMKInputController {
     var surroundingText = ""
     var cursor: UInt32 = 0
     var anchor: UInt32 = 0
-    if !isPassword {
+    let mods = NSEvent.ModifierFlags(rawValue: UInt(modsVal))
+    let isTextInput = unicode != 0
+      && mods.intersection(NSEvent.ModifierFlags([.command, .control])).isEmpty
+    if !isPassword && isTextInput {
       (surroundingText, cursor, anchor) = getSurroundingText(
         newSelection.location, newSelection.length)
     }
