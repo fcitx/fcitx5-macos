@@ -34,9 +34,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   nonisolated(unsafe) static var statusItem: NSStatusItem?
   nonisolated(unsafe) static var statusItemText: String = "🐧"
   nonisolated(unsafe) static var statusItemMode: Int32 = 0
+  nonisolated(unsafe) static var cachedStatusItemPosition: Any?
 
+  private static let statusItemAutosaveName: NSStatusItem.AutosaveName = "fcitx5"
+  private static let statusItemPositionKey =
+    "NSStatusItem Preferred Position \(statusItemAutosaveName)"
   private static let inputSourceChangedNotification = Notification.Name(
     rawValue: kTISNotifySelectedKeyboardInputSourceChanged as String)
+  private var positionObserver: NSObjectProtocol?
 
   private var sigtermSource: DispatchSourceSignal!
 
@@ -65,6 +70,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       name: AppDelegate.inputSourceChangedNotification,
       object: nil)
 
+    // Preserve status item position when macOS clears it after isVisible = false.
+    positionObserver = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification,
+      object: nil,
+      queue: .main
+    ) { _ in
+      let key = AppDelegate.statusItemPositionKey
+      if UserDefaults.standard.object(forKey: key) == nil,
+        let position = AppDelegate.cachedStatusItemPosition
+      {
+        UserDefaults.standard.set(position, forKey: key)
+      }
+    }
+
     setStatusItemCallback { mode, text in
       if let mode = mode {
         AppDelegate.statusItemMode = mode
@@ -89,6 +108,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationWillTerminate(_ notification: Notification) {
     DistributedNotificationCenter.default().removeObserver(self)
+    if let observer = positionObserver {
+      NotificationCenter.default.removeObserver(observer)
+    }
     stop_fcitx_thread()
   }
 
@@ -103,22 +125,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   @MainActor
-  private func removeStatusItem() {
-    if let statusItem = AppDelegate.statusItem {
-      NSStatusBar.system.removeStatusItem(statusItem)
-      AppDelegate.statusItem = nil
-    }
+  private func hideStatusItem() {
+    guard let statusItem = AppDelegate.statusItem, statusItem.isVisible else { return }
+    AppDelegate.cachedStatusItemPosition = UserDefaults.standard.object(
+      forKey: AppDelegate.statusItemPositionKey)
+    statusItem.isVisible = false
   }
 
   @MainActor
-  private func ensureStatusItem() -> NSStatusItem {
-    if let statusItem = AppDelegate.statusItem {
-      return statusItem
+  private func showStatusItem() {
+    let statusItem: NSStatusItem
+    if let existing = AppDelegate.statusItem {
+      statusItem = existing
+    } else {
+      // NSStatusItem.variableLength causes layout shift of icons on the left when switching between en and 拼.
+      let newItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+      newItem.autosaveName = AppDelegate.statusItemAutosaveName
+      AppDelegate.statusItem = newItem
+      statusItem = newItem
     }
-    // NSStatusItem.variableLength causes layout shift of icons on the left when switching between en and 拼.
-    let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-    AppDelegate.statusItem = statusItem
-    return statusItem
+
+    if !statusItem.isVisible {
+      if let position = AppDelegate.cachedStatusItemPosition {
+        UserDefaults.standard.set(position, forKey: AppDelegate.statusItemPositionKey)
+      }
+      statusItem.isVisible = true
+    }
+    statusItem.menu = nil
+
+    if let button = statusItem.button {
+      button.title = AppDelegate.statusItemText
+      button.target = self
+      button.action = nil
+      if AppDelegate.statusItemMode == 1 {
+        button.action = #selector(self.toggle)
+      } else {
+        statusItem.menu = makeStatusItemMenu()
+      }
+    }
   }
 
   @MainActor
@@ -145,23 +189,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @MainActor
   private func refreshStatusItemVisibility() {
     guard AppDelegate.statusItemMode != 0, isFcitxSelectedInputSource() else {
-      removeStatusItem()
+      hideStatusItem()
       return
     }
-
-    let statusItem = ensureStatusItem()
-    statusItem.menu = nil
-
-    if let button = statusItem.button {
-      button.title = AppDelegate.statusItemText
-      button.target = self
-      button.action = nil
-      if AppDelegate.statusItemMode == 1 {  // Toggle input method
-        button.action = #selector(self.toggle)
-      } else {  // Menu
-        statusItem.menu = makeStatusItemMenu()
-      }
-    }
+    showStatusItem()
   }
 
   @MainActor
