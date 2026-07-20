@@ -72,8 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       forName: UserDefaults.didChangeNotification,
       object: nil,
       queue: .main
-    ) { [weak self] _ in
-      guard let self = self else { return }
+    ) { _ in
       let key = AppDelegate.statusItemPositionKey
       if UserDefaults.standard.object(forKey: key) == nil,
         let position = AppDelegate.cachedStatusItemPosition
