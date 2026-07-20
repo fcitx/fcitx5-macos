@@ -44,9 +44,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   nonisolated(unsafe) static var statusItem: NSStatusItem?
   nonisolated(unsafe) static var statusItemText: String = "🐧"
   nonisolated(unsafe) static var statusItemMode: Int32 = 0
+  nonisolated(unsafe) static var cachedStatusItemPosition: Any?
 
+  private static let statusItemAutosaveName: NSStatusItem.AutosaveName = "fcitx5"
+  private static let statusItemPositionKey =
+    "NSStatusItem Preferred Position \(statusItemAutosaveName)"
   private static let inputSourceChangedNotification = Notification.Name(
     rawValue: kTISNotifySelectedKeyboardInputSourceChanged as String)
+  private var positionObserver: NSObjectProtocol?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     redirectStderr()
@@ -61,6 +66,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       selector: #selector(inputSourceChanged),
       name: AppDelegate.inputSourceChangedNotification,
       object: nil)
+
+    // Preserve status item position when macOS clears it after isVisible = false.
+    positionObserver = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      guard let self = self else { return }
+      let key = AppDelegate.statusItemPositionKey
+      if UserDefaults.standard.object(forKey: key) == nil,
+        let position = AppDelegate.cachedStatusItemPosition
+      {
+        UserDefaults.standard.set(position, forKey: key)
+      }
+    }
 
     setStatusItemCallback { mode, text in
       if let mode = mode {
@@ -86,6 +106,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationWillTerminate(_ notification: Notification) {
     DistributedNotificationCenter.default().removeObserver(self)
+    if let observer = positionObserver {
+      NotificationCenter.default.removeObserver(observer)
+    }
     stop_fcitx_thread()
   }
 
@@ -100,11 +123,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   @MainActor
-  private func removeStatusItem() {
-    if let statusItem = AppDelegate.statusItem {
-      NSStatusBar.system.removeStatusItem(statusItem)
-      AppDelegate.statusItem = nil
+  private func hideStatusItem() {
+    guard let statusItem = AppDelegate.statusItem, statusItem.isVisible else { return }
+    AppDelegate.cachedStatusItemPosition = UserDefaults.standard.object(
+      forKey: AppDelegate.statusItemPositionKey)
+    statusItem.isVisible = false
+  }
+
+  @MainActor
+  private func showStatusItem() {
+    let statusItem = ensureStatusItem()
+    guard !statusItem.isVisible else { return }
+    if let position = AppDelegate.cachedStatusItemPosition {
+      UserDefaults.standard.set(position, forKey: AppDelegate.statusItemPositionKey)
     }
+    statusItem.isVisible = true
   }
 
   @MainActor
@@ -114,6 +147,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     // NSStatusItem.variableLength causes layout shift of icons on the left when switching between en and 拼.
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+    statusItem.autosaveName = AppDelegate.statusItemAutosaveName
     AppDelegate.statusItem = statusItem
     return statusItem
   }
@@ -142,11 +176,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @MainActor
   private func refreshStatusItemVisibility() {
     guard AppDelegate.statusItemMode != 0, isFcitxSelectedInputSource() else {
-      removeStatusItem()
+      hideStatusItem()
       return
     }
 
-    let statusItem = ensureStatusItem()
+    showStatusItem()
+    let statusItem = AppDelegate.statusItem!
     statusItem.menu = nil
 
     if let button = statusItem.button {
