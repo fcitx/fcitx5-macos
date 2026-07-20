@@ -111,9 +111,7 @@ struct DictManagerView: View {
             allowsMultipleSelection: true,
             canChooseDirectories: false,
             canChooseFiles: true,
-            allowedContentTypes: ["dict", "scel", "txt"].compactMap {
-              UTType.init(filenameExtension: $0)
-            },
+            allowedContentTypes: fileTypes(["dict", "scel", "txt"]),
             directoryURL: initialDirectoryURL
           ) { urls, dirURL in
             mkdirP(dictPath)

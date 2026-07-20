@@ -27,16 +27,6 @@ private func redirectStderr() {
   }
 }
 
-private func signalHandler(signal: Int32) {
-  // The signal can be raised on any thread. So we must make sure it's
-  // routed back to the main thread.
-  DispatchQueue.main.async {
-    if signal == SIGTERM {
-      restartProcess()
-    }
-  }
-}
-
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
   nonisolated(unsafe) static var server: IMKServer!
@@ -53,13 +43,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     rawValue: kTISNotifySelectedKeyboardInputSourceChanged as String)
   private var positionObserver: NSObjectProtocol?
 
+  private var sigtermSource: DispatchSourceSignal!
+
+  private func installSignalHandlers() {
+    signal(SIGTERM, SIG_IGN)
+    sigtermSource = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+    sigtermSource.setEventHandler {
+      Task { @MainActor in
+        restartProcess()
+      }
+    }
+    sigtermSource.resume()
+  }
+
   func applicationDidFinishLaunching(_ notification: Notification) {
     redirectStderr()
 
     // Once process started, WKWebView doesn't accept new font files. Record and prompt user restart if needed.
     initUserFontFamiliesOnStart()
 
-    signal(SIGTERM, signalHandler)
+    installSignalHandlers()
 
     DistributedNotificationCenter.default().addObserver(
       self,

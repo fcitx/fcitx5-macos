@@ -6,10 +6,11 @@ from util.key import press
 from util.message import CHANGE_NOT_SAVED, UI_NOT_UPDATED, UI_WRONGLY_UPDATED
 from util.string import get_string_value, is_focused
 from util.window import (
+    close_sheet,
     find_element_by_id,
     find_elements_by_id,
     open_input_method_config,
-    scroll,
+    scroll_to,
 )
 
 KEY = "Key"
@@ -19,10 +20,9 @@ ALT_MAPPING = "AltMapping"
 
 def test_punctuation_map(driver: WebDriver, app: str) -> None:
     open_input_method_config(driver, "pinyin")
-    scroll(
+    scroll_to(
         find_element_by_id(driver, "detailScrollView"),
-        find_element_by_id(driver, "Punctuation"),
-        find_element_by_id(driver, "PageSize"),
+        "Punctuation",
     )
     punctuation = find_element_by_id(driver, "Punctuation")
     punctuation.click()
@@ -70,3 +70,4 @@ def test_punctuation_map(driver: WebDriver, app: str) -> None:
         UI_NOT_UPDATED
     )
     assert read_config_value() == r"* \times", CHANGE_NOT_SAVED
+    close_sheet(driver)

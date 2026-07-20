@@ -3,6 +3,7 @@ import SwiftUI
 struct FooterView: View {
   @ObservedObject var manager: ConfigManager
   let onClose: () -> Void
+  let isSheet: Bool
 
   var body: some View {
     HStack {
@@ -34,7 +35,7 @@ struct FooterView: View {
         onClose()
       } label: {
         Text("Close")
-      }
+      }.accessibilityIdentifier(isSheet ? "CloseSheet" : "Close")
     }.padding()
   }
 }

@@ -177,7 +177,7 @@ struct AvailableInputMethodView: View {
   @StateObject private var viewModel = SelectIMViewModel(domain: .availableInputMethods)
   @State private var selection = Set<InputMethod>()
   @State private var enabled = Set<String>()
-  @State private var showImportTable = false
+  @State private var selectedTab = 0
   @State private var importTableErrorMsg = ""
   @State private var showImportTableError = false
   @State private var layout: String = "us"
@@ -187,12 +187,13 @@ struct AvailableInputMethodView: View {
   let onAdd: (Set<InputMethod>) -> Void
 
   var body: some View {
-    NavigationSplitView {
+    let splitView = NavigationSplitView {
       List(selection: $viewModel.selectedLanguageCode) {
         ForEach(languages(viewModel: viewModel), id: \.code) { language in
-          Text(language.localized)
+          Text(language.localized).accessibilityIdentifier(language.code)
         }
       }.frame(minWidth: columnWidth)
+        .accessibilityIdentifier("LanguageList")
       Toggle(
         NSLocalizedString("Only show current language", comment: ""),
         isOn: Binding(
@@ -207,24 +208,29 @@ struct AvailableInputMethodView: View {
             ForEach(viewModel.availableIMsForLanguage, id: \.self) { im in
               Text(im.displayName).fontWeight(popularIMs.contains(im.name) ? .bold : .regular)
                 .listRowSeparator(.hidden)
+                .accessibilityIdentifier("Add:\(im.name)")
             }
           }.contextMenu(forSelectionType: InputMethod.self) { _ in
           } primaryAction: { items in
             onAdd(items)
             enabled.formUnion(items.map { $0.name })
             viewModel.refresh(enabled)
+            selection.removeAll()
           }
           .overlay(RoundedRectangle(cornerRadius: listBorderRadius).stroke(listBorderColor))
-          .padding([.top, .leading, .trailing])
+          .frame(width: keyboardWidth)
+          .padding(.top)
 
           if selection.count == 1, let im = selection.first, im.isKeyboard {
-            KeyboardViewer(layout: $layout).padding([.leading, .trailing])
+            KeyboardViewer(layout: $layout)
           } else {
             Text("Keyboard layout not available")
               .frame(height: keyboardHeight)
+              .accessibilityIdentifier("KeyboardLayoutPrompt")
           }
         } else {
           Text("Select a language from the left list.").frame(maxHeight: .infinity)
+            .accessibilityIdentifier("SelectLanguagePrompt")
         }
 
         HStack {
@@ -236,13 +242,6 @@ struct AvailableInputMethodView: View {
 
           Spacer()
 
-          if viewModel.availableIMs["zh_CN"]?.contains(where: { $0.name == "pinyin" }) == true {
-            Button {
-              showImportTable = true
-            } label: {
-              Text("Import customized table")
-            }
-          }
           Button {
             onAdd(selection)
             dismiss()
@@ -250,10 +249,12 @@ struct AvailableInputMethodView: View {
             Text("Add")
           }.buttonStyle(.borderedProminent)
             .disabled(selection.isEmpty)
-        }.padding([.horizontal, .bottom])
+            .accessibilityIdentifier("Add")
+        }
+        .frame(width: keyboardWidth)
+        .padding(.bottom)
       }
     }
-    .frame(width: sheetWidth, height: sheetHeight)
     .onAppear {
       enabled = Set(group?.inputMethods.map { $0.name } ?? [])
       viewModel.refresh(enabled)
@@ -263,23 +264,39 @@ struct AvailableInputMethodView: View {
         self.layout = dropKeyboardPrefix(im.name)
       }
     }
-    .sheet(isPresented: $showImportTable) {
-      ImportTableView(
-        onAdd: { newIMs in
-          onAdd(
-            Set(
-              newIMs.map {
-                InputMethod(name: $0, displayName: $0, languageCode: "", isKeyboard: false)
-              }))
-        },
-        onError: { msg in
-          importTableErrorMsg = msg
-          showImportTableError = true
-        },
-        finalize: {
-          onImport()
-        })
+
+    SwiftUI.Group {
+      if viewModel.availableIMs["zh_CN"]?.contains(where: { $0.name == "pinyin" }) == true {
+        TabView(selection: $selectedTab) {
+          splitView
+            .tabItem { Text("Input Methods") }
+            .tag(0)
+
+          ImportTableView(
+            onAdd: { newIMs in
+              onAdd(
+                Set(
+                  newIMs.map {
+                    InputMethod(name: $0, displayName: $0, languageCode: "", isKeyboard: false)
+                  }))
+            },
+            onError: { msg in
+              importTableErrorMsg = msg
+              showImportTableError = true
+            },
+            finalize: {
+              onImport()
+            }
+          )
+          .tabItem { Text("Import customized table").accessibilityIdentifier("ImportTableTab") }
+          .tag(1)
+        }
+        .padding(.top)
+      } else {
+        splitView
+      }
     }
+    .frame(width: sheetWidth, height: sheetHeight)
     .toast(isPresenting: $showImportTableError) {
       AlertToast(
         displayMode: .hud,

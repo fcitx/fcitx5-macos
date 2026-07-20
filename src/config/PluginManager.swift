@@ -415,7 +415,7 @@ struct PluginView: View {
               allowsMultipleSelection: false,
               canChooseDirectories: false,
               canChooseFiles: true,
-              allowedContentTypes: [UTType.init(filenameExtension: "bz2")!],
+              allowedContentTypes: fileTypes(["bz2"]),
               directoryURL: URL(
                 fileURLWithPath: homeDir.appendingPathComponent("Downloads").localPath())
             ) { urls, _ in

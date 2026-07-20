@@ -1,0 +1,564 @@
+# Hebrew translation for fcitx5-macos
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the fcitx5-macos package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx5-macos\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-19 12:00+0300\n"
+"Last-Translator: \n"
+"Language-Team: Hebrew\n"
+"Language: he\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: macosfrontend/macosfrontend.h:27
+msgid "Hidden"
+msgstr "סתר"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Toggle input method"
+msgstr "החלפת שיטת הקלדה"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Menu"
+msgstr "תפריט"
+
+#: macosfrontend/macosfrontend.h:57
+msgid "Status bar"
+msgstr "סרגל המצב"
+
+#: macosfrontend/macosfrontend.h:60
+msgid "App default IM"
+msgstr "שיטת הקלדה מחדלת יישום"
+
+#: macosfrontend/macosfrontend.h:62
+msgid "Vim mode"
+msgstr "מצב Vim"
+
+#: macosfrontend/macosfrontend.h:64
+msgid "Simulate key release"
+msgstr "סימולצצית שחרור מפתח"
+
+#: macosfrontend/macosfrontend.h:67
+msgid "Delay of simulated key release in milliseconds"
+msgstr "הסרה של שחרור מפתח מסומלצצ במילישניות"
+
+#: macosfrontend/macosfrontend.h:70
+msgid "Monitor Pasteboard"
+msgstr "ניתור מחלקת הגזית"
+
+#: macosfrontend/macosfrontend.h:72
+msgid "Remove tracking parameters"
+msgstr "הסרת מספרקי עקב"
+
+#: macosfrontend/macosfrontend.h:75
+msgid "Poll Pasteboard interval (s)"
+msgstr "מרחוק ניתור מחלקת הגזית (שניות)"
+
+#: macosnotifications/macosnotifications.h:20
+msgid "Hidden Notifications"
+msgstr "התראות מוסתרות"
+
+#: webpanel/webpanel.h:17 webpanel/webpanel.h:23 webpanel/webpanel.h:28
+msgid "System"
+msgstr "מערכת"
+
+#: webpanel/webpanel.h:17
+msgid "Light"
+msgstr "בהיר"
+
+#: webpanel/webpanel.h:17
+msgid "Dark"
+msgstr "כהה"
+
+#: webpanel/webpanel.h:18
+msgid "Horizontal"
+msgstr "אונקי"
+
+#: webpanel/webpanel.h:18
+msgid "Vertical"
+msgstr "אנכי"
+
+#: webpanel/webpanel.h:19
+msgid "Horizontal top-bottom"
+msgstr "אונקי מעלה למטה"
+
+#: webpanel/webpanel.h:20
+msgid "Vertical right-left"
+msgstr "אנכי מימין לשמאל"
+
+#: webpanel/webpanel.h:21
+msgid "Vertical left-right"
+msgstr "אנכי משמאל לימין"
+
+#: webpanel/webpanel.h:44
+msgid "None"
+msgstr "לא זמין"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+msgid "Blur"
+msgstr "טשבוש"
+
+#: webpanel/webpanel.h:24
+msgid "Liquid Glass"
+msgstr "Liquid Glass"
+
+#: webpanel/webpanel.h:28
+msgid "macOS 26"
+msgstr "macOS 26"
+
+#: webpanel/webpanel.h:29
+msgid "macOS 15"
+msgstr "macOS 15"
+
+#: webpanel/webpanel.h:32
+msgid "Arrow"
+msgstr "חץ"
+
+#: webpanel/webpanel.h:33
+msgid "Triangle"
+msgstr "משלש"
+
+#: webpanel/webpanel.h:36
+msgid "Blink"
+msgstr "צלילה"
+
+#: webpanel/webpanel.h:36
+msgid "Static"
+msgstr "סטטי"
+
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+msgid "Text"
+msgstr "טקסט"
+
+#: webpanel/webpanel.h:40
+msgid "Bar"
+msgstr "סרגל"
+
+#: webpanel/webpanel.h:44
+msgid "Move"
+msgstr "העתקה"
+
+#: webpanel/webpanel.h:45
+msgid "Add"
+msgstr "הוספה"
+
+#: webpanel/webpanel.h:83
+msgid "Follow caret"
+msgstr "עקבת סמנים"
+
+#: webpanel/webpanel.h:86
+msgid "Theme"
+msgstr "ערכת נושא"
+
+#: webpanel/webpanel.h:88
+msgid "Default theme"
+msgstr "ערכת נושא מחדלת"
+
+#: webpanel/webpanel.h:89
+msgid "User theme"
+msgstr "ערכת נושא מושתמש"
+
+#: webpanel/webpanel.h:91
+msgid "Export current theme"
+msgstr "ייצוא ערכת נושא נוכחית"
+
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+msgid "Override default"
+msgstr "החלפת ברירת מחדל"
+
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
+msgid "Highlight color"
+msgstr "צבע הערה"
+
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
+msgid "Highlight color on hover"
+msgstr "צבע הערה על ריצרה"
+
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
+msgid "Highlight text color"
+msgstr "צבע טקסט מוכה"
+
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
+msgid "Highlight text color on press"
+msgstr "צבע טקסט מוכה על לחצת מפתח"
+
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
+msgid "Highlight label color"
+msgstr "צבע תווית מוכה"
+
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
+msgid "Highlight comment color"
+msgstr "צבע הערות מוכה"
+
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
+msgid "Highlight mark color"
+msgstr "צבע סמניך מוכה"
+
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+msgid "Panel color"
+msgstr "צבע לוח"
+
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
+msgid "Text color"
+msgstr "צבע טקסט"
+
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
+msgid "Label color"
+msgstr "צבע תווית"
+
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
+msgid "Comment color"
+msgstr "צבע הערות"
+
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+msgid "Paging button color"
+msgstr "צבע קשתות ניוט"
+
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
+msgid "Disabled paging button color"
+msgstr "צבע קשתות ניוט מושבת"
+
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
+msgid "Indicator text color"
+msgstr "צבע טקסט מסמן"
+
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
+msgid "Preedit color pre-caret"
+msgstr "צבע טרום לפני סמניך"
+
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
+msgid "Preedit caret color"
+msgstr "צבע סמניך טרום"
+
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
+msgid "Preedit color post-caret"
+msgstr "צבע טרום אחרי סמניך"
+
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+msgid "Border color"
+msgstr "צבע מסגרת"
+
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
+msgid "Divider color"
+msgstr "צבע מפריד"
+
+#: webpanel/webpanel.h:150
+msgid "Same with light mode"
+msgstr "זהו מערכת בהירה"
+
+#: webpanel/webpanel.h:204
+msgid "Enable scroll"
+msgstr "הפעלת גלגל"
+
+#: webpanel/webpanel.h:205
+msgid "Auto expand"
+msgstr "הרחבה אוטומטית"
+
+#: webpanel/webpanel.h:206
+msgid "Show scroll bar"
+msgstr "הצגת סרגל גלגל"
+
+#: webpanel/webpanel.h:208
+msgid "Animation"
+msgstr "אנימציה"
+
+#: webpanel/webpanel.h:210
+msgid "Max row count"
+msgstr "מספר שורות מרבי"
+
+#: webpanel/webpanel.h:212
+msgid "Max column count"
+msgstr "מספר עמודות מרבי"
+
+#: webpanel/webpanel.h:214
+msgid "Expand"
+msgstr "הרחבה"
+
+#: webpanel/webpanel.h:216
+msgid "Collapse"
+msgstr "ק׻יצה"
+
+#: webpanel/webpanel.h:218
+msgid "Up"
+msgstr "למעלה"
+
+#: webpanel/webpanel.h:220
+msgid "Down"
+msgstr "למטה"
+
+#: webpanel/webpanel.h:221
+msgid "Left"
+msgstr "שמאל"
+
+#: webpanel/webpanel.h:222
+msgid "Right"
+msgstr "ימין"
+
+#: webpanel/webpanel.h:224
+msgid "Row start"
+msgstr "תחילת שורה"
+
+#: webpanel/webpanel.h:225
+msgid "Row end"
+msgstr "סוף שורה"
+
+#: webpanel/webpanel.h:227
+msgid "Page up"
+msgstr "עמוד למעלה"
+
+#: webpanel/webpanel.h:229
+msgid "Page down"
+msgstr "עמוד למטה"
+
+#: webpanel/webpanel.h:230
+msgid "Commit"
+msgstr "איפוס"
+
+#: webpanel/webpanel.h:232
+msgid "Select candidate"
+msgstr "בחירת מצעה"
+
+#: webpanel/webpanel.h:235
+msgid "Use main keyboard number keys to select candidate"
+msgstr "שימוש במפתחות מספר מראשונות לבחירת מצעה"
+
+#: webpanel/webpanel.h:238
+msgid "Use keypad number keys to select candidate"
+msgstr "שימוש במפתחות מספר מקלדת מספרים לבחירת מצעה"
+
+#: webpanel/webpanel.h:240
+msgid "Optimize for Hyper key"
+msgstr "אופטימיזציה למפתח Hyper"
+
+#: webpanel/webpanel.h:246
+msgid "Layout"
+msgstr "פריסה"
+
+#: webpanel/webpanel.h:250
+msgid "Writing mode"
+msgstr "מצב כתיבה"
+
+#: webpanel/webpanel.h:253
+msgid "Typography awareness for IM"
+msgstr "תודעת תאורפות לשיטת הקלדה"
+
+#: webpanel/webpanel.h:256
+msgid "Vertical comments align right"
+msgstr "הערות אנכיות מויירות לימין"
+
+#: webpanel/webpanel.h:260
+msgid "Paging buttons style"
+msgstr "סגנון קשתות ניוט"
+
+#: webpanel/webpanel.h:266
+msgid "Image"
+msgstr "תמונה"
+
+#: webpanel/webpanel.h:269
+msgid "Keep panel color when has image"
+msgstr "שמירת צבע לוח עם תמונה"
+
+#: webpanel/webpanel.h:273
+msgid "Shadow"
+msgstr "צל"
+
+#: webpanel/webpanel.h:283
+msgid "Text font family"
+msgstr "משמחת גופן טקסט"
+
+#: webpanel/webpanel.h:285
+msgid "Text font size"
+msgstr "גודל גופן טקסט"
+
+#: webpanel/webpanel.h:287
+msgid "Text font weight"
+msgstr "עבות גופן טקסט"
+
+#: webpanel/webpanel.h:290
+msgid "Label font family"
+msgstr "משמחת גופן תווית"
+
+#: webpanel/webpanel.h:292
+msgid "Label font size"
+msgstr "גודל גופן תווית"
+
+#: webpanel/webpanel.h:294
+msgid "Label font weight"
+msgstr "עבות גופן תווית"
+
+#: webpanel/webpanel.h:297
+msgid "Comment font family"
+msgstr "משמחת גופן הערות"
+
+#: webpanel/webpanel.h:299
+msgid "Comment font size"
+msgstr "גודל גופן הערות"
+
+#: webpanel/webpanel.h:302
+msgid "Comment font weight"
+msgstr "עבות גופן הערות"
+
+#: webpanel/webpanel.h:305
+msgid "Preedit font family"
+msgstr "משמחת גופן טרום"
+
+#: webpanel/webpanel.h:307
+msgid "Preedit font size"
+msgstr "גודל גופן טרום"
+
+#: webpanel/webpanel.h:310
+msgid "Preedit font weight"
+msgstr "עבות גופן טרום"
+
+#: webpanel/webpanel.h:312
+msgid "User font dir"
+msgstr "תיקית גופנות משתמש"
+
+#: webpanel/webpanel.h:313
+msgid "System font dir"
+msgstr "תיקית גופנות מערכת"
+
+#: webpanel/webpanel.h:318
+msgid "Style"
+msgstr "סגנון"
+
+#: webpanel/webpanel.h:324
+msgid "Mark style"
+msgstr "סגנון סמניך"
+
+#: webpanel/webpanel.h:325
+msgid "Mark text"
+msgstr "טקסט סמניך"
+
+#: webpanel/webpanel.h:327
+msgid "Hover behavior"
+msgstr "תנהגות על ריצרה"
+
+#: webpanel/webpanel.h:334
+msgid "Border width (px)"
+msgstr "רחב מסגרת (px)"
+
+#: webpanel/webpanel.h:337
+msgid "Border radius (px)"
+msgstr "ראדיוס מסגרת (px)"
+
+#: webpanel/webpanel.h:338
+msgid "Margin (px)"
+msgstr "שפיץ (px)"
+
+#: webpanel/webpanel.h:341
+msgid "Highlight radius (px)"
+msgstr "ראדיוס הערה (px)"
+
+#: webpanel/webpanel.h:344
+msgid "Top padding (px)"
+msgstr "רווית עילות עליונה (px)"
+
+#: webpanel/webpanel.h:346
+msgid "Right padding (px)"
+msgstr "רווית עילות ימין (px)"
+
+#: webpanel/webpanel.h:348
+msgid "Bottom padding (px)"
+msgstr "רווית עילות תחתיה (px)"
+
+#: webpanel/webpanel.h:351
+msgid "Left padding (px)"
+msgstr "רווית עילות שמאל (px)"
+
+#: webpanel/webpanel.h:353
+msgid "Gap between label, text and comment (px)"
+msgstr "מרחק בין תווית, טקסט והערות (px)"
+
+#: webpanel/webpanel.h:356
+msgid "Vertical minimum width (px)"
+msgstr "רחב מנימום אנכי (px)"
+
+#: webpanel/webpanel.h:359
+msgid "Scroll cell width (px)"
+msgstr "רחב תפקידת גלגל (px)"
+
+#: webpanel/webpanel.h:362
+msgid "Horizontal divider width (px)"
+msgstr "רחב מפריד אונקי (px)"
+
+#: webpanel/webpanel.h:371
+msgid "User CSS"
+msgstr "CSS משתמש"
+
+#: webpanel/webpanel.h:372
+msgid "Copy HTML"
+msgstr "עתקת HTML"
+
+#: webpanel/webpanel.h:373
+msgid "Plugin dir"
+msgstr "תיקית תוספים"
+
+#: webpanel/webpanel.h:375
+msgid "I know there may be risks for using plugins"
+msgstr "נכרתי שייתך סכנות לשימוש בתוספים"
+
+#: webpanel/webpanel.h:378
+msgid "Plugins"
+msgstr "תוספים"
+
+#: webpanel/webpanel.h:380
+msgid "Dangerous API for JavaScript plugins"
+msgstr "API מסוכנת לתוספי JavaScript"
+
+#: webpanel/webpanel.h:383
+msgid "Basic"
+msgstr "בוסיסי"
+
+#: webpanel/webpanel.h:384
+msgid "Light mode"
+msgstr "מצב בהיר"
+
+#: webpanel/webpanel.h:385
+msgid "Dark mode"
+msgstr "מצב כהה"
+
+#: webpanel/webpanel.h:386
+msgid "Typography"
+msgstr "תאורפות"
+
+#: webpanel/webpanel.h:387
+msgid "Scroll mode"
+msgstr "מצב גלגל"
+
+#: webpanel/webpanel.h:388
+msgid "Background"
+msgstr "רקע"
+
+#: webpanel/webpanel.h:389
+msgid "Font"
+msgstr "גופן"
+
+#: webpanel/webpanel.h:390
+msgid "Caret"
+msgstr "סמניך"
+
+#: webpanel/webpanel.h:391
+msgid "Highlight"
+msgstr "הערה"
+
+#: webpanel/webpanel.h:392
+msgid "Size"
+msgstr "גודל"
+
+#: webpanel/webpanel.h:393
+msgid "Advanced"
+msgstr "מתקדם"
+
+#: macosfrontend/macosfrontend.conf.in.in:2
+msgid "macOS Frontend"
+msgstr "מפתיים macOS"
+
+#: macosnotifications/notifications.conf.in.in:2
+msgid "macOS Notification"
+msgstr "התראות macOS"

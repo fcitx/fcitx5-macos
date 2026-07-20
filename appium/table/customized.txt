@@ -1,0 +1,4 @@
+Length=1
+KeyCode=a
+[Data]
+a	码

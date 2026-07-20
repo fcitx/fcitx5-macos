@@ -1,0 +1,566 @@
+# Catalan translations for fcitx5-macos package.
+# Traduccions al català del paquet fcitx5-macos.
+# Copyright (C) 2026 fcitx5-macos's contributors
+# This file is distributed under the same license as the fcitx5-macos package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx 5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-18 14:30-0400\n"
+"Last-Translator: opencode <opencode@opencode.ai>\n"
+"Language-Team: Catalan\n"
+"Language: ca\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: macosfrontend/macosfrontend.h:27
+msgid "Hidden"
+msgstr "Ocult"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Toggle input method"
+msgstr "Commutar mètode d'entrada"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Menu"
+msgstr "Menú"
+
+#: macosfrontend/macosfrontend.h:57
+msgid "Status bar"
+msgstr "Barra d'estat"
+
+#: macosfrontend/macosfrontend.h:60
+msgid "App default IM"
+msgstr "ME per defecte de l'aplicació"
+
+#: macosfrontend/macosfrontend.h:62
+msgid "Vim mode"
+msgstr "Mode Vim"
+
+#: macosfrontend/macosfrontend.h:64
+msgid "Simulate key release"
+msgstr "Simular alliberament de tecla"
+
+#: macosfrontend/macosfrontend.h:67
+msgid "Delay of simulated key release in milliseconds"
+msgstr "Retard de l'alliberament de tecla simulat en mil·lisegons"
+
+#: macosfrontend/macosfrontend.h:70
+msgid "Monitor Pasteboard"
+msgstr "Monitoritzar el portapapers"
+
+#: macosfrontend/macosfrontend.h:72
+msgid "Remove tracking parameters"
+msgstr "Eliminar paràmetres de seguiment"
+
+#: macosfrontend/macosfrontend.h:75
+msgid "Poll Pasteboard interval (s)"
+msgstr "Interval de sondeig del portapapers (s)"
+
+#: macosnotifications/macosnotifications.h:20
+msgid "Hidden Notifications"
+msgstr "Notificacions ocultes"
+
+#: webpanel/webpanel.h:17 webpanel/webpanel.h:23 webpanel/webpanel.h:28
+msgid "System"
+msgstr "Sistema"
+
+#: webpanel/webpanel.h:17
+msgid "Light"
+msgstr "Clar"
+
+#: webpanel/webpanel.h:17
+msgid "Dark"
+msgstr "Fosc"
+
+#: webpanel/webpanel.h:18
+msgid "Horizontal"
+msgstr "Horitzontal"
+
+#: webpanel/webpanel.h:18
+msgid "Vertical"
+msgstr "Vertical"
+
+#: webpanel/webpanel.h:19
+msgid "Horizontal top-bottom"
+msgstr "Horitzontal de dalt a baix"
+
+#: webpanel/webpanel.h:20
+msgid "Vertical right-left"
+msgstr "Vertical de dreta a esquerra"
+
+#: webpanel/webpanel.h:21
+msgid "Vertical left-right"
+msgstr "Vertical d'esquerra a dreta"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:32 webpanel/webpanel.h:40
+#: webpanel/webpanel.h:44
+msgid "None"
+msgstr "Cap"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+msgid "Blur"
+msgstr "Difuminat"
+
+#: webpanel/webpanel.h:24
+msgid "Liquid Glass"
+msgstr "Liquid Glass"
+
+#: webpanel/webpanel.h:28
+msgid "macOS 26"
+msgstr "macOS 26"
+
+#: webpanel/webpanel.h:29
+msgid "macOS 15"
+msgstr "macOS 15"
+
+#: webpanel/webpanel.h:32
+msgid "Arrow"
+msgstr "Fletxa"
+
+#: webpanel/webpanel.h:33
+msgid "Triangle"
+msgstr "Triangle"
+
+#: webpanel/webpanel.h:36
+msgid "Blink"
+msgstr "Parpelleig"
+
+#: webpanel/webpanel.h:36
+msgid "Static"
+msgstr "Estàtic"
+
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+msgid "Text"
+msgstr "Text"
+
+#: webpanel/webpanel.h:40
+msgid "Bar"
+msgstr "Barra"
+
+#: webpanel/webpanel.h:44
+msgid "Move"
+msgstr "Moure"
+
+#: webpanel/webpanel.h:45
+msgid "Add"
+msgstr "Afegir"
+
+#: webpanel/webpanel.h:83
+msgid "Follow caret"
+msgstr "Seguir el cursor"
+
+#: webpanel/webpanel.h:86
+msgid "Theme"
+msgstr "Tema"
+
+#: webpanel/webpanel.h:88
+msgid "Default theme"
+msgstr "Tema per defecte"
+
+#: webpanel/webpanel.h:89
+msgid "User theme"
+msgstr "Tema d'usuari"
+
+#: webpanel/webpanel.h:91
+msgid "Export current theme"
+msgstr "Exportar el tema actual"
+
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+msgid "Override default"
+msgstr "Sobreescriure el valor per defecte"
+
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
+msgid "Highlight color"
+msgstr "Color de ressaltat"
+
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
+msgid "Highlight color on hover"
+msgstr "Color de ressaltat en passar per sobre"
+
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
+msgid "Highlight text color"
+msgstr "Color de text ressaltat"
+
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
+msgid "Highlight text color on press"
+msgstr "Color de text ressaltat en prémer"
+
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
+msgid "Highlight label color"
+msgstr "Color d'etiqueta ressaltada"
+
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
+msgid "Highlight comment color"
+msgstr "Color de comentari ressaltat"
+
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
+msgid "Highlight mark color"
+msgstr "Color de marca ressaltada"
+
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+msgid "Panel color"
+msgstr "Color del panell"
+
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
+msgid "Text color"
+msgstr "Color del text"
+
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
+msgid "Label color"
+msgstr "Color de l'etiqueta"
+
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
+msgid "Comment color"
+msgstr "Color del comentari"
+
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+msgid "Paging button color"
+msgstr "Color del botó de pàgines"
+
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
+msgid "Disabled paging button color"
+msgstr "Color del botó de pàgines desactivat"
+
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
+msgid "Indicator text color"
+msgstr "Color del text de l'indicador"
+
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
+msgid "Preedit color pre-caret"
+msgstr "Color de preedició abans del cursor"
+
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
+msgid "Preedit caret color"
+msgstr "Color del cursor de preedició"
+
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
+msgid "Preedit color post-caret"
+msgstr "Color de preedició després del cursor"
+
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+msgid "Border color"
+msgstr "Color de la vora"
+
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
+msgid "Divider color"
+msgstr "Color del separador"
+
+#: webpanel/webpanel.h:150
+msgid "Same with light mode"
+msgstr "Igual que el mode clar"
+
+#: webpanel/webpanel.h:204
+msgid "Enable scroll"
+msgstr "Activar desplaçament"
+
+#: webpanel/webpanel.h:205
+msgid "Auto expand"
+msgstr "Expansió automàtica"
+
+#: webpanel/webpanel.h:206
+msgid "Show scroll bar"
+msgstr "Mostrar la barra de desplaçament"
+
+#: webpanel/webpanel.h:208
+msgid "Animation"
+msgstr "Animació"
+
+#: webpanel/webpanel.h:210
+msgid "Max row count"
+msgstr "Nombre màxim de files"
+
+#: webpanel/webpanel.h:212
+msgid "Max column count"
+msgstr "Nombre màxim de columnes"
+
+#: webpanel/webpanel.h:214
+msgid "Expand"
+msgstr "Expandir"
+
+#: webpanel/webpanel.h:216
+msgid "Collapse"
+msgstr "Replegar"
+
+#: webpanel/webpanel.h:218
+msgid "Up"
+msgstr "Amunt"
+
+#: webpanel/webpanel.h:220
+msgid "Down"
+msgstr "Avall"
+
+#: webpanel/webpanel.h:221
+msgid "Left"
+msgstr "Esquerra"
+
+#: webpanel/webpanel.h:222
+msgid "Right"
+msgstr "Dreta"
+
+#: webpanel/webpanel.h:224
+msgid "Row start"
+msgstr "Inici de fila"
+
+#: webpanel/webpanel.h:225
+msgid "Row end"
+msgstr "Final de fila"
+
+#: webpanel/webpanel.h:227
+msgid "Page up"
+msgstr "Pàgina amunt"
+
+#: webpanel/webpanel.h:229
+msgid "Page down"
+msgstr "Pàgina avall"
+
+#: webpanel/webpanel.h:230
+msgid "Commit"
+msgstr "Confirmar"
+
+#: webpanel/webpanel.h:232
+msgid "Select candidate"
+msgstr "Seleccionar candidat"
+
+#: webpanel/webpanel.h:235
+msgid "Use main keyboard number keys to select candidate"
+msgstr "Utilitzar les tecles numèriques del teclat principal per seleccionar candidats"
+
+#: webpanel/webpanel.h:238
+msgid "Use keypad number keys to select candidate"
+msgstr "Utilitzar les tecles numèriques del teclat numèric per seleccionar candidats"
+
+#: webpanel/webpanel.h:240
+msgid "Optimize for Hyper key"
+msgstr "Optimitzar per a la tecla Hyper"
+
+#: webpanel/webpanel.h:246
+msgid "Layout"
+msgstr "Disposició"
+
+#: webpanel/webpanel.h:250
+msgid "Writing mode"
+msgstr "Mode d'escriptura"
+
+#: webpanel/webpanel.h:253
+msgid "Typography awareness for IM"
+msgstr "Coneixement tipogràfic per al ME"
+
+#: webpanel/webpanel.h:256
+msgid "Vertical comments align right"
+msgstr "Comentaris verticals alineats a la dreta"
+
+#: webpanel/webpanel.h:260
+msgid "Paging buttons style"
+msgstr "Estil dels botons de pàgines"
+
+#: webpanel/webpanel.h:266
+msgid "Image"
+msgstr "Imatge"
+
+#: webpanel/webpanel.h:269
+msgid "Keep panel color when has image"
+msgstr "Conservar el color del panell quan hi ha imatge"
+
+#: webpanel/webpanel.h:273
+msgid "Shadow"
+msgstr "Ombra"
+
+#: webpanel/webpanel.h:283
+msgid "Text font family"
+msgstr "Família de tipus de lletra del text"
+
+#: webpanel/webpanel.h:285
+msgid "Text font size"
+msgstr "Mida del tipus de lletra del text"
+
+#: webpanel/webpanel.h:287
+msgid "Text font weight"
+msgstr "Pes del tipus de lletra del text"
+
+#: webpanel/webpanel.h:290
+msgid "Label font family"
+msgstr "Família de tipus de lletra de l'etiqueta"
+
+#: webpanel/webpanel.h:292
+msgid "Label font size"
+msgstr "Mida del tipus de lletra de l'etiqueta"
+
+#: webpanel/webpanel.h:294
+msgid "Label font weight"
+msgstr "Pes del tipus de lletra de l'etiqueta"
+
+#: webpanel/webpanel.h:297
+msgid "Comment font family"
+msgstr "Família de tipus de lletra del comentari"
+
+#: webpanel/webpanel.h:299
+msgid "Comment font size"
+msgstr "Mida del tipus de lletra del comentari"
+
+#: webpanel/webpanel.h:302
+msgid "Comment font weight"
+msgstr "Pes del tipus de lletra del comentari"
+
+#: webpanel/webpanel.h:305
+msgid "Preedit font family"
+msgstr "Família de tipus de lletra de preedició"
+
+#: webpanel/webpanel.h:307
+msgid "Preedit font size"
+msgstr "Mida del tipus de lletra de preedició"
+
+#: webpanel/webpanel.h:310
+msgid "Preedit font weight"
+msgstr "Pes del tipus de lletra de preedició"
+
+#: webpanel/webpanel.h:312
+msgid "User font dir"
+msgstr "Directori de tipus de lletra d'usuari"
+
+#: webpanel/webpanel.h:313
+msgid "System font dir"
+msgstr "Directori de tipus de lletra del sistema"
+
+#: webpanel/webpanel.h:318
+msgid "Style"
+msgstr "Estil"
+
+#: webpanel/webpanel.h:324
+msgid "Mark style"
+msgstr "Estil de marca"
+
+#: webpanel/webpanel.h:325
+msgid "Mark text"
+msgstr "Text de marca"
+
+#: webpanel/webpanel.h:327
+msgid "Hover behavior"
+msgstr "Comportament en passar per sobre"
+
+#: webpanel/webpanel.h:334
+msgid "Border width (px)"
+msgstr "Amplada de la vora (px)"
+
+#: webpanel/webpanel.h:337
+msgid "Border radius (px)"
+msgstr "Radi de la vora (px)"
+
+#: webpanel/webpanel.h:338
+msgid "Margin (px)"
+msgstr "Marge (px)"
+
+#: webpanel/webpanel.h:341
+msgid "Highlight radius (px)"
+msgstr "Radi de ressaltat (px)"
+
+#: webpanel/webpanel.h:344
+msgid "Top padding (px)"
+msgstr "Espaiat superior (px)"
+
+#: webpanel/webpanel.h:346
+msgid "Right padding (px)"
+msgstr "Espaiat dret (px)"
+
+#: webpanel/webpanel.h:348
+msgid "Bottom padding (px)"
+msgstr "Espaiat inferior (px)"
+
+#: webpanel/webpanel.h:351
+msgid "Left padding (px)"
+msgstr "Espaiat esquerre (px)"
+
+#: webpanel/webpanel.h:353
+msgid "Gap between label, text and comment (px)"
+msgstr "Espai entre etiqueta, text i comentari (px)"
+
+#: webpanel/webpanel.h:356
+msgid "Vertical minimum width (px)"
+msgstr "Amplada mínima vertical (px)"
+
+#: webpanel/webpanel.h:359
+msgid "Scroll cell width (px)"
+msgstr "Amplada de la cel·la de desplaçament (px)"
+
+#: webpanel/webpanel.h:362
+msgid "Horizontal divider width (px)"
+msgstr "Amplada del separador horitzontal (px)"
+
+#: webpanel/webpanel.h:371
+msgid "User CSS"
+msgstr "CSS d'usuari"
+
+#: webpanel/webpanel.h:372
+msgid "Copy HTML"
+msgstr "Copiar HTML"
+
+#: webpanel/webpanel.h:373
+msgid "Plugin dir"
+msgstr "Directori de connectors"
+
+#: webpanel/webpanel.h:375
+msgid "I know there may be risks for using plugins"
+msgstr "Sé que hi pot haver riscos en utilitzar connectors"
+
+#: webpanel/webpanel.h:378
+msgid "Plugins"
+msgstr "Connectors"
+
+#: webpanel/webpanel.h:380
+msgid "Dangerous API for JavaScript plugins"
+msgstr "API perillosa per a connectors JavaScript"
+
+#: webpanel/webpanel.h:383
+msgid "Basic"
+msgstr "Bàsic"
+
+#: webpanel/webpanel.h:384
+msgid "Light mode"
+msgstr "Mode clar"
+
+#: webpanel/webpanel.h:385
+msgid "Dark mode"
+msgstr "Mode fosc"
+
+#: webpanel/webpanel.h:386
+msgid "Typography"
+msgstr "Tipografia"
+
+#: webpanel/webpanel.h:387
+msgid "Scroll mode"
+msgstr "Mode de desplaçament"
+
+#: webpanel/webpanel.h:388
+msgid "Background"
+msgstr "Fons"
+
+#: webpanel/webpanel.h:389
+msgid "Font"
+msgstr "Tipus de lletra"
+
+#: webpanel/webpanel.h:390
+msgid "Caret"
+msgstr "Cursor"
+
+#: webpanel/webpanel.h:391
+msgid "Highlight"
+msgstr "Ressaltat"
+
+#: webpanel/webpanel.h:392
+msgid "Size"
+msgstr "Mida"
+
+#: webpanel/webpanel.h:393
+msgid "Advanced"
+msgstr "Avançat"
+
+#: macosfrontend/macosfrontend.conf.in.in:2
+msgid "macOS Frontend"
+msgstr "Frontal de macOS"
+
+#: macosnotifications/notifications.conf.in.in:2
+msgid "macOS Notification"
+msgstr "Notificació de macOS"

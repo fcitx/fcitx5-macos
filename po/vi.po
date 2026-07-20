@@ -1,0 +1,564 @@
+# Vietnamese translations for fcitx5-macos package
+# Copyright (C) 2024 fcitx5-macos's contributors
+# This file is distributed under the same license as the fcitx5-macos package.
+msgid ""
+msgstr ""
+"Project-Id-Version: fcitx 5\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"PO-Revision-Date: 2026-07-19 00:00-0400\n"
+"Last-Translator: opencode <opencode@opencode.ai>\n"
+"Language-Team: Vietnamese\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: macosfrontend/macosfrontend.h:27
+msgid "Hidden"
+msgstr "Ẩn"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Toggle input method"
+msgstr "Chuyển đổi phương thức nhập"
+
+#: macosfrontend/macosfrontend.h:28
+msgid "Menu"
+msgstr "Trình đơn"
+
+#: macosfrontend/macosfrontend.h:57
+msgid "Status bar"
+msgstr "Thanh trạng thái"
+
+#: macosfrontend/macosfrontend.h:60
+msgid "App default IM"
+msgstr "Phương thức nhập mặc định của ứng dụng"
+
+#: macosfrontend/macosfrontend.h:62
+msgid "Vim mode"
+msgstr "Chế độ Vim"
+
+#: macosfrontend/macosfrontend.h:64
+msgid "Simulate key release"
+msgstr "Mô phỏng nhả phím"
+
+#: macosfrontend/macosfrontend.h:67
+msgid "Delay of simulated key release in milliseconds"
+msgstr "Độ trễ mô phỏng nhả phím (miligiây)"
+
+#: macosfrontend/macosfrontend.h:70
+msgid "Monitor Pasteboard"
+msgstr "Giám sát bảng tạm"
+
+#: macosfrontend/macosfrontend.h:72
+msgid "Remove tracking parameters"
+msgstr "Xóa tham số theo dõi"
+
+#: macosfrontend/macosfrontend.h:75
+msgid "Poll Pasteboard interval (s)"
+msgstr "Khoảng cách quét bảng tạm (giây)"
+
+#: macosnotifications/macosnotifications.h:20
+msgid "Hidden Notifications"
+msgstr "Ẩn thông báo"
+
+#: webpanel/webpanel.h:17 webpanel/webpanel.h:23 webpanel/webpanel.h:28
+msgid "System"
+msgstr "Hệ thống"
+
+#: webpanel/webpanel.h:17
+msgid "Light"
+msgstr "Sáng"
+
+#: webpanel/webpanel.h:17
+msgid "Dark"
+msgstr "Tối"
+
+#: webpanel/webpanel.h:18
+msgid "Horizontal"
+msgstr "Ngang"
+
+#: webpanel/webpanel.h:18
+msgid "Vertical"
+msgstr "Dọc"
+
+#: webpanel/webpanel.h:19
+msgid "Horizontal top-bottom"
+msgstr "Ngang từ trên xuống dưới"
+
+#: webpanel/webpanel.h:20
+msgid "Vertical right-left"
+msgstr "Dọc từ phải sang trái"
+
+#: webpanel/webpanel.h:21
+msgid "Vertical left-right"
+msgstr "Dọc từ trái sang phải"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:32 webpanel/webpanel.h:40
+#: webpanel/webpanel.h:44
+msgid "None"
+msgstr "Không"
+
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+msgid "Blur"
+msgstr "Làm mờ"
+
+#: webpanel/webpanel.h:24
+msgid "Liquid Glass"
+msgstr "Liquid Glass"
+
+#: webpanel/webpanel.h:28
+msgid "macOS 26"
+msgstr "macOS 26"
+
+#: webpanel/webpanel.h:29
+msgid "macOS 15"
+msgstr "macOS 15"
+
+#: webpanel/webpanel.h:32
+msgid "Arrow"
+msgstr "Mũi tên"
+
+#: webpanel/webpanel.h:33
+msgid "Triangle"
+msgstr "Tam giác"
+
+#: webpanel/webpanel.h:36
+msgid "Blink"
+msgstr "Nhấp nháy"
+
+#: webpanel/webpanel.h:36
+msgid "Static"
+msgstr "Cố định"
+
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+msgid "Text"
+msgstr "Văn bản"
+
+#: webpanel/webpanel.h:40
+msgid "Bar"
+msgstr "Thanh"
+
+#: webpanel/webpanel.h:44
+msgid "Move"
+msgstr "Di chuyển"
+
+#: webpanel/webpanel.h:45
+msgid "Add"
+msgstr "Thêm"
+
+#: webpanel/webpanel.h:83
+msgid "Follow caret"
+msgstr "Theo con trỏ"
+
+#: webpanel/webpanel.h:86
+msgid "Theme"
+msgstr "Chủ đề"
+
+#: webpanel/webpanel.h:88
+msgid "Default theme"
+msgstr "Chủ đề mặc định"
+
+#: webpanel/webpanel.h:89
+msgid "User theme"
+msgstr "Chủ đề của người dùng"
+
+#: webpanel/webpanel.h:91
+msgid "Export current theme"
+msgstr "Xuất chủ đề hiện tại"
+
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+msgid "Override default"
+msgstr "Ghi đè mặc định"
+
+#: webpanel/webpanel.h:96 webpanel/webpanel.h:151
+msgid "Highlight color"
+msgstr "Màu tô sáng"
+
+#: webpanel/webpanel.h:99 webpanel/webpanel.h:154
+msgid "Highlight color on hover"
+msgstr "Màu tô sáng khi di chuột"
+
+#: webpanel/webpanel.h:102 webpanel/webpanel.h:157
+msgid "Highlight text color"
+msgstr "Màu văn bản tô sáng"
+
+#: webpanel/webpanel.h:105 webpanel/webpanel.h:160
+msgid "Highlight text color on press"
+msgstr "Màu văn bản tô sáng khi nhấn"
+
+#: webpanel/webpanel.h:108 webpanel/webpanel.h:163
+msgid "Highlight label color"
+msgstr "Màu nhãn tô sáng"
+
+#: webpanel/webpanel.h:111 webpanel/webpanel.h:166
+msgid "Highlight comment color"
+msgstr "Màu chú thích tô sáng"
+
+#: webpanel/webpanel.h:114 webpanel/webpanel.h:169
+msgid "Highlight mark color"
+msgstr "Màu đánh dấu tô sáng"
+
+#: webpanel/webpanel.h:116 webpanel/webpanel.h:171
+msgid "Panel color"
+msgstr "Màu bảng điều khiển"
+
+#: webpanel/webpanel.h:118 webpanel/webpanel.h:173
+msgid "Text color"
+msgstr "Màu văn bản"
+
+#: webpanel/webpanel.h:120 webpanel/webpanel.h:175
+msgid "Label color"
+msgstr "Màu nhãn"
+
+#: webpanel/webpanel.h:122 webpanel/webpanel.h:177
+msgid "Comment color"
+msgstr "Màu chú thích"
+
+#: webpanel/webpanel.h:125 webpanel/webpanel.h:180
+msgid "Paging button color"
+msgstr "Màu nút chuyển trang"
+
+#: webpanel/webpanel.h:128 webpanel/webpanel.h:183
+msgid "Disabled paging button color"
+msgstr "Màu nút chuyển trang bị tắt"
+
+#: webpanel/webpanel.h:130 webpanel/webpanel.h:186
+msgid "Indicator text color"
+msgstr "Màu văn bản chỉ báo"
+
+#: webpanel/webpanel.h:133 webpanel/webpanel.h:189
+msgid "Preedit color pre-caret"
+msgstr "Màu soạn thảo trước con trỏ"
+
+#: webpanel/webpanel.h:136 webpanel/webpanel.h:192
+msgid "Preedit caret color"
+msgstr "Màu con trỏ soạn thảo"
+
+#: webpanel/webpanel.h:139 webpanel/webpanel.h:195
+msgid "Preedit color post-caret"
+msgstr "Màu soạn thảo sau con trỏ"
+
+#: webpanel/webpanel.h:141 webpanel/webpanel.h:197
+msgid "Border color"
+msgstr "Màu viền"
+
+#: webpanel/webpanel.h:143 webpanel/webpanel.h:199
+msgid "Divider color"
+msgstr "Màu đường phân cách"
+
+#: webpanel/webpanel.h:150
+msgid "Same with light mode"
+msgstr "Giống chế độ sáng"
+
+#: webpanel/webpanel.h:204
+msgid "Enable scroll"
+msgstr "Bật cuộn"
+
+#: webpanel/webpanel.h:205
+msgid "Auto expand"
+msgstr "Tự động mở rộng"
+
+#: webpanel/webpanel.h:206
+msgid "Show scroll bar"
+msgstr "Hiển thị thanh cuộn"
+
+#: webpanel/webpanel.h:208
+msgid "Animation"
+msgstr "Hoạt ảnh"
+
+#: webpanel/webpanel.h:210
+msgid "Max row count"
+msgstr "Số hàng tối đa"
+
+#: webpanel/webpanel.h:212
+msgid "Max column count"
+msgstr "Số cột tối đa"
+
+#: webpanel/webpanel.h:214
+msgid "Expand"
+msgstr "Mở rộng"
+
+#: webpanel/webpanel.h:216
+msgid "Collapse"
+msgstr "Thu gọn"
+
+#: webpanel/webpanel.h:218
+msgid "Up"
+msgstr "Lên"
+
+#: webpanel/webpanel.h:220
+msgid "Down"
+msgstr "Xuống"
+
+#: webpanel/webpanel.h:221
+msgid "Left"
+msgstr "Trái"
+
+#: webpanel/webpanel.h:222
+msgid "Right"
+msgstr "Phải"
+
+#: webpanel/webpanel.h:224
+msgid "Row start"
+msgstr "Đầu hàng"
+
+#: webpanel/webpanel.h:225
+msgid "Row end"
+msgstr "Cuối hàng"
+
+#: webpanel/webpanel.h:227
+msgid "Page up"
+msgstr "Lên trang"
+
+#: webpanel/webpanel.h:229
+msgid "Page down"
+msgstr "Xuống trang"
+
+#: webpanel/webpanel.h:230
+msgid "Commit"
+msgstr "Gửi"
+
+#: webpanel/webpanel.h:232
+msgid "Select candidate"
+msgstr "Chọn ứng viên"
+
+#: webpanel/webpanel.h:235
+msgid "Use main keyboard number keys to select candidate"
+msgstr "Dùng phím số bàn phím chính để chọn ứng viên"
+
+#: webpanel/webpanel.h:238
+msgid "Use keypad number keys to select candidate"
+msgstr "Dùng phím số bàn phím số để chọn ứng viên"
+
+#: webpanel/webpanel.h:240
+msgid "Optimize for Hyper key"
+msgstr "Tối ưu cho phím Hyper"
+
+#: webpanel/webpanel.h:246
+msgid "Layout"
+msgstr "Bố cục"
+
+#: webpanel/webpanel.h:250
+msgid "Writing mode"
+msgstr "Chế độ viết"
+
+#: webpanel/webpanel.h:253
+msgid "Typography awareness for IM"
+msgstr "Nhận biết typography cho phương thức nhập"
+
+#: webpanel/webpanel.h:256
+msgid "Vertical comments align right"
+msgstr "Chú thích dọc căn phải"
+
+#: webpanel/webpanel.h:260
+msgid "Paging buttons style"
+msgstr "Kiểu nút chuyển trang"
+
+#: webpanel/webpanel.h:266
+msgid "Image"
+msgstr "Hình ảnh"
+
+#: webpanel/webpanel.h:269
+msgid "Keep panel color when has image"
+msgstr "Giữ màu bảng khi có hình ảnh"
+
+#: webpanel/webpanel.h:273
+msgid "Shadow"
+msgstr "Bóng"
+
+#: webpanel/webpanel.h:283
+msgid "Text font family"
+msgstr "Phông chữ văn bản"
+
+#: webpanel/webpanel.h:285
+msgid "Text font size"
+msgstr "Cỡ chữ văn bản"
+
+#: webpanel/webpanel.h:287
+msgid "Text font weight"
+msgstr "Độ dày chữ văn bản"
+
+#: webpanel/webpanel.h:290
+msgid "Label font family"
+msgstr "Phông chữ nhãn"
+
+#: webpanel/webpanel.h:292
+msgid "Label font size"
+msgstr "Cỡ chữ nhãn"
+
+#: webpanel/webpanel.h:294
+msgid "Label font weight"
+msgstr "Độ dày chữ nhãn"
+
+#: webpanel/webpanel.h:297
+msgid "Comment font family"
+msgstr "Phông chữ chú thích"
+
+#: webpanel/webpanel.h:299
+msgid "Comment font size"
+msgstr "Cỡ chữ chú thích"
+
+#: webpanel/webpanel.h:302
+msgid "Comment font weight"
+msgstr "Độ dày chữ chú thích"
+
+#: webpanel/webpanel.h:305
+msgid "Preedit font family"
+msgstr "Phông chữ soạn thảo"
+
+#: webpanel/webpanel.h:307
+msgid "Preedit font size"
+msgstr "Cỡ chữ soạn thảo"
+
+#: webpanel/webpanel.h:310
+msgid "Preedit font weight"
+msgstr "Độ dày chữ soạn thảo"
+
+#: webpanel/webpanel.h:312
+msgid "User font dir"
+msgstr "Thư mục phông chữ người dùng"
+
+#: webpanel/webpanel.h:313
+msgid "System font dir"
+msgstr "Thư mục phông chữ hệ thống"
+
+#: webpanel/webpanel.h:318
+msgid "Style"
+msgstr "Kiểu"
+
+#: webpanel/webpanel.h:324
+msgid "Mark style"
+msgstr "Kiểu đánh dấu"
+
+#: webpanel/webpanel.h:325
+msgid "Mark text"
+msgstr "Văn bản đánh dấu"
+
+#: webpanel/webpanel.h:327
+msgid "Hover behavior"
+msgstr "Hành vi di chuột"
+
+#: webpanel/webpanel.h:334
+msgid "Border width (px)"
+msgstr "Độ rộng viền (px)"
+
+#: webpanel/webpanel.h:337
+msgid "Border radius (px)"
+msgstr "Bán kính viền (px)"
+
+#: webpanel/webpanel.h:338
+msgid "Margin (px)"
+msgstr "Lề (px)"
+
+#: webpanel/webpanel.h:341
+msgid "Highlight radius (px)"
+msgstr "Bán kính tô sáng (px)"
+
+#: webpanel/webpanel.h:344
+msgid "Top padding (px)"
+msgstr "Khoảng cách trên (px)"
+
+#: webpanel/webpanel.h:346
+msgid "Right padding (px)"
+msgstr "Khoảng cách phải (px)"
+
+#: webpanel/webpanel.h:348
+msgid "Bottom padding (px)"
+msgstr "Khoảng cách dưới (px)"
+
+#: webpanel/webpanel.h:351
+msgid "Left padding (px)"
+msgstr "Khoảng cách trái (px)"
+
+#: webpanel/webpanel.h:353
+msgid "Gap between label, text and comment (px)"
+msgstr "Khoảng cách giữa nhãn, văn bản và chú thích (px)"
+
+#: webpanel/webpanel.h:356
+msgid "Vertical minimum width (px)"
+msgstr "Độ rộng tối thiểu khi dọc (px)"
+
+#: webpanel/webpanel.h:359
+msgid "Scroll cell width (px)"
+msgstr "Độ rộng ô cuộn (px)"
+
+#: webpanel/webpanel.h:362
+msgid "Horizontal divider width (px)"
+msgstr "Độ rộng đường phân cách ngang (px)"
+
+#: webpanel/webpanel.h:371
+msgid "User CSS"
+msgstr "CSS của người dùng"
+
+#: webpanel/webpanel.h:372
+msgid "Copy HTML"
+msgstr "Sao chép HTML"
+
+#: webpanel/webpanel.h:373
+msgid "Plugin dir"
+msgstr "Thư mục tiện ích"
+
+#: webpanel/webpanel.h:375
+msgid "I know there may be risks for using plugins"
+msgstr "Tôi biết việc sử dụng tiện ích có thể có rủi ro"
+
+#: webpanel/webpanel.h:378
+msgid "Plugins"
+msgstr "Tiện ích"
+
+#: webpanel/webpanel.h:380
+msgid "Dangerous API for JavaScript plugins"
+msgstr "API nguy hiểm cho tiện ích JavaScript"
+
+#: webpanel/webpanel.h:383
+msgid "Basic"
+msgstr "Cơ bản"
+
+#: webpanel/webpanel.h:384
+msgid "Light mode"
+msgstr "Chế độ sáng"
+
+#: webpanel/webpanel.h:385
+msgid "Dark mode"
+msgstr "Chế độ tối"
+
+#: webpanel/webpanel.h:386
+msgid "Typography"
+msgstr "Typography"
+
+#: webpanel/webpanel.h:387
+msgid "Scroll mode"
+msgstr "Chế độ cuộn"
+
+#: webpanel/webpanel.h:388
+msgid "Background"
+msgstr "Nền"
+
+#: webpanel/webpanel.h:389
+msgid "Font"
+msgstr "Phông chữ"
+
+#: webpanel/webpanel.h:390
+msgid "Caret"
+msgstr "Con trỏ"
+
+#: webpanel/webpanel.h:391
+msgid "Highlight"
+msgstr "Tô sáng"
+
+#: webpanel/webpanel.h:392
+msgid "Size"
+msgstr "Kích thước"
+
+#: webpanel/webpanel.h:393
+msgid "Advanced"
+msgstr "Nâng cao"
+
+#: macosfrontend/macosfrontend.conf.in.in:2
+msgid "macOS Frontend"
+msgstr "Giao diện macOS"
+
+#: macosnotifications/notifications.conf.in.in:2
+msgid "macOS Notification"
+msgstr "Thông báo macOS"

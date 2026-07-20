@@ -1,5 +1,5 @@
 from appium.webdriver.webdriver import WebDriver
-from util.boolean import get_switch_state
+from util.boolean import get_boolean_value
 from util.config import read_config
 from util.message import (
     CHANGE_NOT_SAVED,
@@ -11,7 +11,7 @@ from util.window import (
     find_element_by_id,
     open_input_method_config,
     reset_option,
-    scroll,
+    scroll_to,
 )
 
 FUZZY = "Fuzzy"
@@ -29,20 +29,21 @@ def test_reset_group(driver: WebDriver, app: str):
             cfg[FUZZY][SWITCH_IDS[2]],
         ]
 
-    scroll(
+    scroll_to(
         find_element_by_id(driver, "detailScrollView"),
-        find_element_by_id(driver, SWITCH_IDS[0]),
-        find_element_by_id(driver, "PageSize"),
+        SWITCH_IDS[0],
     )
 
     for switch_id in SWITCH_IDS:
         find_element_by_id(driver, switch_id).click()
     toggled = read_config_values()
-    toggled_ui = [get_switch_state(find_element_by_id(driver, id)) for id in SWITCH_IDS]
+    toggled_ui = [
+        get_boolean_value(find_element_by_id(driver, id)) for id in SWITCH_IDS
+    ]
 
     reset_option(driver, FUZZY)
     for i, switch_id in enumerate(SWITCH_IDS):
-        ui_state = get_switch_state(find_element_by_id(driver, switch_id))
+        ui_state = get_boolean_value(find_element_by_id(driver, switch_id))
         if i == 0:
             assert ui_state == toggled_ui[i], UI_WRONGLY_UPDATED
         else:
