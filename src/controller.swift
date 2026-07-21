@@ -109,9 +109,10 @@ class FcitxInputController: IMKInputController {
     var cursor: UInt32 = 0
     var anchor: UInt32 = 0
     let mods = NSEvent.ModifierFlags(rawValue: UInt(modsVal))
-    let isPrintable = unicode != 0
-    let hasNoShortcutModifier = mods.intersection(NSEvent.ModifierFlags([.command, .control])).isEmpty
-    if !isPassword && isPrintable && hasNoShortcutModifier {
+    let hasNoShortcutModifier = mods.isDisjoint(with: [.command, .control])
+    // We don't need to read surrounding text from app every time a key is pressed, plus sometimes reading causes issue,
+    // e.g. on JetBrains when focusing on editor, Cmd+0 should trigger commit tool window without triggering Speed Search.
+    if !isPassword && unicode != 0 && hasNoShortcutModifier {
       (surroundingText, cursor, anchor) = getSurroundingText(
         newSelection.location, newSelection.length)
     }
