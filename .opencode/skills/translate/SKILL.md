@@ -151,12 +151,13 @@ msgstr "Translated text"
 - **Placeholder tokens**: `%d`, `%s`, `%1$d`, `%1$s` etc. MUST be preserved exactly.
 - **`fuzzy` flag**: Only use when you are unsure of the translation. Mark it and leave a comment explaining the uncertainty. Fuzzy entries are NOT shown to users.
 - **Empty `msgstr ""`**: Means untranslated. Every `msgid` must have a non-empty `msgstr` in completed translations.
-- **Fuzzy/continuation lines pitfall**: An untranslated entry may look like:
+- **Fuzzy/continuation lines pitfall**: A fuzzy or untranslated entry may look like:
   ```po
+  #, fuzzy
   msgstr ""
   "Old fuzzy translation text here"
   ```
-  When filling in the translation, replace the **entire block** (both the `msgstr ""` line and all continuation lines) with a single `msgstr "New translation"`. If you only replace the `msgstr ""` line, the orphaned continuation lines become invalid double msgstr content. Always validate with `msgfmt -c` after editing.
+  Continuation lines (quoted strings after `msgstr ""`) are valid PO syntax — they exist so long translations can be split across multiple lines. When filling in the translation, replace the **entire block** (the `#, fuzzy` flag if present, the `msgstr ""` line, and all continuation lines) with a single `msgstr "New translation"`. If you only replace the `msgstr ""` line, the orphaned continuation lines are silently concatenated, appending stale text to your translation. Always validate after editing (see Validation below).
 
 ### PO File Header Template
 
@@ -181,9 +182,11 @@ msgstr ""
 
 ```sh
 msgfmt -c po/<lang>.po -o /dev/null
+msgcmp po/<lang>.po po/base.pot
 ```
 
-Checks for format errors, missing translations, and placeholder mismatches.
+- `msgfmt -c` — checks PO syntax and compilation (format errors, placeholder mismatches, duplicate msgids).
+- `msgcmp` — checks translation completeness against the template (missing or extra msgids).
 
 ## Terminology Reference
 
