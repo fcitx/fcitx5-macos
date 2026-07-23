@@ -1,6 +1,5 @@
 import Fcitx
 import SwiftUI
-import UniformTypeIdentifiers
 
 private let themeDir = localDir.appendingPathComponent("theme")
 
@@ -10,12 +9,8 @@ struct UserThemeView: View {
   var body: some View {
     SelectFileButton(
       directory: themeDir,
-      allowedContentTypes: fileTypes(["conf"]),
-      onFinish: { fileName in
-        themeName = String(fileName.dropLast(5))
-        Fcitx.setConfig(
-          "\(webpanelUri)/usertheme", "\"\(quote(themeName))\"")
-      },
+      allowedSuffixes: [".conf"],
+      hasFile: !themeName.isEmpty,
       label: {
         if themeName.isEmpty {
           Text("Select/Import theme")
@@ -23,7 +18,17 @@ struct UserThemeView: View {
           Text(themeName)
         }
       },
-      model: $themeName
-    )
+      onImport: { fileName in
+        themeName = fileName.deletingPathExtension
+        Fcitx.setConfig(
+          "\(webpanelUri)/usertheme", "\"\(quote(themeName))\"")
+      },
+      onClear: {
+        themeName = ""
+      },
+      accessibilityId: "SelectTheme"
+    ) {
+      Text("Click or drag theme file (.conf) here")
+    }
   }
 }

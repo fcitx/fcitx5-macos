@@ -329,15 +329,11 @@ msgstr "Выбрать слово-кандидат"
 
 #: webpanel/webpanel.h:235
 msgid "Use main keyboard number keys to select candidate"
-msgstr ""
-"Используйте основные цифровые клавиши основных клавиш клавиатуры для выбора "
-"слова-кандидата"
+msgstr "Использовать цифровые клавиши основной клавиатуры для выбора кандидата"
 
 #: webpanel/webpanel.h:238
 msgid "Use keypad number keys to select candidate"
-msgstr ""
-"Используйте цифровые клавиши цифрового блока на клавиатуре для выбора слова-"
-"кандидата"
+msgstr "Использовать цифровые клавиши цифровой клавиатуры для выбора кандидата"
 
 #: webpanel/webpanel.h:240
 msgid "Optimize for Hyper key"

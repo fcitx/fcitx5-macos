@@ -1,5 +1,4 @@
 import SwiftUI
-import UniformTypeIdentifiers
 
 private let cssDir = wwwDir.appendingPathComponent("css")
 private let fcitxPrefix = "fcitx:///file/css/"
@@ -12,12 +11,8 @@ struct CssView: OptionViewProtocol {
     let strValue = value as? String ?? ""
     SelectFileButton(
       directory: cssDir,
-      allowedContentTypes: fileTypes(["css"]),
-      onFinish: { fileName in
-        if !fileName.isEmpty {
-          value = fcitxPrefix + fileName
-        }
-      },
+      allowedSuffixes: [".css"],
+      hasFile: !strValue.isEmpty,
       label: {
         if !strValue.hasPrefix(fcitxPrefix) {
           Text("Select/Import CSS")
@@ -25,10 +20,15 @@ struct CssView: OptionViewProtocol {
           Text(strValue.dropFirst(fcitxPrefix.count))
         }
       },
-      model: Binding(
-        get: { value as? String ?? "" },
-        set: { value = $0 }
-      )
-    )
+      onImport: { fileName in
+        value = fcitxPrefix + fileName
+      },
+      onClear: {
+        value = ""
+      },
+      accessibilityId: "SelectCss"
+    ) {
+      Text("Click or drag .css file here")
+    }
   }
 }
