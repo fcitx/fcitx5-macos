@@ -1,3 +1,4 @@
+import Logging
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -35,7 +36,10 @@ private func importFile(
     }
   } else {
     // Need to consider subdirectory of target directory.
-    fileName = String(file.localPath().dropFirst(directory.localPath().count))
+    let directoryPath = directory.localPath()
+    fileName = String(
+      file.localPath().dropFirst(
+        directoryPath.hasSuffix("/") ? directoryPath.count : directoryPath.count + 1))
   }
   onFinish(fileName)
 }
