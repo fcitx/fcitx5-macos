@@ -8,12 +8,19 @@ private struct DuplicateFile: Identifiable {
   var fileName: String { url.lastPathComponent }
 }
 
-private func filterSelectedFiles(_ urls: [URL], allowedSuffixes: [String]?) -> [URL] {
-  guard let allowedSuffixes else {
-    return urls
+private func filterSelectedFiles(
+  _ urls: [URL], allowedContentTypes: [UTType], allowedSuffixes: [String]?
+) -> [URL] {
+  if let allowedSuffixes {
+    return urls.filter { url in
+      allowedSuffixes.contains { url.lastPathComponent.hasSuffix($0) }
+    }
   }
   return urls.filter { url in
-    allowedSuffixes.contains { url.lastPathComponent.hasSuffix($0) }
+    guard !url.pathExtension.isEmpty,
+      let extType = UTType(filenameExtension: url.pathExtension)
+    else { return false }
+    return allowedContentTypes.contains { extType.conforms(to: $0) }
   }
 }
 
@@ -89,7 +96,8 @@ struct DragDropFileSelector<Content>: View where Content: View {
   }
 
   private func handleSelection(_ urls: [URL]) {
-    let filtered = filterSelectedFiles(urls, allowedSuffixes: allowedSuffixes)
+    let filtered = filterSelectedFiles(
+      urls, allowedContentTypes: allowedContentTypes, allowedSuffixes: allowedSuffixes)
     guard !filtered.isEmpty else {
       return
     }
