@@ -9,9 +9,11 @@ from util.window import find_element_by_id
 def get_color_value(element: WebElement) -> str:
     """Get the current color value from a text element."""
     raw = element.get_attribute("value")  # rgb 0.0705882 0.203922 0.337255 1
+    parts = raw.split()[1:]
     return "".join(
-        "%.2x" % round(float(x) * 255) for x in raw.split()[1:-1]
-    )  # ignore alpha
+        "%.2x" % round(float(x) * 255)
+        for x in (parts[:-1] if parts[-1] == "1" else parts)
+    )
 
 
 def set_color_value(element: WebElement, value: str):

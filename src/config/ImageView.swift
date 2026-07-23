@@ -38,25 +38,34 @@ struct ImageView: OptionViewProtocol {
         ForEach(Array(modes.enumerated()), id: \.0) { idx, mode in
           Text(mode)
         }
-      }
+      }.accessibilityIdentifier("ImageMode")
       if mode == 0 {
         SelectFileButton(
           directory: imageDir,
           allowedContentTypes: [.image],
-          onFinish: { fileName in
-            file = fileName
-          },
+          hasFile: !file.isEmpty,
           label: {
             if file.isEmpty {
               Text("Select image")
             } else {
               Text(file)
             }
-          }, model: $file
-        )
+          },
+          onImport: { fileName in
+            file = fileName
+          },
+          onClear: {
+            file = ""
+          },
+          accessibilityId: "SelectImage"
+        ) {
+          Text("Click or drag image file here")
+        }
       } else {
         TextField(
-          NSLocalizedString("https:// or data:image/png;base64,", comment: ""), text: $url)
+          NSLocalizedString("https:// or data:image/png;base64,", comment: ""), text: $url
+        )
+        .accessibilityIdentifier("ImageURL")
       }
     }.onChange(of: file) {
       value = $0.isEmpty ? "" : fcitxPrefix + $0

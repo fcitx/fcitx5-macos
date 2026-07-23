@@ -49,7 +49,8 @@ let arch = getArch()
 
 func fileTypes(_ extensions: [String]) -> [UTType] {
   return extensions.compactMap {
-    UTType(filenameExtension: $0)
+    let ext = $0.split(separator: ".").last.map(String.init) ?? $0
+    return UTType(filenameExtension: ext)
   }
 }
 
@@ -67,6 +68,12 @@ func getFileNamesWithExtension(_ path: String, _ suffix: String = "", _ full: Bo
     return names.sorted()
   } catch {
     return []
+  }
+}
+
+extension String {
+  var deletingPathExtension: String {
+    (self as NSString).deletingPathExtension
   }
 }
 
@@ -279,5 +286,5 @@ func appPathFromBundleIdentifier(_ bundleID: String) -> String {
 
 func appNameFromPath(_ path: String) -> String {
   let name = URL(filePath: path).lastPathComponent
-  return name.hasSuffix(".app") ? String(name.dropLast(4)) : ""
+  return name.hasSuffix(".app") ? name.deletingPathExtension : ""
 }

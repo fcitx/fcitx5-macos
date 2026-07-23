@@ -151,6 +151,12 @@ msgstr "Translated text"
 - **Placeholder tokens**: `%d`, `%s`, `%1$d`, `%1$s` etc. MUST be preserved exactly.
 - **`fuzzy` flag**: Only use when you are unsure of the translation. Mark it and leave a comment explaining the uncertainty. Fuzzy entries are NOT shown to users.
 - **Empty `msgstr ""`**: Means untranslated. Every `msgid` must have a non-empty `msgstr` in completed translations.
+- **Fuzzy/continuation lines pitfall**: An untranslated entry may look like:
+  ```po
+  msgstr ""
+  "Old fuzzy translation text here"
+  ```
+  When filling in the translation, replace the **entire block** (both the `msgstr ""` line and all continuation lines) with a single `msgstr "New translation"`. If you only replace the `msgstr ""` line, the orphaned continuation lines become invalid double msgstr content. Always validate with `msgfmt -c` after editing.
 
 ### PO File Header Template
 

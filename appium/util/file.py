@@ -12,16 +12,21 @@ def find_open_panel_container(driver: WebDriver) -> WebElement:
 
 
 def select_files(driver: WebDriver, path: str, filenames: list[str]):
+    """
+    Empty path means keeping the default directory.
+    """
     find_element_by_id(driver, "square.and.arrow.down").click()
     find_open_panel_container(driver)
-    press(driver, [Keys.COMMAND, Keys.SHIFT, "H"])  # Jump to home directory.
     open_button = find_element_by_id(driver, "OKButton")
-    parts = list(Path(path).relative_to(Path.home()).parts)
-    for part in parts:
-        container = find_open_panel_container(driver)
-        element = scroll_to(container, part)
-        element.click()
-        open_button.click()
+
+    if path:
+        press(driver, [Keys.COMMAND, Keys.SHIFT, "H"])  # Jump to home directory.
+        parts = list(Path(path).relative_to(Path.home()).parts)
+        for part in parts:
+            container = find_open_panel_container(driver)
+            element = scroll_to(container, part)
+            element.click()
+            open_button.click()
 
     container = find_open_panel_container(driver)
     for filename in filenames:
@@ -33,4 +38,4 @@ def select_files(driver: WebDriver, path: str, filenames: list[str]):
                 "keyModifierFlags": 1 << 4,
             },
         )
-    find_element_by_id(driver, "OKButton").click()
+    open_button.click()

@@ -3,6 +3,8 @@ import Logging
 import SwiftUI
 import UniformTypeIdentifiers
 
+private let importTableAllowedSuffixes = [".conf", ".conf.in", ".dict", ".txt"]
+
 class ImportTableVM: ObservableObject {
   // Record IMs and auto add new ones.
   @Published private(set) var ims = [String]()
@@ -20,10 +22,10 @@ class ImportTableVM: ObservableObject {
   }
 
   func addFiles(_ urls: [URL]) {
-    let allowedSuffixes = [".conf", ".conf.in", ".dict", ".txt"]
     for url in urls {
       let fileName = url.lastPathComponent
-      if allowedSuffixes.contains(where: { fileName.hasSuffix($0) }) && !selectedFiles.contains(url)
+      if importTableAllowedSuffixes.contains(where: { fileName.hasSuffix($0) })
+        && !selectedFiles.contains(url)
       {
         selectedFiles.append(url)
       }
@@ -46,7 +48,7 @@ class ImportTableVM: ObservableObject {
 
       if fileName.hasSuffix(".conf") || fileName.hasSuffix(".conf.in") {
         destDir = imLocalDir
-        destFileName = fileName.hasSuffix(".conf.in") ? String(fileName.dropLast(3)) : fileName
+        destFileName = fileName.hasSuffix(".conf.in") ? fileName.deletingPathExtension : fileName
       } else {
         destDir = tableLocalDir
         destFileName = fileName
@@ -62,8 +64,8 @@ class ImportTableVM: ObservableObject {
         if fileName.hasSuffix(".conf") || fileName.hasSuffix(".conf.in") {
           let baseName =
             destFileName.hasSuffix(".conf")
-            ? String(destFileName.dropLast(5))
-            : String(destFileName.dropLast(8))
+            ? destFileName.deletingPathExtension
+            : destFileName.deletingPathExtension.deletingPathExtension
           importedConfs.append(baseName)
         }
       } else {
@@ -112,50 +114,29 @@ struct ImportTableView: View {
   var body: some View {
     VStack(spacing: gapSize) {
       // Drag and Drop Area - Fixed Height
-      ZStack {
-        RoundedRectangle(cornerRadius: 12)
-          .stroke(style: StrokeStyle(lineWidth: 2, dash: [8]))
-          .foregroundColor(.secondary.opacity(0.5))
+      DragDropFileSelector(
+        allowsMultipleSelection: true,
+        allowedContentTypes: allowedTypes,
+        allowedSuffixes: importTableAllowedSuffixes,
+        onSelect: importTableVM.addFiles
+      ) { isTargeted in
+        ZStack {
+          RoundedRectangle(cornerRadius: 12)
+            .stroke(style: StrokeStyle(lineWidth: 2, dash: [8]))
+            .foregroundColor(isTargeted ? .accentColor : .secondary.opacity(0.5))
 
-        VStack(spacing: 8) {
-          Image(systemName: "square.and.arrow.down")
-            .font(.system(size: 24))
-          VStack(spacing: 2) {
-            Text("Click or drag to this area").accessibilityIdentifier("DragAndDrop")
-            Text("Table config: *.conf or *.conf.in")
-            Text("Table data: *.dict or *.txt")
+          VStack(spacing: 8) {
+            Image(systemName: "square.and.arrow.down")
+              .font(.system(size: 24))
+            VStack(spacing: 2) {
+              Text("Click or drag to this area")
+              Text("Table config: *.conf or *.conf.in")
+              Text("Table data: *.dict or *.txt")
+            }
           }
         }
       }
       .frame(height: 160)
-      .contentShape(Rectangle())
-      .onTapGesture {
-        _ = selectFile(
-          allowsMultipleSelection: true,
-          canChooseDirectories: false,
-          canChooseFiles: true,
-          allowedContentTypes: allowedTypes,
-          directoryURL: nil
-        ) { urls, _ in
-          importTableVM.addFiles(urls)
-        }
-      }
-      .onDrop(of: [.fileURL], isTargeted: nil) { providers in
-        for provider in providers {
-          _ = provider.loadObject(ofClass: URL.self) { url, error in
-            if let url = url {
-              let fileName = url.lastPathComponent
-              let allowedSuffixes = [".conf", ".conf.in", ".dict", ".txt"]
-              if allowedSuffixes.contains(where: { fileName.hasSuffix($0) }) {
-                DispatchQueue.main.async {
-                  importTableVM.addFiles([url])
-                }
-              }
-            }
-          }
-        }
-        return true
-      }
 
       // File List Area - Fixed Height to prevent shift
       VStack(alignment: .leading, spacing: 4) {
