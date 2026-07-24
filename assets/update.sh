@@ -25,34 +25,4 @@ fi
 xattr -dr com.apple.quarantine "$APP_DIR"
 codesign --force --sign - --deep "$APP_DIR"
 
-cd "$RESOURCES_DIR"
-im=$(su -m "$user" -c "./get_im")
-# Switching out is necessary, otherwise it doesn't show menu
-# Not sure which one so try both.
-su -m "$user" -c "./switch_im com.apple.keylayout.ABC"
-su -m "$user" -c "./switch_im com.apple.keylayout.US"
 killall Fcitx5
-
-# This input source ID comes from Carbon API:
-# import Carbon
-
-# let bundleId = "org.fcitx.inputmethod.Fcitx5"
-# let conditions = NSMutableDictionary()
-# conditions.setValue(bundleId, forKey: kTISPropertyBundleID as String)
-# if let array = TISCreateInputSourceList(conditions, true)?.takeRetainedValue()
-#   as? [TISInputSource]
-# {
-#   for inputSource in array {
-#     if let ptr = TISGetInputSourceProperty(inputSource, kTISPropertyInputSourceID) {
-#       let inputSourceID = Unmanaged<CFString>.fromOpaque(ptr).takeUnretainedValue() as String
-#       print(inputSourceID)
-#     }
-#   }
-# }
-
-# The rule to construct seems:
-# org.fcitx.inputmethod.Fcitx5 is our CFBundleIdentifier;
-# The rest is the keys under tsInputModeListKey trimming the org.fcitx.inputmethod.
-
-# Switch back.
-su -m "$user" -c "./switch_im $im"
