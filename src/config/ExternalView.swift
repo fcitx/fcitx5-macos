@@ -73,6 +73,7 @@ struct ExternalView: OptionViewProtocol {
       .sheet(isPresented: $showDictManager) {
         DictManagerView().refreshDicts()
       }
+      .accessibilityIdentifier("DictManager")
     default:
       switch external {
       // Its Option is different in Pinyin and QuickPhrase, so use External as source of truth.

@@ -97,45 +97,51 @@ struct DictManagerView: View {
                   }
                   reloadDicts()
                 }
-              ))
-            Text(dict.id)
+              )
+            ).accessibilityIdentifier("\(dict.id)_Checkbox")
+            Text(dict.id).accessibilityIdentifier(dict.id)
           }
         }
       }
       VStack {
-        Button {
-          let initialDirectoryURL = URL(
+        SelectFileButton(
+          directory: dictDir,
+          allowedSuffixes: [".dict", ".scel", ".txt"],
+          allowsMultipleSelection: true,
+          initialDirectory: URL(
             fileURLWithPath: dictManagerSelectedDirectory
-              ?? homeDir.appendingPathComponent("Downloads").localPath())
-          let _ = selectFile(
-            allowsMultipleSelection: true,
-            canChooseDirectories: false,
-            canChooseFiles: true,
-            allowedContentTypes: fileTypes(["dict", "scel", "txt"]),
-            directoryURL: initialDirectoryURL
-          ) { urls, dirURL in
+              ?? homeDir.appendingPathComponent("Downloads").localPath()),
+          hasFile: false,
+          label: { Text("Import dictionaries") },
+          onImport: { _, files in
             mkdirP(dictPath)
-            failure =
-              urls.map({ file in
-                switch file.pathExtension {
-                case "dict":
-                  importDict(file)
-                case "scel":
-                  importScelDict(file)
-                case "txt":
-                  importTxtDict(file)
-                default:
-                  false
-                }
-              }).filter({ !$0 }).count
-            if failure > 0 {
+            var failCount = 0
+            for fileName in files {
+              let file = dictDir.appendingPathComponent(fileName)
+              let ok: Bool
+              switch file.pathExtension {
+              case "dict": ok = true
+              case "scel": ok = importScelDict(file)
+              case "txt": ok = importTxtDict(file)
+              default: ok = false
+              }
+              if file.pathExtension == "scel" || file.pathExtension == "txt" {
+                let _ = removeFile(file)
+              }
+              if !ok { failCount += 1 }
+            }
+            if failCount > 0 {
+              failure = failCount
               showFailure = true
             }
             reloadDicts()
+          },
+          onDirectoryChanged: { dirURL in
             dictManagerSelectedDirectory = dirURL?.localPath()
-          }
-        } label: {
-          Text("Import dictionaries")
+          },
+          accessibilityId: "ImportDicts"
+        ) {
+          Text("Click or drag .txt/.scel/.dict file here")
         }
 
         urlButton(
@@ -143,13 +149,15 @@ struct DictManagerView: View {
 
         Button {
           for dict in selectedDicts {
-            let _ = removeFile(dictDir.appendingPathComponent(dict + ".dict"))
+            let suffix = dictVM.isEnabled[dict] == true ? ".dict" : ".dict.disable"
+            let _ = removeFile(dictDir.appendingPathComponent(dict + suffix))
           }
           selectedDicts.removeAll()
           reloadDicts()
         } label: {
           Text("Remove dictionaries")
         }.disabled(selectedDicts.isEmpty)
+          .accessibilityIdentifier("RemoveDicts")
 
         Button {
           Fcitx.setConfig("fcitx://config/addon/pinyin/clearuserdict", "{}")
@@ -178,7 +186,7 @@ struct DictManagerView: View {
           dismiss()
         } label: {
           Text("Close")
-        }
+        }.accessibilityIdentifier("CloseSheet")
       }
     }.padding()
       .frame(minWidth: 300)

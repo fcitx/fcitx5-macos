@@ -80,6 +80,13 @@ def terminate_app(driver: WebDriver) -> None:
 def appium_server() -> Generator[str, None, None]:
     """Start Appium server at session start and stop it at session end."""
     subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
+    subprocess.run(
+        [
+            os.path.join(project_root, "build/arm64/assets/switch_im"),
+            "com.apple.keylayout.ABC",
+        ],
+        check=True,
+    )
     proc = subprocess.Popen(
         ["appium"],
         stdout=subprocess.DEVNULL,

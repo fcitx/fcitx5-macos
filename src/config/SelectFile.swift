@@ -71,6 +71,7 @@ struct DragDropFileSelector<Content>: View where Content: View {
   let directoryURL: URL?
   let allowedSuffixes: [String]?
   let onSelect: ([URL]) -> Void
+  let onDirectoryChanged: ((URL?) -> Void)?
   let content: (_ isTargeted: Bool) -> Content
 
   @State private var isTargeted = false
@@ -83,6 +84,7 @@ struct DragDropFileSelector<Content>: View where Content: View {
     directoryURL: URL? = nil,
     allowedSuffixes: [String]? = nil,
     onSelect: @escaping ([URL]) -> Void,
+    onDirectoryChanged: ((URL?) -> Void)? = nil,
     @ViewBuilder content: @escaping (_ isTargeted: Bool) -> Content
   ) {
     self.allowsMultipleSelection = allowsMultipleSelection
@@ -92,6 +94,7 @@ struct DragDropFileSelector<Content>: View where Content: View {
     self.directoryURL = directoryURL
     self.allowedSuffixes = allowedSuffixes
     self.onSelect = onSelect
+    self.onDirectoryChanged = onDirectoryChanged
     self.content = content
   }
 
@@ -117,7 +120,8 @@ struct DragDropFileSelector<Content>: View where Content: View {
           canChooseFiles: canChooseFiles,
           allowedContentTypes: allowedContentTypes,
           directoryURL: directoryURL
-        ) { urls, _ in
+        ) { urls, dirURL in
+          onDirectoryChanged?(dirURL)
           handleSelection(urls)
         }
       }
@@ -143,27 +147,46 @@ struct DragDropFileSelector<Content>: View where Content: View {
 
 private struct SelectFileSheet<DropContent>: View where DropContent: View {
   let directory: URL
+  let initialDirectory: URL?
+  let allowsMultipleSelection: Bool
   let allowedContentTypes: [UTType]
   let allowedSuffixes: [String]?
-  let onImport: (String) -> Void
+  let onImport: (String, [String]) -> Void
+  let onDirectoryChanged: ((URL?) -> Void)?
   @Binding var showPicker: Bool
   let dropContent: () -> DropContent
   @State private var duplicateFile: DuplicateFile? = nil
+  @State private var pendingFiles = [URL]()
+  @State private var importedFiles = [String]()
+
+  private func processNext() {
+    guard !pendingFiles.isEmpty else {
+      if !importedFiles.isEmpty {
+        onImport(importedFiles.first ?? "", importedFiles)
+      }
+      importedFiles = []
+      showPicker = false
+      return
+    }
+    let file = pendingFiles.removeFirst()
+    importFile(file, to: directory, onDuplicate: { duplicateFile = $0 }) { fileName in
+      importedFiles.append(fileName)
+      processNext()
+    }
+  }
 
   var body: some View {
     VStack(spacing: gapSize) {
       DragDropFileSelector(
-        allowsMultipleSelection: false,
+        allowsMultipleSelection: allowsMultipleSelection,
         allowedContentTypes: allowedContentTypes,
-        directoryURL: directory,
+        directoryURL: initialDirectory ?? directory,
         allowedSuffixes: allowedSuffixes,
         onSelect: { urls in
-          guard let file = urls.first else { return }
-          importFile(file, to: directory, onDuplicate: { duplicateFile = $0 }) { fileName in
-            onImport(fileName)
-            showPicker = false
-          }
-        }
+          pendingFiles = urls
+          processNext()
+        },
+        onDirectoryChanged: onDirectoryChanged
       ) { isTargeted in
         ZStack {
           RoundedRectangle(cornerRadius: 12)
@@ -188,11 +211,13 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
           title: Text("\(item.fileName) already exists. Replace?"),
           primaryButton: .default(Text("OK")) {
             replaceImportedFile(item, in: directory) { fileName in
-              onImport(fileName)
-              showPicker = false
+              importedFiles.append(fileName)
+              processNext()
             }
           },
-          secondaryButton: .cancel()
+          secondaryButton: .cancel {
+            processNext()
+          }
         )
       }
   }
@@ -200,12 +225,15 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
 
 struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent: View {
   let directory: URL
+  let initialDirectory: URL?
+  let allowsMultipleSelection: Bool
   let allowedContentTypes: [UTType]
   let allowedSuffixes: [String]?
   let hasFile: Bool
   let label: () -> Label
-  let onImport: (String) -> Void
+  let onImport: (String, [String]) -> Void
   let onClear: (() -> Void)?
+  let onDirectoryChanged: ((URL?) -> Void)?
   let accessibilityId: String
   let dropContent: () -> DropContent
 
@@ -215,20 +243,26 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
     directory: URL,
     allowedContentTypes: [UTType]? = nil,
     allowedSuffixes: [String]? = nil,
+    allowsMultipleSelection: Bool = false,
+    initialDirectory: URL? = nil,
     hasFile: Bool,
     @ViewBuilder label: @escaping () -> Label,
-    onImport: @escaping (String) -> Void,
+    onImport: @escaping (String, [String]) -> Void,
     onClear: (() -> Void)? = nil,
+    onDirectoryChanged: ((URL?) -> Void)? = nil,
     accessibilityId: String = "",
     @ViewBuilder dropContent: @escaping () -> DropContent
   ) {
     self.directory = directory
     self.allowedContentTypes = allowedContentTypes ?? (allowedSuffixes.map { fileTypes($0) } ?? [])
+    self.allowsMultipleSelection = allowsMultipleSelection
+    self.initialDirectory = initialDirectory
     self.allowedSuffixes = allowedSuffixes
     self.hasFile = hasFile
     self.label = label
     self.onImport = onImport
     self.onClear = onClear
+    self.onDirectoryChanged = onDirectoryChanged
     self.accessibilityId = accessibilityId
     self.dropContent = dropContent
   }
@@ -243,9 +277,12 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
       .sheet(isPresented: $showPicker) {
         SelectFileSheet(
           directory: directory,
+          initialDirectory: initialDirectory,
+          allowsMultipleSelection: allowsMultipleSelection,
           allowedContentTypes: allowedContentTypes,
           allowedSuffixes: allowedSuffixes,
           onImport: onImport,
+          onDirectoryChanged: onDirectoryChanged,
           showPicker: $showPicker,
           dropContent: dropContent
         )

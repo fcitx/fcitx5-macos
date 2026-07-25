@@ -20,7 +20,7 @@ struct CssView: OptionViewProtocol {
           Text(strValue.dropFirst(fcitxPrefix.count))
         }
       },
-      onImport: { fileName in
+      onImport: { fileName, _ in
         value = fcitxPrefix + fileName
       },
       onClear: {

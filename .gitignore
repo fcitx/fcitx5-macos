@@ -11,3 +11,5 @@ meta.swift
 *~
 version.json
 *.pyc
+*.dict
+*.scel

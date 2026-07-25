@@ -23,9 +23,7 @@ def test_punctuation_map(driver: WebDriver, app: str) -> None:
     scroll_to(
         find_element_by_id(driver, "detailScrollView"),
         "Punctuation",
-    )
-    punctuation = find_element_by_id(driver, "Punctuation")
-    punctuation.click()
+    ).click()
 
     def read_config_value() -> str:
         punc_path = os.path.join(app, r"../data/punctuation/punc.mb.zh_CN")

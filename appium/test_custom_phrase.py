@@ -26,8 +26,7 @@ def test_custom_phrase(driver: WebDriver, app: str):
     scroll_to(
         find_element_by_id(driver, "detailScrollView"),
         "CustomPhrase",
-    )
-    find_element_by_id(driver, "CustomPhrase").click()
+    ).click()
     j = find_elements_by_id(driver, "Keyword")[-1]
     w9 = find_elements_by_id(driver, "Phrase")[-1]
     o10 = find_elements_by_id(driver, "Order")[-1]

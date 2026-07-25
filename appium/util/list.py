@@ -1,5 +1,16 @@
 from appium.webdriver.webdriver import WebDriver
+from selenium.webdriver.remote.webelement import WebElement
 from util.window import find_element_by_id
+
+
+def cmd_click(element: WebElement):
+    element.parent.execute_script(
+        "macos: click",
+        {
+            "elementId": element.id,
+            "keyModifierFlags": 1 << 4,
+        },
+    )
 
 
 def _click(driver: WebDriver, option_id: str, index: int, action: str):
