@@ -371,15 +371,6 @@ struct AboutView: View {
 
   func install(debug: Bool) {
     viewModel.state = .installing
-    let conditions = NSMutableDictionary()
-    conditions.setValue("com.apple.keylayout.ABC", forKey: kTISPropertyInputSourceID as String)
-    if let array = TISCreateInputSourceList(conditions, true)?.takeRetainedValue()
-      as? [TISInputSource]
-    {
-      for inputSource in array {
-        TISSelectInputSource(inputSource)
-      }
-    }
     let path = cacheDir.appendingPathComponent(debug ? mainDebugFileName : mainFileName).localPath()
     // Necessary to put it in background, otherwise sudo UI will hang if it has been canceled once.
     Task {
