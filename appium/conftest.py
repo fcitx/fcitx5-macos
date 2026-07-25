@@ -5,8 +5,8 @@ import shutil
 import subprocess
 import time
 import urllib.request
-from datetime import datetime
-from typing import Generator
+from collections.abc import Generator
+from datetime import datetime, timezone
 
 import pytest
 from appium.options.mac import Mac2Options
@@ -26,7 +26,7 @@ def check_appium_server() -> bool:
         with urllib.request.urlopen(f"{APPIUM_SERVER}/status", timeout=1) as resp:
             data = json.loads(resp.read())
             return data.get("value", {}).get("ready", False)
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -78,7 +78,7 @@ def terminate_app(driver: WebDriver) -> None:
 
 @pytest.fixture(scope="session")
 def appium_server() -> Generator[str, None, None]:
-    subprocess.run(["pkill", "-9", "FcitxTestApp"])
+    subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
     """Start Appium server at session start and stop it at session end."""
     proc = subprocess.Popen(
         ["appium"],
@@ -117,7 +117,7 @@ def driver(appium_server: str) -> Generator[WebDriver, None, None]:
 @pytest.fixture(scope="session")
 def session_base_dir() -> Generator[str, None, None]:
     """Create a unique base config directory for this test session."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(tz=timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S")
     base_dir = os.path.join(project_root, "build/appium", timestamp)
     os.makedirs(base_dir, exist_ok=True)
     yield base_dir

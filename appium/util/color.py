@@ -11,7 +11,7 @@ def get_color_value(element: WebElement) -> str:
     raw = element.get_attribute("value")  # rgb 0.0705882 0.203922 0.337255 1
     parts = raw.split()[1:]
     return "".join(
-        "%.2x" % round(float(x) * 255)
+        f"{round(float(x) * 255):02x}"
         for x in (parts[:-1] if parts[-1] == "1" else parts)
     )
 
