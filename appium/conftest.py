@@ -78,8 +78,8 @@ def terminate_app(driver: WebDriver) -> None:
 
 @pytest.fixture(scope="session")
 def appium_server() -> Generator[str, None, None]:
-    subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
     """Start Appium server at session start and stop it at session end."""
+    subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
     proc = subprocess.Popen(
         ["appium"],
         stdout=subprocess.DEVNULL,
