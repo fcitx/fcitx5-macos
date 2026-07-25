@@ -42,8 +42,10 @@ def test_import_customized_table(driver: WebDriver, app: str):
 
     find_element_by_id(driver, "Import").click()
     assert find_element_by_id(driver, "customized")
-    expected = open(os.path.join(table_path, "customized.conf.in")).read()
-    actual = open(os.path.join(app, "../data/inputmethod/customized.conf")).read()
+    with open(os.path.join(table_path, "customized.conf.in")) as f:
+        expected = f.read()
+    with open(os.path.join(app, "../data/inputmethod/customized.conf")) as f:
+        actual = f.read()
     assert expected == actual, CHANGE_NOT_SAVED
     assert os.listdir(os.path.join(app, "../data/table")) == ["customized.main.dict"], (
         CHANGE_NOT_SAVED
