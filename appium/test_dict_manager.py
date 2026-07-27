@@ -29,8 +29,11 @@ FAKE = "fake.scel"
 def test_dict_manager(driver: WebDriver, app: str):
     dict_path = str((Path(__file__).resolve().parent / "dict").resolve())
     subprocess.run(
-        f"~/Library/fcitx5/bin/libime_pinyindict {dict_path}/{RAW} {dict_path}/{BIN}",
-        shell=True,
+        [
+            str(Path.home() / "Library/fcitx5/bin/libime_pinyindict"),
+            f"{dict_path}/{RAW}",
+            f"{dict_path}/{BIN}",
+        ],
         check=True,
     )
     subprocess.run(
@@ -78,8 +81,12 @@ def test_dict_manager(driver: WebDriver, app: str):
     for expected_id, expected_file in zip(expected_ids, expected_files):
         tmp_path = f"{app}/../{expected_id}.txt"
         subprocess.run(
-            f'~/Library/fcitx5/bin/libime_pinyindict -d "{dictionaries_path}/{expected_file}" "{tmp_path}"',
-            shell=True,
+            [
+                str(Path.home() / "Library/fcitx5/bin/libime_pinyindict"),
+                "-d",
+                f"{dictionaries_path}/{expected_file}",
+                f"{tmp_path}",
+            ],
             check=True,
         )
         decompiled_dicts.append(read_dict(tmp_path))

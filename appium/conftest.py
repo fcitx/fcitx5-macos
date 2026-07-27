@@ -82,7 +82,7 @@ def appium_server() -> Generator[str, None, None]:
     subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
     subprocess.run(
         [
-            os.path.join(project_root, "build/arm64/assets/switch_im"),
+            os.path.join(project_root, "build", platform.machine(), "assets/switch_im"),
             "com.apple.keylayout.ABC",
         ],
         check=True,

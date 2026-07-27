@@ -9,10 +9,6 @@ let dictPath = dictDir.localPath()
 
 private let binDir = libraryDir.appendingPathComponent("bin")
 
-func importDict(_ file: URL) -> Bool {
-  return copyFile(file, dictDir.appendingPathComponent(file.lastPathComponent))
-}
-
 func importTxtDict(_ file: URL) -> Bool {
   let path = file.localPath()
   FCITX_INFO("Importing \(path)")
@@ -115,26 +111,30 @@ struct DictManagerView: View {
           label: { Text("Import dictionaries") },
           onImport: { _, files in
             mkdirP(dictPath)
-            var failCount = 0
-            for fileName in files {
-              let file = dictDir.appendingPathComponent(fileName)
-              let ok: Bool
-              switch file.pathExtension {
-              case "dict": ok = true
-              case "scel": ok = importScelDict(file)
-              case "txt": ok = importTxtDict(file)
-              default: ok = false
+            Task.detached {
+              var failCount = 0
+              for fileName in files {
+                let file = dictDir.appendingPathComponent(fileName)
+                let ok: Bool
+                switch file.pathExtension {
+                case "dict": ok = true
+                case "scel": ok = importScelDict(file)
+                case "txt": ok = importTxtDict(file)
+                default: ok = false
+                }
+                if file.pathExtension == "scel" || file.pathExtension == "txt" {
+                  let _ = removeFile(file)
+                }
+                if !ok { failCount += 1 }
               }
-              if file.pathExtension == "scel" || file.pathExtension == "txt" {
-                let _ = removeFile(file)
+              await MainActor.run {
+                if failCount > 0 {
+                  failure = failCount
+                  showFailure = true
+                }
+                reloadDicts()
               }
-              if !ok { failCount += 1 }
             }
-            if failCount > 0 {
-              failure = failCount
-              showFailure = true
-            }
-            reloadDicts()
           },
           onDirectoryChanged: { dirURL in
             dictManagerSelectedDirectory = dirURL?.localPath()
