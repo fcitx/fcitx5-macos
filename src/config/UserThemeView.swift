@@ -18,7 +18,7 @@ struct UserThemeView: View {
           Text(themeName)
         }
       },
-      onImport: { fileName in
+      onImport: { fileName, _ in
         themeName = fileName.deletingPathExtension
         Fcitx.setConfig(
           "\(webpanelUri)/usertheme", "\"\(quote(themeName))\"")

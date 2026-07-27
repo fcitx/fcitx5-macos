@@ -4,6 +4,7 @@ from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from util.key import press
+from util.list import cmd_click
 from util.window import find_element_by_id, scroll_to
 
 
@@ -24,18 +25,11 @@ def select_files(driver: WebDriver, path: str, filenames: list[str]):
         parts = list(Path(path).relative_to(Path.home()).parts)
         for part in parts:
             container = find_open_panel_container(driver)
-            element = scroll_to(container, part)
-            element.click()
+            scroll_to(container, part).click()
             open_button.click()
 
     container = find_open_panel_container(driver)
     for filename in filenames:
         element = scroll_to(container, filename)
-        driver.execute_script(
-            "macos: click",
-            {
-                "elementId": element.id,
-                "keyModifierFlags": 1 << 4,
-            },
-        )
+        cmd_click(element)
     open_button.click()

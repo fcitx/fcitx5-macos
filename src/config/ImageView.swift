@@ -51,7 +51,7 @@ struct ImageView: OptionViewProtocol {
               Text(file)
             }
           },
-          onImport: { fileName in
+          onImport: { fileName, _ in
             file = fileName
           },
           onClear: {
