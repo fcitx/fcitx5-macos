@@ -43,7 +43,7 @@ def test_dict_manager(driver: WebDriver, app: str):
         ],
         check=True,
     )
-    with open(f"{dict_path}/{FAKE}", "w") as f:
+    with open(f"{dict_path}/{FAKE}", "w"):
         pass
     dictionaries_path = os.path.join(app, r"../data/pinyin/dictionaries")
 
@@ -69,7 +69,9 @@ def test_dict_manager(driver: WebDriver, app: str):
     assert get_boolean_value(checkbox) is True, UI_NOT_UPDATED
 
     expected_files = [f"{id}.dict" for id in expected_ids]
-    assert set(os.listdir(dictionaries_path)) == set(expected_files), INTERNAL_TOOL_ERROR
+    assert set(os.listdir(dictionaries_path)) == set(expected_files), (
+        INTERNAL_TOOL_ERROR
+    )
 
     original_dict = read_dict(f"{dict_path}/{RAW}")
     decompiled_dicts = []
