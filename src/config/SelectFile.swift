@@ -63,6 +63,10 @@ private func replaceImportedFile(
   }
 }
 
+func dropZoneLabel(_ suffix: String) -> Text {
+  Text(String(format: NSLocalizedString("Click or drag %@ file here", comment: ""), suffix))
+}
+
 struct DragDropFileSelector<Content>: View where Content: View {
   let allowsMultipleSelection: Bool
   let canChooseDirectories: Bool
@@ -146,12 +150,13 @@ struct DragDropFileSelector<Content>: View where Content: View {
 }
 
 private struct SelectFileSheet<DropContent>: View where DropContent: View {
-  let directory: URL
+  let directory: URL?
   let initialDirectory: URL?
   let allowsMultipleSelection: Bool
   let allowedContentTypes: [UTType]
   let allowedSuffixes: [String]?
-  let onImport: (String, [String]) -> Void
+  let onImport: ((String, [String]) -> Void)?
+  let onSelect: (([URL]) -> Void)?
   let onDirectoryChanged: ((URL?) -> Void)?
   @Binding var showPicker: Bool
   let dropContent: () -> DropContent
@@ -161,13 +166,14 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
 
   private func processNext() {
     guard !pendingFiles.isEmpty else {
-      if !importedFiles.isEmpty {
+      if let onImport, !importedFiles.isEmpty {
         onImport(importedFiles.first ?? "", importedFiles)
       }
       importedFiles = []
       showPicker = false
       return
     }
+    guard let directory else { return }
     let file = pendingFiles.removeFirst()
     importFile(file, to: directory, onDuplicate: { duplicateFile = $0 }) { fileName in
       importedFiles.append(fileName)
@@ -183,8 +189,13 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
         directoryURL: initialDirectory ?? directory,
         allowedSuffixes: allowedSuffixes,
         onSelect: { urls in
-          pendingFiles = urls
-          processNext()
+          if let onSelect {
+            onSelect(urls)
+            showPicker = false
+          } else {
+            pendingFiles = urls
+            processNext()
+          }
         },
         onDirectoryChanged: onDirectoryChanged
       ) { isTargeted in
@@ -210,9 +221,11 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
         Alert(
           title: Text("\(item.fileName) already exists. Replace?"),
           primaryButton: .default(Text("OK")) {
-            replaceImportedFile(item, in: directory) { fileName in
-              importedFiles.append(fileName)
-              processNext()
+            if let directory {
+              replaceImportedFile(item, in: directory) { fileName in
+                importedFiles.append(fileName)
+                processNext()
+              }
             }
           },
           secondaryButton: .cancel {
@@ -224,14 +237,15 @@ private struct SelectFileSheet<DropContent>: View where DropContent: View {
 }
 
 struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent: View {
-  let directory: URL
+  let directory: URL?
   let initialDirectory: URL?
   let allowsMultipleSelection: Bool
   let allowedContentTypes: [UTType]
   let allowedSuffixes: [String]?
   let hasFile: Bool
   let label: () -> Label
-  let onImport: (String, [String]) -> Void
+  let onImport: ((String, [String]) -> Void)?
+  let onSelect: (([URL]) -> Void)?
   let onClear: (() -> Void)?
   let onDirectoryChanged: ((URL?) -> Void)?
   let accessibilityId: String
@@ -240,14 +254,15 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
   @State private var showPicker = false
 
   init(
-    directory: URL,
+    directory: URL? = nil,
     allowedContentTypes: [UTType]? = nil,
     allowedSuffixes: [String]? = nil,
     allowsMultipleSelection: Bool = false,
     initialDirectory: URL? = nil,
     hasFile: Bool,
     @ViewBuilder label: @escaping () -> Label,
-    onImport: @escaping (String, [String]) -> Void,
+    onImport: ((String, [String]) -> Void)? = nil,
+    onSelect: (([URL]) -> Void)? = nil,
     onClear: (() -> Void)? = nil,
     onDirectoryChanged: ((URL?) -> Void)? = nil,
     accessibilityId: String = "",
@@ -261,6 +276,7 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
     self.hasFile = hasFile
     self.label = label
     self.onImport = onImport
+    self.onSelect = onSelect
     self.onClear = onClear
     self.onDirectoryChanged = onDirectoryChanged
     self.accessibilityId = accessibilityId
@@ -282,6 +298,7 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
           allowedContentTypes: allowedContentTypes,
           allowedSuffixes: allowedSuffixes,
           onImport: onImport,
+          onSelect: onSelect,
           onDirectoryChanged: onDirectoryChanged,
           showPicker: $showPicker,
           dropContent: dropContent

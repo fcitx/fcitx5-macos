@@ -141,7 +141,7 @@ struct DictManagerView: View {
           },
           accessibilityId: "ImportDicts"
         ) {
-          Text("Click or drag .txt/.scel/.dict file here")
+          dropZoneLabel(".txt/.scel/.dict")
         }
 
         urlButton(

@@ -27,7 +27,7 @@ def test_user_theme(driver: WebDriver, app: str):
     button = get_button()
     prompt_label = get_label(button)
     button.click()
-    theme_path = str((Path(__file__).resolve().parent / "theme").resolve())
+    theme_path = str((Path(__file__).parent / "theme").resolve())
     select_files(driver, theme_path, [f"{THEME}.conf"])
     assert get_label(get_button()) == THEME, UI_NOT_UPDATED
     assert read_config_value() == VALUE, CHANGE_NOT_SAVED

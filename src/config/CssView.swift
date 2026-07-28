@@ -28,7 +28,7 @@ struct CssView: OptionViewProtocol {
       },
       accessibilityId: "SelectCss"
     ) {
-      Text("Click or drag .css file here")
+      dropZoneLabel(".css")
     }
   }
 }

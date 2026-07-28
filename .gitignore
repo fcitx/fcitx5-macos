@@ -13,3 +13,4 @@ version.json
 *.pyc
 *.dict
 *.scel
+*.zip

@@ -86,27 +86,13 @@ struct DataView: View {
   @State private var showExportSuccess = false
   @State private var showExportFailure = false
 
-  private func importZip(_ binding: Binding<Bool>, _ validator: @escaping () -> Bool) {
-    let initialDirectoryURL = URL(
-      fileURLWithPath: importDataSelectedDirectory
-        ?? homeDir.appendingPathComponent("Downloads").localPath())
-    let _ = selectFile(
-      allowsMultipleSelection: false,
-      canChooseDirectories: false,
-      canChooseFiles: true,
-      allowedContentTypes: [.zip],
-      directoryURL: initialDirectoryURL
-    ) { urls, dirURL in
-      if let file = urls.first {
-        _ = removeFile(extractDir)
-        mkdirP(extractPath)
-        if extractZip(file), validator() {
-          binding.wrappedValue = true
-        } else {
-          showInvalidZip = true
-        }
-      }
-      importDataSelectedDirectory = dirURL?.localPath()
+  private func importZip(_ file: URL, _ binding: Binding<Bool>, _ validator: () -> Bool) {
+    _ = removeFile(extractDir)
+    mkdirP(extractPath)
+    if extractZip(file), validator() {
+      binding.wrappedValue = true
+    } else {
+      showInvalidZip = true
     }
   }
 
@@ -166,41 +152,68 @@ struct DataView: View {
         ImportDataView().load(squirrelItems)
       }.disabled(!FileManager.default.fileExists(atPath: squirrelDir.localPath()))
 
-      Button {
-        importZip(
-          $showImportF5a,
-          {
-            extractDir.appendingPathComponent("metadata.json").exists()
-          })
-      } label: {
-        Text("Fcitx5 Android").tooltip("fcitx5-android_YYYY-MM-DD*.zip")
+      SelectFileButton(
+        allowedSuffixes: [".zip"],
+        initialDirectory: importDataSelectedDirectory.flatMap { URL(fileURLWithPath: $0) },
+        hasFile: false,
+        label: { Text("Fcitx5 Android") },
+        onSelect: { urls in
+          if let file = urls.first {
+            importZip(file, $showImportF5a) {
+              extractDir.appendingPathComponent("metadata.json").exists()
+            }
+          }
+        },
+        onDirectoryChanged: { dirURL in
+          importDataSelectedDirectory = dirURL?.localPath()
+        }
+      ) {
+        dropZoneLabel("fcitx5-android_YYYY-MM-DD*.zip")
       }.sheet(isPresented: $showImportF5a) {
         ImportDataView().load(f5aItems)
       }
 
-      Button {
-        importZip(
-          $showImportF5m,
-          {
-            extractDir.appendingPathComponent("metadata.json").exists()
-          })
-      } label: {
-        Text("Fcitx5 macOS").tooltip("fcitx5-macos_YYYY-MM-DD*.zip")
+      SelectFileButton(
+        allowedSuffixes: [".zip"],
+        initialDirectory: importDataSelectedDirectory.flatMap { URL(fileURLWithPath: $0) },
+        hasFile: false,
+        label: { Text("Fcitx5 macOS") },
+        onSelect: { urls in
+          if let file = urls.first {
+            importZip(file, $showImportF5m) {
+              extractDir.appendingPathComponent("metadata.json").exists()
+            }
+          }
+        },
+        onDirectoryChanged: { dirURL in
+          importDataSelectedDirectory = dirURL?.localPath()
+        }
+      ) {
+        dropZoneLabel("fcitx5-macos_YYYY-MM-DD*.zip")
       }.sheet(isPresented: $showImportF5m) {
         ImportDataView().load(f5mItems)
-      }
+      }.accessibilityIdentifier("ImportFcitx5macOS")
 
-      Button {
-        importZip(
-          $showImportHamster,
-          {
-            hamsterRimeDir.exists()
-          })
-      } label: {
-        Text("Hamster").tooltip("YYYYMMDD-*.zip")
+      SelectFileButton(
+        allowedSuffixes: [".zip"],
+        initialDirectory: importDataSelectedDirectory.flatMap { URL(fileURLWithPath: $0) },
+        hasFile: false,
+        label: { Text("Hamster") },
+        onSelect: { urls in
+          if let file = urls.first {
+            importZip(file, $showImportHamster) {
+              hamsterRimeDir.exists()
+            }
+          }
+        },
+        onDirectoryChanged: { dirURL in
+          importDataSelectedDirectory = dirURL?.localPath()
+        }
+      ) {
+        dropZoneLabel("YYYYMMDD-*.zip")
       }.sheet(isPresented: $showImportHamster) {
         ImportDataView().load(hamsterItems)
-      }
+      }.accessibilityIdentifier("ImportHamster")
 
       Text("Export data to …")
 
@@ -228,7 +241,7 @@ struct DataView: View {
             }.buttonStyle(.borderedProminent)
           }
         }.padding()
-      }
+      }.accessibilityIdentifier("ExportFcitx5")
     }.padding()
       .toast(isPresenting: $showSquirrelError) {
         AlertToast(
