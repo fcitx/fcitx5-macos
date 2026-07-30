@@ -124,7 +124,7 @@ def driver(appium_server: str) -> Generator[WebDriver, None, None]:
 @pytest.fixture(scope="session")
 def session_base_dir() -> Generator[str, None, None]:
     """Create a unique base config directory for this test session."""
-    timestamp = datetime.now(tz=timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(tz=timezone.utc).astimezone().strftime("%Y-%m-%d %H-%M-%S")
     base_dir = os.path.join(project_root, "build/appium", timestamp)
     os.makedirs(base_dir, exist_ok=True)
     yield base_dir

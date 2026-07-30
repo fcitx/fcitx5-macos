@@ -267,7 +267,7 @@ struct ImportDataView: View {
           dismiss()
         } label: {
           Text("Done")
-        }
+        }.accessibilityIdentifier("Done")
         Button {
           failedItems = [String]()
           for item in importDataVM.items {
@@ -304,6 +304,7 @@ struct ImportDataView: View {
               NSLocalizedString("Items failed to import:", comment: "")
                 + failedItems.joined(separator: ", "))
           }
+          .accessibilityIdentifier("Import")
       }
     }.padding()
       .toast(isPresenting: $showSuccess) {
