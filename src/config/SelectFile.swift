@@ -253,6 +253,32 @@ struct SelectFileButton<Label, DropContent>: View where Label: View, DropContent
 
   @State private var showPicker = false
 
+  /// - Parameters:
+  ///   - directory: Target directory for file import. When non-nil, files from the
+  ///     picker/drag-drop are copied here (mkdir -p if needed); `onImport` must be
+  ///     set. When nil, no copy is performed — only `onSelect` mode works.
+  ///   - allowedContentTypes: Filter by UTI (e.g. `[.zip]`). Derived from
+  ///     `allowedSuffixes` when nil.
+  ///   - allowedSuffixes: Filter by file extension (e.g. `[".zip"]`). Used to derive
+  ///     `allowedContentTypes` when the latter is nil.
+  ///   - allowsMultipleSelection: When `true`, accepts multiple files.
+  ///     `onImport` is called once with the full list of imported filenames.
+  ///     `onSelect` receives all URLs in a single callback.
+  ///   - initialDirectory: Starting directory for the file picker. Use with
+  ///     `onDirectoryChanged` to persist the user's last-picked directory.
+  ///   - hasFile: Whether a file is currently selected; shows a clear (x) button
+  ///     when `true` and `onClear` is provided.
+  ///   - label: The button label shown in the UI.
+  ///   - onImport: Import callback — receives the first filename and the full list
+  ///     of imported filenames. Mutually exclusive with `onSelect`.
+  ///   - onSelect: Raw URL callback — receives file URL(s) without copying.
+  ///     Mutually exclusive with `onImport`.
+  ///   - onClear: Called when the user clicks the clear (x) button.
+  ///   - onDirectoryChanged: Called with the directory URL of the last-selected file.
+  ///     Pair with `initialDirectory` to persist the picker directory.
+  ///   - accessibilityId: Accessibility identifier for UI testing.
+  ///   - dropContent: Drag-drop zone content (e.g. `dropZoneLabel(".zip")`). Defines
+  ///     the drop target area.
   init(
     directory: URL? = nil,
     allowedContentTypes: [UTType]? = nil,
