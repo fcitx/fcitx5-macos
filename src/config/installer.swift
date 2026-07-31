@@ -26,6 +26,7 @@ func getPluginDescriptor(_ plugin: String) -> URL {
 }
 
 func getFilesFromDescriptor(_ descriptor: URL) -> [String] {
+  guard descriptor.exists() else { return [] }
   guard let json = readJSON(descriptor) as? [String: Any] else {
     FCITX_WARN("Skipped invalid JSON \(descriptor.localPath())")
     return []

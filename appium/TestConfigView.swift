@@ -16,6 +16,10 @@ struct TestConfigView: View {
         NSApp.mainWindow?.close()
         ConfigWindowController.openWindow("theme", ThemeEditorController.self)
       }.accessibilityIdentifier("Theme")
+      Button("Plugin Manager") {
+        NSApp.mainWindow?.close()
+        ConfigWindowController.openWindow("plugin", PluginManager.self)
+      }.accessibilityIdentifier("Plugin Manager")
       Button("Advanced") {
         NSApp.mainWindow?.close()
         ConfigWindowController.openWindow("advanced", AdvancedController.self)
