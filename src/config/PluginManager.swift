@@ -42,6 +42,18 @@ private func getAutoAddIms(_ plugin: String) -> [String] {
   return json["input_methods"] as? [String] ?? []
 }
 
+private func autoAddIMs(_ plugins: [String]) {
+  Fcitx.reload()
+  // Otherwise user knows how to play with it, don't mess it up.
+  if Fcitx.imGroupCount() == 1 {
+    // Don't add IMs for dependencies.
+    let inputMethods = plugins.flatMap { getAutoAddIms($0) }
+    for im in inputMethods {
+      Fcitx.imAddToCurrentGroup(im)
+    }
+  }
+}
+
 @MainActor
 class PluginVM: ObservableObject {
   @Published private(set) var installedPlugins = [Plugin]()
@@ -285,16 +297,8 @@ struct PluginView: View {
           showDownloadFailed = true
           return
         }
-        // Don't add IMs for dependencies.
-        let inputMethods = downloadedPlugins.flatMap { getAutoAddIms($0) }
-        Fcitx.setupI18N()  // Register .mo.
-        Fcitx.reload()
-        if Fcitx.imGroupCount() == 1 {
-          // Otherwise user knows how to play with it, don't mess it up.
-          for im in inputMethods {
-            Fcitx.imAddToCurrentGroup(im)
-          }
-        }
+        Fcitx.setupI18N()  // Register .mo. Must be before reload (first step of autoAddIMs).
+        autoAddIMs(Array(downloadedPlugins))
         ConfigWindowController.refreshAll()
       }
     }
@@ -410,33 +414,49 @@ struct PluginView: View {
             Text("Install")
           }.disabled(selectedAvailable.isEmpty || processing)
             .buttonStyle(.borderedProminent)
-          Button {
-            let _ = selectFile(
-              allowsMultipleSelection: false,
-              canChooseDirectories: false,
-              canChooseFiles: true,
-              allowedContentTypes: fileTypes(["bz2"]),
-              directoryURL: URL(
-                fileURLWithPath: homeDir.appendingPathComponent("Downloads").localPath())
-            ) { urls, _ in
+          SelectFileButton(
+            allowedSuffixes: [".bz2"],
+            allowsMultipleSelection: true,
+            initialDirectory: URL(
+              fileURLWithPath: homeDir.appendingPathComponent("Downloads").localPath()),
+            hasFile: false,
+            label: { Text("Install manually") },
+            onSelect: { urls in
+              var installedPlugins = Set<String>()
               for url in urls {
                 let fileName = url.lastPathComponent
-                for pluginName in pluginMap.keys {
-                  if fileName == getPluginFileName(pluginName, native: true) {
-                    mkdirP(cacheDir.localPath())
-                    let cacheFileURL = getCacheURL(pluginName, native: true)
-                    let _ = copyFile(url, cacheFileURL)
-                    let _ = exec(
-                      "/usr/bin/xattr", ["-dr", "com.apple.quarantine", cacheFileURL.localPath()])
-                    let _ = extractPlugin(pluginName, native: true)
-                    restart()
-                  }
+                guard fileName.hasSuffix(".tar.bz2") else { continue }
+                let base = url.deletingPathExtension().deletingPathExtension().lastPathComponent
+                let pluginName: String
+                let native: Bool
+                if base.hasSuffix("-any") {
+                  pluginName = String(base.dropLast(4))
+                  native = false
+                } else if base.hasSuffix("-\(arch)") {
+                  pluginName = String(base.dropLast("-\(arch)".count))
+                  native = true
+                } else {
+                  showInvalidFileName = true
+                  continue
                 }
+                mkdirP(cacheDir.localPath())
+                let cacheFileURL = getCacheURL(pluginName, native: native)
+                let _ = copyFile(url, cacheFileURL)
+                let _ = exec(
+                  "/usr/bin/xattr",
+                  ["-dr", "com.apple.quarantine", cacheFileURL.localPath()])
+                let _ = extractPlugin(pluginName, native: native)
+                installedPlugins.insert(pluginName)
               }
-              showInvalidFileName = true
+              autoAddIMs(Array(installedPlugins))
+              restart()
+            },
+            accessibilityId: "InstallManually"
+          ) {
+            VStack(spacing: gapSize) {
+              dropZoneLabel("*-\(arch)|any.tar.bz2")
+              Text("Fcitx5 will auto restart.")
             }
-          } label: {
-            Text("Install manually")
           }
         }
       }

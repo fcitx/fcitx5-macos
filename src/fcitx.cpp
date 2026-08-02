@@ -330,7 +330,13 @@ void imAddToCurrentGroup(const char *imName) noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
         auto &imMgr = fcitx.instance()->inputMethodManager();
         auto group = imMgr.currentGroup();
-        group.inputMethodList().emplace_back(imName);
+        auto &list = group.inputMethodList();
+        if (std::any_of(list.begin(), list.end(), [imName](const auto &item) {
+                return item.name() == imName;
+            })) {
+            return;
+        }
+        list.emplace_back(imName);
         imMgr.setGroup(group);
         imMgr.save();
     });

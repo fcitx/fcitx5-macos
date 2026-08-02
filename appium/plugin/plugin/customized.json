@@ -1,0 +1,10 @@
+{
+    "files": [
+        "share/fcitx5/inputmethod/customized.conf",
+        "share/fcitx5/table/customized.main.dict"
+    ],
+    "data_version": "",
+    "input_methods": [
+        "customized"
+    ]
+}
