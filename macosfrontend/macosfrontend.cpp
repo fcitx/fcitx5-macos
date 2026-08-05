@@ -212,7 +212,8 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
             // dummy preedit.
             keepVimPreedit = true;
             imSetCurrentIM("keyboard-us");
-        } else if (!ic->inputPanel().transient() && ic->inputPanel().empty()) {
+        } else if (ic->inputPanel().overlayMessage().empty() &&
+                   ic->inputPanel().empty()) {
             // HACK: For Terminal and iTerm, when pressing an handled ctrl, we
             // force a dummy preedit so that the following c or [ could be
             // processed by fcitx. It's known that Esc won't work in Terminal,
