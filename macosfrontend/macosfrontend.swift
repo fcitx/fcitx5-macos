@@ -40,11 +40,8 @@ private func isJetBrains(_ app: String) -> Bool {
 
 nonisolated(unsafe) private var controller: IMKInputController? = nil
 
-nonisolated(unsafe) private var client: IMKTextInput? = nil
-
-public func setController(_ ctrl: Any, _ cli: Any?) {
+public func setController(_ ctrl: Any) {
   controller = ctrl as? IMKInputController
-  client = cli as? IMKTextInput
 }
 
 @MainActor
@@ -140,7 +137,7 @@ public func commitAndSetPreeditAsync(
   _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool
 ) {
   Task { @MainActor in
-    guard let client = client else {
+    guard let client = controller?.client() else {
       return
     }
     commitAndSetPreeditSync(client, commit, preedit, caretPos, dummyPreedit)
@@ -149,7 +146,7 @@ public func commitAndSetPreeditAsync(
 
 public func commitAsync(_ commit: String) {
   Task { @MainActor in
-    guard let client = client else {
+    guard let client = controller?.client() else {
       return
     }
     commitString(client, commit)
@@ -157,7 +154,7 @@ public func commitAsync(_ commit: String) {
 }
 
 public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt32, UInt32) {
-  guard let client = client, location != NSNotFound else {
+  guard let client = controller?.client(), location != NSNotFound else {
     return ("", 0, 0)
   }
   let totalLength = client.length()
@@ -187,7 +184,7 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
 // It's called from C++ within dispatch_async(dispatch_get_main_queue())
 // so we can mark corresponding variables as nonisolated(unsafe).
 public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {
-  guard let client = client else {
+  guard let client = controller?.client() else {
     return []
   }
   var rect = NSRect(x: 0, y: 0, width: 0, height: 0)
@@ -211,13 +208,15 @@ public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {
 
 // Called from C++ within dispatch_async(dispatch_get_main_queue())
 public func getSelection() -> String {
-  guard let range = client?.selectedRange(),
-    range.location != NSNotFound
-  else {
+  guard let client = controller?.client() else {
+    return ""
+  }
+  let range = client.selectedRange()
+  if range.location == NSNotFound {
     return ""
   }
   var actualRange = NSRange(location: 0, length: 0)
-  return client?.string(from: range, actualRange: &actualRange) ?? ""
+  return client.string(from: range, actualRange: &actualRange) ?? ""
 }
 
 // Call it on
@@ -231,5 +230,5 @@ public func overrideKeyboardLayout() {
   let layout = String(get_current_group_layout())
   let appleLayout = layout == "PinyinKeyboard" ? "PinyinKeyboard" : layoutMap[layout] ?? "ABC"
   FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
-  client?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
+  controller?.client()?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
 }
