@@ -343,10 +343,17 @@ void WebPanel::update(UserInterfaceComponent component,
     case UserInterfaceComponent::InputPanel: {
         int highlighted = -1;
         const InputPanel &inputPanel = inputContext->inputPanel();
-        updateInputPanel(
-            instance_->outputFilter(inputContext, inputPanel.preedit()),
-            instance_->outputFilter(inputContext, inputPanel.auxUp()),
-            instance_->outputFilter(inputContext, inputPanel.auxDown()));
+        Text preedit, auxUp, auxDown;
+        if (!inputPanel.empty()) {
+            preedit =
+                instance_->outputFilter(inputContext, inputPanel.preedit());
+            auxUp = instance_->outputFilter(inputContext, inputPanel.auxUp());
+            auxDown =
+                instance_->outputFilter(inputContext, inputPanel.auxDown());
+        } else if (!inputPanel.overlayMessage().empty()) {
+            auxUp = inputPanel.overlayMessage();
+        }
+        updateInputPanel(preedit, auxUp, auxDown);
         bool pageable = false;
         bool hasPrev = false;
         bool hasNext = false;
@@ -524,8 +531,8 @@ void WebPanel::updateClient(InputContext *ic) {
     if (auto macosIC = dynamic_cast<MacosInputContext *>(ic)) {
         // Don't set dummy preedit when switching IM. It will clear current cell
         // in LibreOffice.
-        macosIC->setDummyPreedit(bool(panelShow_) &&
-                                 !macosIC->inputPanel().transient());
+        macosIC->setDummyPreedit(
+            bool(panelShow_) && macosIC->inputPanel().overlayMessage().empty());
         if (!macosIC->isSyncEvent) {
             macosIC->commitAndSetPreeditAsync();
         }
