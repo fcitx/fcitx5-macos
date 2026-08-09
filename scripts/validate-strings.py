@@ -1,22 +1,19 @@
 #!/usr/bin/env python3
 """Validate Apple .strings files for correct quote escaping and key consistency."""
 
-import sys
-import re
 import os
+import re
+import sys
 
 
-def parse_keys(path: str):
-    keys = []
-    try:
-        with open(path, "r", encoding="utf-16") as f:
-            for line in f:
-                line = line.rstrip("\n")
-                m = re.match(r'^"(.*)" = ".*";$', line)
-                if m:
-                    keys.append(m.group(1))
-    except Exception:
-        pass
+def parse_keys(path: str) -> list[str]:
+    keys: list[str] = []
+    with open(path, "r", encoding="utf-16") as f:
+        for line in f:
+            line = line.rstrip("\n")
+            m = re.match(r'^"(.*)" = ".*";$', line)
+            if m:
+                keys.append(m.group(1))
     return keys
 
 
@@ -29,19 +26,22 @@ def check_strings_file(path: str, en_keys=None):
                 m = re.match(r'^"(.*)" = "(.*)";$', line)
                 if not m:
                     continue
-                for group_name, group_val in [("key", m.group(1)), ("value", m.group(2))]:
+                for group_name, group_val in [
+                    ("key", m.group(1)),
+                    ("value", m.group(2)),
+                ]:
                     i = 0
                     while i < len(group_val):
                         if group_val[i] == "\\":
                             i += 2
                         elif group_val[i] == '"':
                             errors.append(
-                                f"  {path}:{lineno}: unescaped quote in {group_name}: ...{group_val[max(0,i-10):i+10]}..."
+                                f"  {path}:{lineno}: unescaped quote in {group_name}: ...{group_val[max(0, i - 10) : i + 10]}..."
                             )
                             break
                         else:
                             i += 1
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         errors.append(f"  {path}: {e}")
 
     if en_keys is not None:
@@ -67,7 +67,9 @@ if __name__ == "__main__":
             break
     if en_keys is None:
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        en_path = os.path.join(script_dir, "..", "assets", "en.lproj", "Localizable.strings")
+        en_path = os.path.join(
+            script_dir, "..", "assets", "en.lproj", "Localizable.strings"
+        )
         en_path = os.path.normpath(en_path)
         if os.path.exists(en_path):
             en_keys = parse_keys(en_path)

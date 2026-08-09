@@ -3,6 +3,8 @@
         "llvm-vs-code-extensions.vscode-clangd",
         "meta.pyrefly",
         "ms-python.python",
-        "swiftlang.swift-vscode"
+        "swiftlang.swift-vscode",
+        "twxs.cmake",
+        "vadimcn.vscode-lldb",
     ]
 }

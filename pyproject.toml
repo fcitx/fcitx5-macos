@@ -1,5 +1,0 @@
-[tool.ruff.lint]
-extend-select = ["I"]
-
-[tool.pyrefly]
-search-path = ["appium"]
