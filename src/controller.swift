@@ -21,7 +21,6 @@ class FcitxInputController: IMKInputController {
   let appId: String
   let isPasswordOnlyApp: Bool
   let accentColor: String
-  let client: Any!
 
   var lastModifiers = NSEvent.ModifierFlags(rawValue: 0)
   var selection: NSRange? = nil
@@ -36,10 +35,9 @@ class FcitxInputController: IMKInputController {
     self.appId = (client as? IMKTextInput)?.bundleIdentifier() ?? ""
     self.isPasswordOnlyApp = isPasswordOnly(app: self.appId)
     self.accentColor = getAccentColor(appId)
-    self.client = client
     self.uuid = create_input_context(appId, accentColor)
     super.init(server: server, delegate: delegate, client: client)
-    setController(self, self.client)
+    setController(self)
     // On Chrome's home page execute document.addEventListener('keydown', console.log),
     // restart Fcitx5, click another app, then click blank area of Chrome's home page.
     // Now FcitxInputController is created but activateServer is not called, so we have
@@ -52,7 +50,7 @@ class FcitxInputController: IMKInputController {
   }
 
   override func commitComposition(_ sender: Any!) {
-    guard let client = client as? IMKTextInput else {
+    guard let client = client() else {
       return
     }
     let res = String(commit_composition(uuid))
@@ -98,7 +96,7 @@ class FcitxInputController: IMKInputController {
   }
 
   func processKey(_ unicode: UInt32, _ modsVal: UInt32, _ code: UInt16, _ isRelease: Bool) -> Bool {
-    guard let client = client as? IMKTextInput else {
+    guard let client = client() else {
       return false
     }
     // It can change within an IMKInputController (e.g. sudo in Terminal), so must reevaluate before each key sent to IM.
@@ -154,10 +152,10 @@ class FcitxInputController: IMKInputController {
     // to blur, drag the browser to somewhere else, click the address bar and type, the candidate
     // window is placed in wrong position (actually the most recent call is deactivateServer wtf).
     // Fortunately handle is called regardless of activateServer call. IMK being IMK.
-    // Before 7244f30 the client is stored in C++ side, thus calling ic->focusIn inside
-    // MacosFrontend::keyEvent lets the correct client be used by getCaretCoordinates, which serves
+    // Before 7244f30 the client was stored in C++ side, thus calling ic->focusIn inside
+    // MacosFrontend::keyEvent let the correct client be used by getCaretCoordinates, which served
     // the same purpose here.
-    setController(self, self.client)
+    setController(self)
 
     let code = event.keyCode
     let mods = event.modifierFlags
@@ -193,7 +191,7 @@ class FcitxInputController: IMKInputController {
 
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
-    setController(self, self.client)
+    setController(self)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
     focus_in(uuid, isPassword)
