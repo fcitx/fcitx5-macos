@@ -73,7 +73,7 @@ def test_install_manually(driver: WebDriver, app: str):
         installed_dict.read_bytes() == (table_path / "customized.dict").read_bytes()
     ), CHANGE_NOT_SAVED
     profile = read_config(app, "profile")
-    assert profile["Groups/0/Items/1"]["Name"] == "customized", CHANGE_NOT_SAVED
+    assert profile["Groups/0/Items/2"]["Name"] == "customized", CHANGE_NOT_SAVED
 
     installed_json.unlink()
     installed_conf.unlink()

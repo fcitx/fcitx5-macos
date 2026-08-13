@@ -10,7 +10,13 @@ DefaultIM=pinyin
 # Name
 Name=pinyin
 # Layout
-Layout=
+# Layout=
+
+[Groups/0/Items/1]
+# Name
+Name=wbx
+# Layout
+# Layout=
 
 [GroupOrder]
 0=Default
