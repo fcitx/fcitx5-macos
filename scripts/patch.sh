@@ -1,19 +1,17 @@
 #!/bin/zsh
 set -e
 
+# Apply multiple patches to the given directory if it has no uncommitted changes.
 apply_patch() {
     local dir="$1"
-    local patch="$2"
+    shift
     if [ -z "$(git -C "$dir" status --porcelain --ignore-submodules=all)" ]; then
-        git apply --directory="$dir" "$patch"
-        echo "Applied $patch"
+        git apply --directory="$dir" "$@"
+        echo "Applied patches to $dir"
     else
-        echo "Skipping $patch: $dir has uncommitted changes"
+        echo "Skipping $dir: has uncommitted changes"
     fi
 }
 
-for patch in patches/*(N); do
-    apply_patch fcitx5 "$patch"
-done
-
+apply_patch fcitx5 patches/*(N)
 apply_patch fcitx5-webview/webview fcitx5-webview/patches/webview.patch

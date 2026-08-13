@@ -1,5 +1,3 @@
-from util.message import UI_WRONGLY_UPDATED
-from util.window import find_elements_by_id
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 from util.button import get_undo_redo
@@ -10,9 +8,15 @@ from util.message import (
     BUTTON_SHOULD_BE_ENABLED,
     CHANGE_NOT_SAVED,
     UI_NOT_UPDATED,
+    UI_WRONGLY_UPDATED,
 )
 from util.string import get_string_value
-from util.window import find_element_by_id, open_theme_config, reset_option
+from util.window import (
+    find_element_by_id,
+    find_elements_by_id,
+    open_theme_config,
+    reset_option,
+)
 
 CARET_SECTION = "Caret"
 STRING_ID = "Text"
