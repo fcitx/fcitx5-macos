@@ -6,10 +6,17 @@ fcitx5-macos is a macOS input method editor built with CMake + Ninja. Uses C++20
 
 ## Build
 
+After changing source code, run the build to verify it compiles:
+
 ```sh
 ./scripts/patch.sh
 cmake -B build/$(uname -m) -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/$(uname -m)
+```
+
+Installing to the system requires sudo and is a manual step:
+
+```sh
 sudo cmake --install build/$(uname -m)
 ```
 
