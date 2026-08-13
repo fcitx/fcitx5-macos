@@ -53,5 +53,5 @@ def test_add_input_methods(driver: WebDriver, app: str):
     assert find_element_by_id(driver, "keyboard-us"), UI_NOT_UPDATED
 
     profile = read_config(app, "profile")
-    assert profile["Groups/0/Items/1"]["Name"] == "hallelujah", CHANGE_NOT_SAVED
-    assert profile["Groups/0/Items/2"]["Name"] == "keyboard-us", CHANGE_NOT_SAVED
+    assert profile["Groups/0/Items/2"]["Name"] == "hallelujah", CHANGE_NOT_SAVED
+    assert profile["Groups/0/Items/3"]["Name"] == "keyboard-us", CHANGE_NOT_SAVED

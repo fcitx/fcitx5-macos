@@ -43,6 +43,10 @@ void activateActionById(int id, bool hotkey) noexcept;
 
 std::string isoName(const char *code) noexcept;
 
+// Check whether the string is a valid regular expression, using the same
+// rules as fcitx's regex option constrain.
+bool isRegexValid(const char *regex) noexcept;
+
 std::string getSymbolsOfLayout(const char *layout, bool shift) noexcept;
 
 // Tunnel variables

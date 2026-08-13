@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <thread>
 
+#include <fcitx-config/option.h>
 #include <fcitx-utils/i18n.h>
 #include <fcitx/action.h>
 #include <fcitx/inputmethodentry.h>
@@ -483,6 +484,10 @@ std::string isoName(const char *code) noexcept {
         return "";
     }
     return D_(ISO_639_3_DOMAIN, entry->name);
+}
+
+bool isRegexValid(const char *regex) noexcept {
+    return fcitx::RegexConstrain().check(regex);
 }
 
 static nlohmann::json actionToJson(fcitx::Action *action,
