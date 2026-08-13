@@ -37,6 +37,10 @@ void overrideKeyboardLayoutAsync() {
 MacosFrontend::MacosFrontend(Instance *instance)
     : instance_(instance),
       focusGroup_("macos", instance->inputContextManager()) {
+    // macOS's keypad is always number and never navigation. It doesn't support
+    // NumLock. Force NumLock for xkb so that keyboard-cn can produce numbers.
+    instance_->updateXkbStateMask(focusGroup_.display(), 0, 0,
+                                  static_cast<uint32_t>(KeyState::NumLock));
     // For update when switching internal input method of rime.
     eventHandlers_.emplace_back(instance_->watchEvent(
         EventType::InputContextUpdateUI, EventWatcherPhase::Default,
