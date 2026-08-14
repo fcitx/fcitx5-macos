@@ -29,11 +29,17 @@ add_executable(KeySwift testkey.swift
     ${PROJECT_SOURCE_DIR}/src/config/keycode.swift
     ${PROJECT_SOURCE_DIR}/src/config/keyrecorder.swift
 )
-target_compile_options(KeySwift PUBLIC
-    "$<$<COMPILE_LANGUAGE:Swift>:-cxx-interoperability-mode=default>"
-)
+target_compile_options(KeySwift PRIVATE "-cxx-interoperability-mode=default")
 target_link_libraries(KeySwift Keycode)
 add_test(NAME KeySwift COMMAND KeySwift)
+
+add_executable(KeyEventSwift testevent.swift
+    ${PROJECT_SOURCE_DIR}/src/config/keycode.swift
+    ${PROJECT_SOURCE_DIR}/src/config/keyrecorder.swift
+)
+target_compile_options(KeyEventSwift PRIVATE "-cxx-interoperability-mode=default")
+target_link_libraries(KeyEventSwift Keycode)
+add_test(NAME KeyEventSwift COMMAND KeyEventSwift)
 
 add_executable(TagSwift testtag.swift
     ${PROJECT_SOURCE_DIR}/src/config/tag.swift
