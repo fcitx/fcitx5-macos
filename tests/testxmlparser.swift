@@ -9,10 +9,20 @@ func main() -> Int {
   let url = URL(fileURLWithPath: CommandLine.arguments[1])
   let expected = [(shortcut: "msd", phrase: "马上到！"), (shortcut: "omw", phrase: "On my way!")]
   let actual = parseCustomPhraseXML(url)
-  assert(actual.count == expected.count)
-  for i in 0..<actual.count {
-    assert(actual[i].shortcut == expected[i].shortcut)
-    assert(actual[i].phrase == expected[i].phrase)
+  var failed = false
+  if actual.count != expected.count {
+    print("count: expected \(expected.count), got \(actual.count)")
+    failed = true
   }
-  return 0
+  for i in 0..<min(actual.count, expected.count) {
+    if actual[i].shortcut != expected[i].shortcut {
+      print("shortcut[\(i)]: expected \(expected[i].shortcut), got \(actual[i].shortcut)")
+      failed = true
+    }
+    if actual[i].phrase != expected[i].phrase {
+      print("phrase[\(i)]: expected \(expected[i].phrase), got \(actual[i].phrase)")
+      failed = true
+    }
+  }
+  return failed ? 1 : 0
 }

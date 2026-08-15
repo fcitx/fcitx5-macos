@@ -2,56 +2,68 @@ import Foundation
 
 @_cdecl("main")
 func main() -> Int {
-// targetTag can be nil, version or latest. When latestAvailable is false, targetTag can't be latest.
-// So it's a combination of 2*2*5 = 20 cases.
+  // targetTag can be nil, version or latest. When latestAvailable is false, targetTag can't be latest.
+  // So it's a combination of 2*2*5 = 20 cases.
+  var failed = false
 
-// Release to Release
+  // Release to Release
   // latest >> stable = current
-  assert(getTag(currentDebug: false, targetDebug: false, latestAvailable: false, targetTag: nil) == nil)
-  // latest >> stable > current
-  assert(getTag(currentDebug: false, targetDebug: false, latestAvailable: false, targetTag: "1") == "1")
-  // latest = current
-  assert(getTag(currentDebug: false, targetDebug: false, latestAvailable: true, targetTag: nil) == nil)
-  // stable > current
-  assert(getTag(currentDebug: false, targetDebug: false, latestAvailable: true, targetTag: "1") == "1")
-  // latest > current >= stable
-  assert(getTag(currentDebug: false, targetDebug: false, latestAvailable: true, targetTag: "latest") == "latest")
+  let cases: [(String, Bool, Bool, Bool, String?, String?)] = [
+    // Release to Release
+    // latest >> stable = current
+    ("release->release latest>>stable=current", false, false, false, nil, nil),
+    // latest >> stable > current
+    ("release->release latest>>stable>current", false, false, false, "1", "1"),
+    // latest = current
+    ("release->release latest=current", false, false, true, nil, nil),
+    // stable > current
+    ("release->release stable>current", false, false, true, "1", "1"),
+    // latest > current >= stable
+    ("release->release latest>current>=stable", false, false, true, "latest", "latest"),
 
-// Release to Debug
-  // latest >> stable = current
-  let _ = getTag(currentDebug: false, targetDebug: true, latestAvailable: false, targetTag: nil) // Switch button not clickable.
-  // latest >> stable > current
-  let _ = getTag(currentDebug: false, targetDebug: true, latestAvailable: false, targetTag: "1") // Switch button not clickable.
-  // latest = current
-  assert(getTag(currentDebug: false, targetDebug: true, latestAvailable: true, targetTag: nil) == "latest")
-  // stable > current
-  assert(getTag(currentDebug: false, targetDebug: true, latestAvailable: true, targetTag: "1") == "latest")
-  // latest > current >= stable
-  assert(getTag(currentDebug: false, targetDebug: true, latestAvailable: true, targetTag: "latest") == "latest")
+    // Release to Debug
+    // latest = current
+    ("release->debug latest=current", false, true, true, nil, "latest"),
+    // stable > current
+    ("release->debug stable>current", false, true, true, "1", "latest"),
+    // latest > current >= stable
+    ("release->debug latest>current>=stable", false, true, true, "latest", "latest"),
 
-// Debug to Release
-  // latest >> stable = current
-  let _ = getTag(currentDebug: true, targetDebug: false, latestAvailable: false, targetTag: nil) // We don't provide debug stable.
-  // latest >> stable > current
-  assert(getTag(currentDebug: true, targetDebug: false, latestAvailable: false, targetTag: "1") == "1")
-  // latest = current
-  assert(getTag(currentDebug: true, targetDebug: false, latestAvailable: true, targetTag: nil) == "latest")
-  // stable > current
-  assert(getTag(currentDebug: true, targetDebug: false, latestAvailable: true, targetTag: "1") == "1")
-  // latest > current >= stable
-  assert(getTag(currentDebug: true, targetDebug: false, latestAvailable: true, targetTag: "latest") == "latest")
+    // Debug to Release
+    // latest >> stable > current
+    ("debug->release latest>>stable>current", true, false, false, "1", "1"),
+    // latest = current
+    ("debug->release latest=current", true, false, true, nil, "latest"),
+    // stable > current
+    ("debug->release stable>current", true, false, true, "1", "1"),
+    // latest > current >= stable
+    ("debug->release latest>current>=stable", true, false, true, "latest", "latest"),
 
-// Debug to Debug
-  // latest >> stable = current
-  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: false, targetTag: nil) // We don't provide debug stable.
-  // latest >> stable > current
-  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: false, targetTag: "1") // Update button not clickable.
-  // latest = current
-  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: true, targetTag: nil) // Update button not clickable.
-  // stable > current
-  assert(getTag(currentDebug: true, targetDebug: true, latestAvailable: true, targetTag: "1") == "latest")
-  // latest > current >= stable
-  assert(getTag(currentDebug: true, targetDebug: true, latestAvailable: true, targetTag: "latest") == "latest")
+    // Debug to Debug
+    // stable > current
+    ("debug->debug stable>current", true, true, true, "1", "latest"),
+    // latest > current >= stable
+    ("debug->debug latest>current>=stable", true, true, true, "latest", "latest"),
+  ]
+  for (name, currentDebug, targetDebug, latestAvailable, targetTag, expected) in cases {
+    let actual = getTag(
+      currentDebug: currentDebug, targetDebug: targetDebug, latestAvailable: latestAvailable,
+      targetTag: targetTag)
+    if actual != expected {
+      print("\(name): expected \(expected as Any), got \(actual as Any)")
+      failed = true
+    }
+  }
 
-  return 0
+  // Release to Debug: Switch button not clickable, result ignored.
+  let _ = getTag(currentDebug: false, targetDebug: true, latestAvailable: false, targetTag: nil)
+  let _ = getTag(currentDebug: false, targetDebug: true, latestAvailable: false, targetTag: "1")
+  // Debug to Release: We don't provide debug stable.
+  let _ = getTag(currentDebug: true, targetDebug: false, latestAvailable: false, targetTag: nil)
+  // Debug to Debug: We don't provide debug stable; Update button not clickable.
+  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: false, targetTag: nil)
+  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: false, targetTag: "1")
+  let _ = getTag(currentDebug: true, targetDebug: true, latestAvailable: true, targetTag: nil)
+
+  return failed ? 1 : 0
 }

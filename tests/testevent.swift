@@ -55,11 +55,15 @@ let cases: [(String, Case)] = [
 
 @_cdecl("main")
 func main() -> Int {
+  var failed = false
   for (name, c) in cases {
     let actual = keyEventUnicode(
       characters: c.characters, charactersIgnoringModifiers: c.charactersIgnoringModifiers, mods: c.mods)
     let expected = keyToUnicode(c.expected)
-    assert(actual == expected, "\(name): expected \(expected), got \(actual)")
+    if actual != expected {
+      failed = true
+      print("\(name): expected \(expected), got \(actual)")
+    }
   }
-  return 0
+  return failed ? 1 : 0
 }
