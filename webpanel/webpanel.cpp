@@ -462,7 +462,8 @@ void WebPanel::update(UserInterfaceComponent component,
                 }
                 // Disable scroll mode if all candidates are on the same
                 // page.
-                if (hasPrev || hasNext) {
+                if (hasPrev || hasNext || bulk->totalSize() > list->size() ||
+                    bulk->totalSize() < 0) {
                     scrollState_ = candidate_window::scroll_state_t::ready;
                 } else {
                     pageable = false;
@@ -681,8 +682,51 @@ void WebPanel::scroll(int start, int count) {
     if (!bulk) {
         return;
     }
+    int highlighted = -1;
+    int fetchCount = count;
+    if (start == 0) {
+        if (dynamic_) {
+            const auto *bulkCursor = list->toBulkCursor();
+            const int globalCursor =
+                bulkCursor ? bulkCursor->globalCursorIndex() : -1;
+            if (globalCursor >= 0) {
+                highlighted = globalCursor;
+            } else {
+                const int cursorIndex = list->cursorIndex();
+                highlighted = pageStart_ + std::max(0, cursorIndex);
+            }
+        } else {
+            const auto *bulkCursor = list->toBulkCursor();
+            const int globalCursor =
+                bulkCursor ? bulkCursor->globalCursorIndex() : -1;
+            if (globalCursor >= 0) {
+                highlighted = globalCursor;
+            } else if (list->size() > 0) {
+                int cursor = std::max(0, list->cursorIndex());
+                if (cursor < list->size()) {
+                    const auto *currentCandidate = &list->candidate(cursor);
+                    const int total = bulk->totalSize();
+                    for (int i = 0; total < 0 || i < total; ++i) {
+                        try {
+                            if (&bulk->candidateFromAll(i) == currentCandidate) {
+                                highlighted = i;
+                                break;
+                            }
+                        } catch (const std::invalid_argument &) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (highlighted < 0) {
+            highlighted = 0;
+        }
+        fetchCount = std::max(
+            count, highlighted + *config_.scrollMode->maxColumnCount);
+    }
     int size = bulk->totalSize();
-    int end = size < 0 ? start + count : std::min(start + count, size);
+    int end = size < 0 ? start + fetchCount : std::min(start + fetchCount, size);
     bool endReached = size == end;
     std::vector<candidate_window::Candidate> candidates;
     for (int i = start; i < end; ++i) {
@@ -701,8 +745,8 @@ void WebPanel::scroll(int start, int count) {
         }
     }
     scrollState_ = candidate_window::scroll_state_t::scrolling;
-    window_->set_candidates(std::move(candidates), -1, scrollState_, start == 0,
-                            endReached);
+    window_->set_candidates(std::move(candidates), highlighted, scrollState_,
+                            start == 0, endReached);
     updateClient(ic);
     showAsync(true);
 }
