@@ -48,6 +48,23 @@ let cases: [(String, Case)] = [
   ("Alt+comma", Case(.option, "≤", ",", ",")),
   ("Alt+Shift+comma", Case(.option.union(.shift), "¯", ",", ",")),
 
+  // Pinyin Keyboard (pass through and let osx_unicode_to_fcitx_keysym handle).
+  ("；", Case([], "；", "；", "；")),
+  ("： (Shift+；)", Case(.shift, "：", "；", "：")),
+  ("Control+；", Case(.control, ";", "；", "；")),
+  ("Control+Shift+；", Case(.control.union(.shift), ";", "；", "；")),
+  ("Alt+；", Case(.option, "…", "；", "；")),
+  ("Alt+Shift+；", Case(.option.union(.shift), "Ú", "；", "；")),
+  ("Cmd+；", Case(.command, ";", "；", "；")),
+  ("Cmd+Shift+；", Case(.command.union(.shift), ":", "；", "；")),
+  ("Control+Alt+；", Case(.control.union(.option), ";", "；", "；")),
+  ("Control+Alt+Shift+；", Case(.control.union(.option).union(.shift), ";", "；", "；")),
+  ("Alt+Cmd+；", Case(.option.union(.command), "…", "；", "；")),
+  ("Alt+Cmd+Shift+，", Case(.option.union(.command).union(.shift), "Ú", "；", "；")),
+  ("Control+Cmd+；", Case(.control.union(.command), ";", "；", "；")),
+  ("Control+Cmd+Shift+；", Case(.command.union(.command).union(.shift), ";", "；", "；")),
+  ("Control+Option+Cmd+Shift+；", Case(.control.union(.option).union(.command).union(.shift), ";", "；", "；")),
+
   // Type safety.
   ("nil characters", Case([], nil, "a", "")),
   ("nil charactersIgnoringModifiers", Case([], "a", nil, "")),

@@ -288,7 +288,13 @@ fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
         for (int i = 0; i < sizeof(char_mappings) / sizeof(char_mappings[0]);
              i++) {
             if (char_mappings[i].osxKeycode == osxKeycode) {
-                unicode = (osxModifiers & NSEventModifierFlagShift)
+                // Only remap shifted punctuation when it is a genuine Shift
+                // key, i.e. no Control/Option/Command is involved. Otherwise
+                // the key is e.g. Control+Shift+comma, which should stay comma.
+                unicode = ((osxModifiers & NSEventModifierFlagShift) &&
+                           !(osxModifiers & (NSEventModifierFlagControl |
+                                             NSEventModifierFlagOption |
+                                             NSEventModifierFlagCommand)))
                               ? char_mappings[i].shiftedAsciiChar
                               : char_mappings[i].asciiChar;
                 break;
