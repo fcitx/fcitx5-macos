@@ -506,24 +506,61 @@ void WebPanel::update(UserInterfaceComponent component,
                 const auto *bulkCursor = list->toBulkCursor();
                 const int globalCursor =
                     bulkCursor ? bulkCursor->globalCursorIndex() : -1;
-                int pageStart = 0;
+                const auto *pageableList = list->toPageable();
                 const int cursorIndex = list->cursorIndex();
-                if (globalCursor >= 0 && cursorIndex >= 0) {
-                    pageStart = globalCursor - cursorIndex;
-                } else if (list->size() > 0) {
-                    // Paging may leave the cursor on another page. Locate the
-                    // first visible candidate in the bulk list in that case.
+                int pageStart = -1;
+
+                if (list->size() > 0) {
                     const auto *firstCandidate = &list->candidate(0);
                     const int total = bulk->totalSize();
-                    for (int i = 0; total < 0 || i < total; ++i) {
+                    int searchStart = 0;
+                    if (pageableList && pageableList->currentPage() > 0) {
+                        searchStart = std::max(
+                            0, (pageableList->currentPage() - 1) * list->size());
+                    }
+                    for (int i = searchStart; total < 0 || i < total; ++i) {
                         try {
-                            if (&bulk->candidateFromAll(i) == firstCandidate) {
+                            const auto &candidate = bulk->candidateFromAll(i);
+                            if (&candidate == firstCandidate ||
+                                (candidate.text().toString() ==
+                                     firstCandidate->text().toString() &&
+                                 candidate.comment().toString() ==
+                                     firstCandidate->comment().toString())) {
                                 pageStart = i;
                                 break;
                             }
                         } catch (const std::invalid_argument &) {
                             break;
                         }
+                    }
+                    if (pageStart < 0 && searchStart > 0) {
+                        for (int i = 0; i < searchStart; ++i) {
+                            try {
+                                const auto &candidate = bulk->candidateFromAll(i);
+                                if (&candidate == firstCandidate ||
+                                    (candidate.text().toString() ==
+                                         firstCandidate->text().toString() &&
+                                     candidate.comment().toString() ==
+                                         firstCandidate->comment().toString())) {
+                                    pageStart = i;
+                                    break;
+                                }
+                            } catch (const std::invalid_argument &) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (pageStart < 0) {
+                    if (pageableList && pageableList->currentPage() >= 0 &&
+                        list->size() > 0) {
+                        pageStart = pageableList->currentPage() * list->size();
+                    } else if (globalCursor >= 0 && cursorIndex >= 0 &&
+                               globalCursor >= cursorIndex) {
+                        pageStart = globalCursor - cursorIndex;
+                    } else {
+                        pageStart = 0;
                     }
                 }
                 pageStart_ = std::max(0, pageStart);
@@ -559,13 +596,13 @@ void WebPanel::update(UserInterfaceComponent component,
                         break;
                     }
                 }
-                if (globalCursor >= pageStart_ &&
-                    globalCursor <
-                        pageStart_ + static_cast<int>(candidates.size())) {
-                    highlighted = globalCursor - pageStart_;
-                } else if (cursorIndex >= 0 &&
-                           cursorIndex < static_cast<int>(candidates.size())) {
+                if (cursorIndex >= 0 &&
+                    cursorIndex < static_cast<int>(candidates.size())) {
                     highlighted = cursorIndex;
+                } else if (globalCursor >= pageStart_ &&
+                           globalCursor <
+                               pageStart_ + static_cast<int>(candidates.size())) {
+                    highlighted = globalCursor - pageStart_;
                 } else {
                     highlighted = -1;
                 }
@@ -730,7 +767,12 @@ void WebPanel::scroll(int start, int count) {
                     const int total = bulk->totalSize();
                     for (int i = 0; total < 0 || i < total; ++i) {
                         try {
-                            if (&bulk->candidateFromAll(i) == currentCandidate) {
+                            const auto &candidate = bulk->candidateFromAll(i);
+                            if (&candidate == currentCandidate ||
+                                (candidate.text().toString() ==
+                                     currentCandidate->text().toString() &&
+                                 candidate.comment().toString() ==
+                                     currentCandidate->comment().toString())) {
                                 highlighted = i;
                                 break;
                             }
