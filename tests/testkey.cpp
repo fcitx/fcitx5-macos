@@ -7,21 +7,17 @@ void test_osx_to_fcitx() {
     FCITX_ASSERT(osx_unicode_to_fcitx_keysym('0', 0, kVK_ANSI_Keypad0) ==
                  FcitxKey_KP_0);
     FCITX_ASSERT(osx_unicode_to_fcitx_keysym('a', 0, 0) == FcitxKey_a);
-    FCITX_ASSERT(osx_unicode_to_fcitx_keysym('a', NSEventModifierFlagShift,
-                                             0) == FcitxKey_A);
-    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(161 /* ¡ */,
-                                             NSEventModifierFlagOption,
-                                             kVK_ANSI_1) == FcitxKey_1);
-    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(8260 /* ⁄ */,
-                                             NSEventModifierFlagShift |
-                                                 NSEventModifierFlagOption,
-                                             kVK_ANSI_1) == FcitxKey_exclam);
+
     ::pinyinKeyboard = true;
     FCITX_ASSERT(osx_unicode_to_fcitx_keysym(65292 /* ， */, 0,
                                              kVK_ANSI_Comma) == FcitxKey_comma);
     FCITX_ASSERT(
         osx_unicode_to_fcitx_keysym(12299 /* 》 */, NSEventModifierFlagShift,
                                     kVK_ANSI_Period) == FcitxKey_greater);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(
+                     12299 /* 》 */,
+                     NSEventModifierFlagShift | NSEventModifierFlagControl,
+                     kVK_ANSI_Period) == FcitxKey_period);
     ::pinyinKeyboard = false;
 
     FCITX_ASSERT(osx_keycode_to_fcitx_keycode(kVK_ANSI_0) == 11 + 8);

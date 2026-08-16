@@ -208,34 +208,6 @@ static struct {
     char asciiChar;
     char shiftedAsciiChar;
 } char_mappings[] = {
-    // alphabet
-    {kVK_ANSI_A, 'a', 'A'},
-    {kVK_ANSI_B, 'b', 'B'},
-    {kVK_ANSI_C, 'c', 'C'},
-    {kVK_ANSI_D, 'd', 'D'},
-    {kVK_ANSI_E, 'e', 'E'},
-    {kVK_ANSI_F, 'f', 'F'},
-    {kVK_ANSI_G, 'g', 'G'},
-    {kVK_ANSI_H, 'h', 'H'},
-    {kVK_ANSI_I, 'i', 'I'},
-    {kVK_ANSI_J, 'j', 'J'},
-    {kVK_ANSI_K, 'k', 'K'},
-    {kVK_ANSI_L, 'l', 'L'},
-    {kVK_ANSI_M, 'm', 'M'},
-    {kVK_ANSI_N, 'n', 'N'},
-    {kVK_ANSI_O, 'o', 'O'},
-    {kVK_ANSI_P, 'p', 'P'},
-    {kVK_ANSI_Q, 'q', 'Q'},
-    {kVK_ANSI_R, 'r', 'R'},
-    {kVK_ANSI_S, 's', 'S'},
-    {kVK_ANSI_T, 't', 'T'},
-    {kVK_ANSI_U, 'u', 'U'},
-    {kVK_ANSI_V, 'v', 'V'},
-    {kVK_ANSI_W, 'w', 'W'},
-    {kVK_ANSI_X, 'x', 'X'},
-    {kVK_ANSI_Y, 'y', 'Y'},
-    {kVK_ANSI_Z, 'z', 'Z'},
-
     // number row with shift mappings
     {kVK_ANSI_0, '0', ')'},
     {kVK_ANSI_1, '1', '!'},
@@ -309,38 +281,20 @@ fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
             return pair.sym;
         }
     }
-    // macOS sends special unicode for Alt+(Shift+) non-whitespace key thus
-    // can't match any configured hotkey in fcitx. So we revert unicode to
-    // ascii, which doesn't change the committing special char behavior if
-    // rejected by fcitx.
-    if ((osxModifiers & ~NSEventModifierFlagShift) ==
-        NSEventModifierFlagOption) {
-        for (const auto &pair : char_mappings) {
-            if (pair.osxKeycode == osxKeycode) {
-                unicode = (osxModifiers & NSEventModifierFlagShift)
-                              ? pair.shiftedAsciiChar
-                              : pair.asciiChar;
-                break;
-            }
-        }
-    }
-    // Send capital keysym when shift is pressed (bug #101)
-    // This is for Squirrel compatibility:
-    // Squirrel recognizes Control+Shift+F and Control+Shift+0
-    // but not Control+Shift+f and Control+Shift+parenright
-    else if ((unicode >= 'a') && (unicode <= 'z') &&
-             (osxModifiers & NSEventModifierFlagShift)) {
-        unicode += 'A' - 'a';
-    }
     // If com.apple.keylayout.PinyinKeyboard is used, we need to map Chinese
     // punctuations back to ASCII so that engines can handle them properly, e.g.
     // Rime when typing pinyin followed by comma.
-    else if (pinyinKeyboard &&
-             (osxModifiers & ~NSEventModifierFlagShift) == 0) {
-        for (int i = 26; i < sizeof(char_mappings) / sizeof(char_mappings[0]);
+    if (pinyinKeyboard) {
+        for (int i = 0; i < sizeof(char_mappings) / sizeof(char_mappings[0]);
              i++) {
             if (char_mappings[i].osxKeycode == osxKeycode) {
-                unicode = (osxModifiers & NSEventModifierFlagShift)
+                // Only remap shifted punctuation when it is a genuine Shift
+                // key, i.e. no Control/Option/Command is involved. Otherwise
+                // the key is e.g. Control+Shift+comma, which should stay comma.
+                unicode = ((osxModifiers & NSEventModifierFlagShift) &&
+                           !(osxModifiers & (NSEventModifierFlagControl |
+                                             NSEventModifierFlagOption |
+                                             NSEventModifierFlagCommand)))
                               ? char_mappings[i].shiftedAsciiChar
                               : char_mappings[i].asciiChar;
                 break;

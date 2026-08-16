@@ -163,15 +163,10 @@ class FcitxInputController: IMKInputController {
 
     switch event.type {
     case .keyDown:
-      var unicode: UInt32 = 0
-      // For Shift+comma, charactersIgnoringModifiers is comma, characters is less.
-      // For Control+Shift+comma, both are comma.
-      // This behavior is different with what key recorder gets.
-      // We need less for Shift+comma, so we use characters.
-      // But then for Control+Shift+A, characters is \u{01}, so we remove the control key.
-      if let characters = event.characters {
-        unicode = removeCtrl(char: keyToUnicode(characters))
-      }
+      let unicode = keyEventUnicode(
+        characters: event.characters,
+        charactersIgnoringModifiers: event.charactersIgnoringModifiers,
+        mods: mods)
       let handled = processKey(unicode, modsVal, code, false)
       return handled
     case .flagsChanged:
@@ -289,26 +284,6 @@ class FcitxInputController: IMKInputController {
     let fromHotkey = lastModifiers.rawValue != 0 && action.hotkey?[0] != nil
     Fcitx.activateActionById(Int32(action.id), fromHotkey)
   }
-}
-
-/// Convert a character like ^X to the corresponding lowercase letter x.
-private func removeCtrl(char: UInt32) -> UInt32 {
-  if char == 0x1b {  // ^[
-    return 0x5b
-  }
-  if char == 0x1c {  // ^\
-    return 0x5c
-  }
-  if char == 0x1d {  // ^]
-    return 0x5d
-  }
-  if char == 0x1f {  // ^-
-    return 0x2d
-  }
-  if char <= 0x1F {
-    return char + 0x60
-  }
-  return char
 }
 
 /// Extract the representedObject of the sender of an IMK menu action.

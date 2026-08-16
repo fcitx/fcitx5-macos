@@ -1,14 +1,24 @@
-func testPrefixForStatusItem() {
-  assert(prefixForStatusItem("") == "🐧")
-  assert(prefixForStatusItem("A") == "A")
-  assert(prefixForStatusItem("拼") == "拼")
-  assert(prefixForStatusItem("en") == "en")
-  assert(prefixForStatusItem("双拼") == "双")
-  assert(prefixForStatusItem("Bamboo") == "Ba")
+func testPrefixForStatusItem() -> Bool {
+  let cases: [(String, String)] = [
+    ("", "🐧"),
+    ("A", "A"),
+    ("拼", "拼"),
+    ("en", "en"),
+    ("双拼", "双"),
+    ("Bamboo", "Ba"),
+  ]
+  var failed = false
+  for (input, expected) in cases {
+    let actual = prefixForStatusItem(input)
+    if actual != expected {
+      print("prefixForStatusItem(\(input)): expected \(expected), got \(actual)")
+      failed = true
+    }
+  }
+  return !failed
 }
 
 @_cdecl("main")
 func main() -> Int {
-  testPrefixForStatusItem()
-  return 0
+  return testPrefixForStatusItem() ? 0 : 1
 }
