@@ -39,9 +39,14 @@ private func isJetBrains(_ app: String) -> Bool {
 }
 
 nonisolated(unsafe) private var controller: IMKInputController? = nil
+nonisolated(unsafe) private var currentLayout: String? = nil
 
 public func setController(_ ctrl: Any) {
-  controller = ctrl as? IMKInputController
+  guard let ctrl = ctrl as? IMKInputController, controller != ctrl else {
+    return
+  }
+  controller = ctrl
+  currentLayout = nil
 }
 
 @MainActor
@@ -229,6 +234,10 @@ public func getSelection() -> String {
 public func overrideKeyboardLayout() {
   let layout = String(get_current_group_layout())
   let appleLayout = layout == "PinyinKeyboard" ? "PinyinKeyboard" : layoutMap[layout] ?? "ABC"
+  guard let client = controller?.client(), currentLayout != appleLayout else {
+    return
+  }
   FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
-  controller?.client()?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
+  currentLayout = appleLayout
+  client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
 }
