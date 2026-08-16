@@ -162,8 +162,10 @@ WebPanel::WebPanel(Instance *instance)
                 });
                 return keyEvent.filterAndAccept();
             }
+            const bool isMacOSScroll = *config_.scrollMode->macosStyleScroll;
             if (scrollState_ == candidate_window::scroll_state_t::ready &&
-                key.checkKeyList(*config_.scrollMode->expand)) {
+                (key.checkKeyList(*config_.scrollMode->expand) ||
+                 (isMacOSScroll && key.check(FcitxKey_bracketright)))) {
                 if (keyEvent.isRelease()) {
                     return;
                 }
@@ -171,6 +173,26 @@ WebPanel::WebPanel(Instance *instance)
                 return keyEvent.filterAndAccept();
             }
             if (scrollState_ == candidate_window::scroll_state_t::scrolling) {
+                if (isMacOSScroll) {
+                    if (key.check(FcitxKey_bracketright)) {
+                        if (!keyEvent.isRelease()) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                              window_->scroll_key_action(
+                                  candidate_window::scroll_key_action_t::down);
+                            });
+                        }
+                        return keyEvent.filterAndAccept();
+                    }
+                    if (key.check(FcitxKey_bracketleft)) {
+                        if (!keyEvent.isRelease()) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                              window_->scroll_key_action(
+                                  candidate_window::scroll_key_action_t::up);
+                            });
+                        }
+                        return keyEvent.filterAndAccept();
+                    }
+                }
                 static const std::vector<candidate_window::scroll_key_action_t>
                     selectActions = {
                         candidate_window::scroll_key_action_t::one,

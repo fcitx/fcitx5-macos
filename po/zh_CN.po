@@ -264,7 +264,11 @@ msgstr "动态候选词个数"
 msgid "Auto expand"
 msgstr "自动展开"
 
-#: webpanel/webpanel.h:208
+#: webpanel/webpanel.h:209
+msgid "macOS style [ ] scroll navigation"
+msgstr "macOS 风格 [ ] 卷轴导航"
+
+#: webpanel/webpanel.h:211
 msgid "Show scroll bar"
 msgstr "显示滚动条"
 

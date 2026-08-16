@@ -264,7 +264,11 @@ msgstr ""
 msgid "Auto expand"
 msgstr "ავტომატური გაშლა"
 
-#: webpanel/webpanel.h:208
+#: webpanel/webpanel.h:209
+msgid "macOS style [ ] scroll navigation"
+msgstr ""
+
+#: webpanel/webpanel.h:211
 msgid "Show scroll bar"
 msgstr "გადახვევის ზოლის ჩვენება"
 
