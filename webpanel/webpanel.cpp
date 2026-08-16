@@ -789,6 +789,9 @@ void WebPanel::scroll(int start, int count) {
         fetchCount = std::max(
             count, highlighted + *config_.scrollMode->maxColumnCount);
     }
+    // The expanded view indexes candidates from its requested global start.
+    dynamic_ = false;
+    pageStart_ = 0;
     int size = bulk->totalSize();
     int end = size < 0 ? start + fetchCount : std::min(start + fetchCount, size);
     bool endReached = size == end;
