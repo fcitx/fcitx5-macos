@@ -234,9 +234,10 @@ public func getSelection() -> String {
 public func overrideKeyboardLayout() {
   let layout = String(get_current_group_layout())
   let appleLayout = layout == "PinyinKeyboard" ? "PinyinKeyboard" : layoutMap[layout] ?? "ABC"
-  if currentLayout != appleLayout {
-    FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
-    currentLayout = appleLayout
-    controller?.client()?.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
+  guard let client = controller?.client(), currentLayout != appleLayout else {
+    return
   }
+  FCITX_DEBUG("Override keyboard layout to \(appleLayout)")
+  currentLayout = appleLayout
+  client.overrideKeyboard(withKeyboardNamed: "com.apple.keylayout.\(appleLayout)")
 }
