@@ -202,6 +202,8 @@ FCITX_CONFIGURATION(
 FCITX_CONFIGURATION(
     ScrollConfig,
     Option<bool> enableScroll{this, "EnableScroll", _("Enable scroll"), true};
+    Option<bool> dynamicCandidateCount{this, "DynamicCandidateCount",
+                                       _("Dynamic candidate count"), false};
     Option<bool> autoExpand{this, "AutoExpand", _("Auto expand"), false};
     Option<bool> showScrollBar{this, "ShowScrollBar", _("Show scroll bar"),
                                true};
@@ -439,6 +441,8 @@ private:
 
     candidate_window::scroll_state_t scrollState_ =
         candidate_window::scroll_state_t::none;
+    bool dynamic_ = false;
+    int pageStart_ = 0;
     void scroll(int start, int count);
     void expand();
     void collapse();

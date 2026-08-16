@@ -20,14 +20,18 @@ WebPanel::WebPanel(Instance *instance)
             if (!list)
                 return;
             const auto &bulk = list->toBulk();
-            if (scrollState_ == candidate_window::scroll_state_t::scrolling &&
+            if ((scrollState_ == candidate_window::scroll_state_t::scrolling ||
+                 dynamic_) &&
                 !bulk) {
                 return;
             }
             try {
                 const auto &candidate =
-                    scrollState_ == candidate_window::scroll_state_t::scrolling
-                        ? bulk->candidateFromAll(index)
+                    scrollState_ ==
+                                candidate_window::scroll_state_t::scrolling ||
+                            dynamic_
+                        ? bulk->candidateFromAll(dynamic_ ? pageStart_ + index
+                                                          : index)
                         : list->candidate(index);
                 // Engine is responsible for updating UI
                 candidate.select(ic);
@@ -42,13 +46,15 @@ WebPanel::WebPanel(Instance *instance)
             const auto &list = ic->inputPanel().candidateList();
             if (!list)
                 return;
-            if (scrollState_ == candidate_window::scroll_state_t::scrolling) {
+            if (scrollState_ == candidate_window::scroll_state_t::scrolling ||
+                dynamic_) {
                 const auto bulkCursor = list->toBulkCursor();
                 if (!bulkCursor) {
                     return;
                 }
                 try {
-                    bulkCursor->setGlobalCursorIndex(index);
+                    bulkCursor->setGlobalCursorIndex(
+                        dynamic_ ? pageStart_ + index : index);
                 } catch (const std::invalid_argument &e) {
                     FCITX_ERROR() << "highlight candidate index out of range";
                 }
@@ -82,7 +88,8 @@ WebPanel::WebPanel(Instance *instance)
             const auto &list = ic->inputPanel().candidateList();
             if (!list)
                 return;
-            if (scrollState_ == candidate_window::scroll_state_t::scrolling) {
+            if (scrollState_ == candidate_window::scroll_state_t::scrolling ||
+                dynamic_) {
                 const auto &bulk = list->toBulk();
                 if (!bulk) {
                     return;
@@ -92,7 +99,8 @@ WebPanel::WebPanel(Instance *instance)
                     return;
                 }
                 try {
-                    auto &candidate = bulk->candidateFromAll(index);
+                    auto &candidate = bulk->candidateFromAll(
+                        dynamic_ ? pageStart_ + index : index);
                     if (actionableList->hasAction(candidate)) {
                         std::vector<candidate_window::CandidateAction> actions;
                         for (const auto &action :
@@ -119,14 +127,18 @@ WebPanel::WebPanel(Instance *instance)
             if (!actionableList)
                 return;
             const auto &bulk = list->toBulk();
-            if (scrollState_ == candidate_window::scroll_state_t::scrolling &&
+            if ((scrollState_ == candidate_window::scroll_state_t::scrolling ||
+                 dynamic_) &&
                 !bulk) {
                 return;
             }
             try {
                 const auto &candidate =
-                    scrollState_ == candidate_window::scroll_state_t::scrolling
-                        ? bulk->candidateFromAll(index)
+                    scrollState_ ==
+                                candidate_window::scroll_state_t::scrolling ||
+                            dynamic_
+                        ? bulk->candidateFromAll(dynamic_ ? pageStart_ + index
+                                                          : index)
                         : list->candidate(index);
                 if (actionableList->hasAction(candidate)) {
                     actionableList->triggerAction(candidate, id);
@@ -213,75 +225,75 @@ WebPanel::WebPanel(Instance *instance)
                 const std::vector<std::pair<
                     Option<KeyList>, candidate_window::scroll_key_action_t>>
                     actionMap = {
-                        {config_.scrollMode->up,
-                         candidate_window::scroll_key_action_t::up},
-                        {config_.scrollMode->down,
-                         candidate_window::scroll_key_action_t::down},
-                        {config_.scrollMode->left,
-                         candidate_window::scroll_key_action_t::left},
-                        {config_.scrollMode->right,
-                         candidate_window::scroll_key_action_t::right},
-                        {config_.scrollMode->rowStart,
-                         candidate_window::scroll_key_action_t::home},
-                        {config_.scrollMode->rowEnd,
-                         candidate_window::scroll_key_action_t::end},
-                        {config_.scrollMode->pageUp,
-                         candidate_window::scroll_key_action_t::page_up},
-                        {config_.scrollMode->pageDown,
-                         candidate_window::scroll_key_action_t::page_down},
-                        {config_.scrollMode->commit,
-                         candidate_window::scroll_key_action_t::commit},
-                    }; // Can't be static because config could be modified.
-                for (const auto &pair : actionMap) {
-                    if (key.checkKeyList(*pair.first)) {
-                        if (!keyEvent.isRelease()) {
-                            auto captured = pair.second;
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                              window_->scroll_key_action(captured);
-                            });
+                            {config_.scrollMode->up,
+                             candidate_window::scroll_key_action_t::up},
+                            {config_.scrollMode->down,
+                             candidate_window::scroll_key_action_t::down},
+                            {config_.scrollMode->left,
+                             candidate_window::scroll_key_action_t::left},
+                            {config_.scrollMode->right,
+                             candidate_window::scroll_key_action_t::right},
+                            {config_.scrollMode->rowStart,
+                             candidate_window::scroll_key_action_t::home},
+                            {config_.scrollMode->rowEnd,
+                             candidate_window::scroll_key_action_t::end},
+                            {config_.scrollMode->pageUp,
+                             candidate_window::scroll_key_action_t::page_up},
+                            {config_.scrollMode->pageDown,
+                             candidate_window::scroll_key_action_t::page_down},
+                            {config_.scrollMode->commit,
+                             candidate_window::scroll_key_action_t::commit},
+                        }; // Can't be static because config could be modified.
+                    for (const auto &pair : actionMap) {
+                        if (key.checkKeyList(*pair.first)) {
+                            if (!keyEvent.isRelease()) {
+                                auto captured = pair.second;
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                  window_->scroll_key_action(captured);
+                                });
+                            }
+                            // Must not send release event to engine, which resets
+                            // scroll mode.
+                            return keyEvent.filterAndAccept();
                         }
-                        // Must not send release event to engine, which resets
-                        // scroll mode.
+                    }
+                    if (key.checkKeyList(*config_.scrollMode->collapse)) {
+                        if (keyEvent.isRelease()) {
+                            return;
+                        }
+                        // Instead of directly calling collapse, let webview handle
+                        // animation and call it.
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                          window_->scroll_key_action(
+                              candidate_window::scroll_key_action_t::collapse);
+                        });
+                        return keyEvent.filterAndAccept();
+                    }
+                    // Karabiner-Elements defines Hyper as Ctrl+Alt+Shift+Cmd, but
+                    // its combinations cause fcitx5-rime to reset candidates. This
+                    // is because librime's process_key returns 0 event if a key
+                    // event (Shift) is handled, thus fcitx5-rime can't use the
+                    // retval to decide update UI or not.
+                    static std::vector<Key> hyperModifiers = {
+                        Key("Super+Super_L"),
+                        Key("Control+Super+Control_L"),
+                        Key("Control+Alt+Super+Alt_L"),
+                        Key("Control+Alt+Shift+Super+Shift_L"),
+                        Key("Alt+Shift+Super+Control_L"),
+                        Key("Alt+Super+Shift_L"),
+                        Key("Super+Alt_L"),
+                        Key("Super_L"),
+                        Key("Control+Control_L"),
+                        Key("Control+Alt+Alt_L"),
+                        Key("Control+Alt+Super+Super_L"),
+                        Key("Alt+Super+Control_L"),
+                    }; // keys received by Fcitx5 when CapsLock (Hyper) is pressed
+                    if (*config_.scrollMode->optimizeForHyperKey &&
+                        key.checkKeyList(hyperModifiers)) {
                         return keyEvent.filterAndAccept();
                     }
                 }
-                if (key.checkKeyList(*config_.scrollMode->collapse)) {
-                    if (keyEvent.isRelease()) {
-                        return;
-                    }
-                    // Instead of directly calling collapse, let webview handle
-                    // animation and call it.
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                      window_->scroll_key_action(
-                          candidate_window::scroll_key_action_t::collapse);
-                    });
-                    return keyEvent.filterAndAccept();
-                }
-                // Karabiner-Elements defines Hyper as Ctrl+Alt+Shift+Cmd, but
-                // its combinations cause fcitx5-rime to reset candidates. This
-                // is because librime's process_key returns 0 event if a key
-                // event (Shift) is handled, thus fcitx5-rime can't use the
-                // retval to decide update UI or not.
-                static std::vector<Key> hyperModifiers = {
-                    Key("Super+Super_L"),
-                    Key("Control+Super+Control_L"),
-                    Key("Control+Alt+Super+Alt_L"),
-                    Key("Control+Alt+Shift+Super+Shift_L"),
-                    Key("Alt+Shift+Super+Control_L"),
-                    Key("Alt+Super+Shift_L"),
-                    Key("Super+Alt_L"),
-                    Key("Super_L"),
-                    Key("Control+Control_L"),
-                    Key("Control+Alt+Alt_L"),
-                    Key("Control+Alt+Super+Super_L"),
-                    Key("Alt+Super+Control_L"),
-                }; // keys received by Fcitx5 when CapsLock (Hyper) is pressed
-                if (*config_.scrollMode->optimizeForHyperKey &&
-                    key.checkKeyList(hyperModifiers)) {
-                    return keyEvent.filterAndAccept();
-                }
-            }
-        });
+            });
 }
 
 void WebPanel::updateConfig() {
@@ -398,8 +410,43 @@ void WebPanel::update(UserInterfaceComponent component,
                 hasPrev = pageableList->hasPrev();
                 hasNext = pageableList->hasNext();
             }
-            // Scroll mode
+            // Dynamic candidate count fetches enough candidates from the bulk
+            // list to fill the fixed-width horizontal row. The WebView hides
+            // the tail that does not fit, while all callbacks below continue
+            // to address the global candidate list.
             const auto &bulk = list->toBulk();
+            auto appendCurrentPageCandidates = [&]() {
+                auto *actionableList = list->toActionable();
+                size = list->size();
+                for (int i = 0; i < size; i++) {
+                    auto label = list->label(i).toString();
+                    // HACK: fcitx5's Linux UI concatenates label and text and
+                    // expects engine to append a ' ' to label.
+                    auto length = label.length();
+                    if (length && label[length - 1] == ' ') {
+                        label = label.substr(0, length - 1);
+                    }
+                    const auto &candidate = list->candidate(i);
+                    std::vector<candidate_window::CandidateAction> actions;
+                    if (actionableList &&
+                        actionableList->hasAction(candidate)) {
+                        for (const auto &action :
+                             actionableList->candidateActions(candidate)) {
+                            actions.push_back({action.id(), action.text()});
+                        }
+                    }
+                    candidates.push_back(
+                        {instance_->outputFilter(inputContext, candidate.text())
+                             .toString(),
+                         label,
+                         instance_
+                             ->outputFilter(inputContext, candidate.comment())
+                             .toString(),
+                         actions, candidate.spaceBetweenComment()});
+                }
+                highlighted = list->cursorIndex();
+            };
+            // Scroll mode
             if (layout == candidate_window::layout_t::horizontal &&
                 writingMode ==
                     candidate_window::writing_mode_t::horizontal_tb &&
@@ -409,10 +456,12 @@ void WebPanel::update(UserInterfaceComponent component,
                     return expand();
                 }
                 if (*config_.scrollMode->autoExpand) {
-                    scrollState_ = candidate_window::scroll_state_t::scrolling;
+                    scrollState_ =
+                        candidate_window::scroll_state_t::scrolling;
                     return expand();
                 }
-                // Disable scroll mode if all candidates are on the same page.
+                // Disable scroll mode if all candidates are on the same
+                // page.
                 if (hasPrev || hasNext) {
                     scrollState_ = candidate_window::scroll_state_t::ready;
                 } else {
@@ -422,36 +471,95 @@ void WebPanel::update(UserInterfaceComponent component,
             } else {
                 scrollState_ = candidate_window::scroll_state_t::none;
             }
-            // Candidate actions
-            auto *actionableList = list->toActionable();
-            size = list->size();
-            for (int i = 0; i < size; i++) {
-                auto label = list->label(i).toString();
-                // HACK: fcitx5's Linux UI concatenates label and text and
-                // expects engine to append a ' ' to label.
-                auto length = label.length();
-                if (length && label[length - 1] == ' ') {
-                    label = label.substr(0, length - 1);
-                }
-                const auto &candidate = list->candidate(i);
-                std::vector<candidate_window::CandidateAction> actions;
-                if (actionableList && actionableList->hasAction(candidate)) {
-                    for (const auto &action :
-                         actionableList->candidateActions(candidate)) {
-                        actions.push_back({action.id(), action.text()});
+
+            const bool dynamic =
+                layout == candidate_window::layout_t::horizontal &&
+                writingMode ==
+                    candidate_window::writing_mode_t::horizontal_tb &&
+                *config_.scrollMode->dynamicCandidateCount;
+            dynamic_ = false;
+            if (dynamic && bulk) {
+                dynamic_ = true;
+                const auto *bulkCursor = list->toBulkCursor();
+                const int globalCursor =
+                    bulkCursor ? bulkCursor->globalCursorIndex() : -1;
+                int pageStart = 0;
+                const int cursorIndex = list->cursorIndex();
+                if (globalCursor >= 0 && cursorIndex >= 0) {
+                    pageStart = globalCursor - cursorIndex;
+                } else if (list->size() > 0) {
+                    // Paging may leave the cursor on another page. Locate the
+                    // first visible candidate in the bulk list in that case.
+                    const auto *firstCandidate = &list->candidate(0);
+                    const int total = bulk->totalSize();
+                    for (int i = 0; total < 0 || i < total; ++i) {
+                        try {
+                            if (&bulk->candidateFromAll(i) == firstCandidate) {
+                                pageStart = i;
+                                break;
+                            }
+                        } catch (const std::invalid_argument &) {
+                            break;
+                        }
                     }
                 }
-                candidates.push_back(
-                    {instance_->outputFilter(inputContext, candidate.text())
-                         .toString(),
-                     label,
-                     instance_->outputFilter(inputContext, candidate.comment())
-                         .toString(),
-                     actions, candidate.spaceBetweenComment()});
+                pageStart_ = std::max(0, pageStart);
+                const int fetchCount = std::max(
+                    *config_.scrollMode->maxColumnCount * 2, list->size());
+                const int total = bulk->totalSize();
+                const int end = total < 0
+                                    ? pageStart_ + fetchCount
+                                    : std::min(pageStart_ + fetchCount, total);
+                auto *actionableList = list->toActionable();
+                for (int i = pageStart_; i < end; ++i) {
+                    try {
+                        const auto &candidate = bulk->candidateFromAll(i);
+                        std::vector<candidate_window::CandidateAction> actions;
+                        if (actionableList &&
+                            actionableList->hasAction(candidate)) {
+                            for (const auto &action :
+                                 actionableList->candidateActions(candidate)) {
+                                actions.push_back({action.id(), action.text()});
+                            }
+                        }
+                        candidates.push_back(
+                            {instance_
+                                 ->outputFilter(inputContext, candidate.text())
+                                 .toString(),
+                             "",
+                             instance_
+                                 ->outputFilter(inputContext,
+                                                candidate.comment())
+                                 .toString(),
+                             actions, candidate.spaceBetweenComment()});
+                    } catch (const std::invalid_argument &) {
+                        break;
+                    }
+                }
+                if (globalCursor >= pageStart_ &&
+                    globalCursor <
+                        pageStart_ + static_cast<int>(candidates.size())) {
+                    highlighted = globalCursor - pageStart_;
+                } else if (cursorIndex >= 0 &&
+                           cursorIndex < static_cast<int>(candidates.size())) {
+                    highlighted = cursorIndex;
+                } else {
+                    highlighted = -1;
+                }
+                if (candidates.empty()) {
+                    // A few candidate list implementations expose BulkCandidateList
+                    // but cannot resolve the first item until their current page
+                    // has been materialized. Keep the normal panel usable in that
+                    // case instead of hiding it with an empty candidate array.
+                    dynamic_ = false;
+                    appendCurrentPageCandidates();
+                }
+            } else {
+                appendCurrentPageCandidates();
             }
-            highlighted = list->cursorIndex();
         } else {
             scrollState_ = candidate_window::scroll_state_t::none;
+            dynamic_ = false;
         }
         window_->set_paging_buttons(pageable, hasPrev, hasNext);
         window_->set_layout(layout);
@@ -460,7 +568,7 @@ void WebPanel::update(UserInterfaceComponent component,
         // Must be called after set_layout and set_writing_mode so that proper
         // states are read after set.
         window_->set_candidates(std::move(candidates), highlighted,
-                                scrollState_, false, false);
+                                scrollState_, false, false, dynamic_);
         updatePanelShowFlags(!candidatesEmpty, PanelShowFlag::HasCandidates);
         updateClient(inputContext);
         showAsync(panelShow_);

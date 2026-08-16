@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fcitx 5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-18 14:09-0400\n"
+"POT-Creation-Date: 2026-08-16 19:36+0800\n"
 "PO-Revision-Date: 2026-07-19 12:00+0200\n"
 "Last-Translator: opencode <opencode@opencode.ai>\n"
 "Language-Team: Danish\n"
@@ -99,7 +99,7 @@ msgstr "Lodret, venstre til højre"
 msgid "None"
 msgstr "Ingen"
 
-#: webpanel/webpanel.h:23 webpanel/webpanel.h:272
+#: webpanel/webpanel.h:23 webpanel/webpanel.h:274
 msgid "Blur"
 msgstr "Sløring"
 
@@ -131,7 +131,7 @@ msgstr "Blink"
 msgid "Static"
 msgstr "Statisk"
 
-#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:319
+#: webpanel/webpanel.h:37 webpanel/webpanel.h:41 webpanel/webpanel.h:321
 msgid "Text"
 msgstr "Tekst"
 
@@ -167,7 +167,7 @@ msgstr "Brugertema"
 msgid "Export current theme"
 msgstr "Eksporter aktuelt tema"
 
-#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:332
+#: webpanel/webpanel.h:95 webpanel/webpanel.h:148 webpanel/webpanel.h:334
 msgid "Override default"
 msgstr "Tilsidesæt standard"
 
@@ -255,303 +255,307 @@ msgstr "Samme som lystilstand"
 msgid "Enable scroll"
 msgstr "Aktiver rulning"
 
-#: webpanel/webpanel.h:205
+#: webpanel/webpanel.h:206
+msgid "Dynamic candidate count"
+msgstr ""
+
+#: webpanel/webpanel.h:207
 msgid "Auto expand"
 msgstr "Udvid automatisk"
 
-#: webpanel/webpanel.h:206
+#: webpanel/webpanel.h:208
 msgid "Show scroll bar"
 msgstr "Vis rullebjælke"
 
-#: webpanel/webpanel.h:208
+#: webpanel/webpanel.h:210
 msgid "Animation"
 msgstr "Animation"
 
-#: webpanel/webpanel.h:210
+#: webpanel/webpanel.h:212
 msgid "Max row count"
 msgstr "Maks. antal rækker"
 
-#: webpanel/webpanel.h:212
+#: webpanel/webpanel.h:214
 msgid "Max column count"
 msgstr "Maks. antal kolonner"
 
-#: webpanel/webpanel.h:214
+#: webpanel/webpanel.h:216
 msgid "Expand"
 msgstr "Udvid"
 
-#: webpanel/webpanel.h:216
+#: webpanel/webpanel.h:218
 msgid "Collapse"
 msgstr "Fold sammen"
 
-#: webpanel/webpanel.h:218
+#: webpanel/webpanel.h:220
 msgid "Up"
 msgstr "Op"
 
-#: webpanel/webpanel.h:220
+#: webpanel/webpanel.h:222
 msgid "Down"
 msgstr "Ned"
 
-#: webpanel/webpanel.h:221
+#: webpanel/webpanel.h:223
 msgid "Left"
 msgstr "Venstre"
 
-#: webpanel/webpanel.h:222
+#: webpanel/webpanel.h:224
 msgid "Right"
 msgstr "Højre"
 
-#: webpanel/webpanel.h:224
+#: webpanel/webpanel.h:226
 msgid "Row start"
 msgstr "Rækkestart"
 
-#: webpanel/webpanel.h:225
+#: webpanel/webpanel.h:227
 msgid "Row end"
 msgstr "Rækkeafslutning"
 
-#: webpanel/webpanel.h:227
+#: webpanel/webpanel.h:229
 msgid "Page up"
 msgstr "Side op"
 
-#: webpanel/webpanel.h:229
+#: webpanel/webpanel.h:231
 msgid "Page down"
 msgstr "Side ned"
 
-#: webpanel/webpanel.h:230
+#: webpanel/webpanel.h:232
 msgid "Commit"
 msgstr "Indsend"
 
-#: webpanel/webpanel.h:232
+#: webpanel/webpanel.h:234
 msgid "Select candidate"
 msgstr "Vælg kandidat"
 
-#: webpanel/webpanel.h:235
+#: webpanel/webpanel.h:237
 msgid "Use main keyboard number keys to select candidate"
 msgstr "Brug hovedtastaturets tal taster til at vælge kandidat"
 
-#: webpanel/webpanel.h:238
+#: webpanel/webpanel.h:240
 msgid "Use keypad number keys to select candidate"
 msgstr "Brug numerisk tastaturs tal taster til at vælge kandidat"
 
-#: webpanel/webpanel.h:240
+#: webpanel/webpanel.h:242
 msgid "Optimize for Hyper key"
 msgstr "Optimer til Hyper-tast"
 
-#: webpanel/webpanel.h:246
+#: webpanel/webpanel.h:248
 msgid "Layout"
 msgstr "Layout"
 
-#: webpanel/webpanel.h:250
+#: webpanel/webpanel.h:252
 msgid "Writing mode"
 msgstr "Skrivetilstand"
 
-#: webpanel/webpanel.h:253
+#: webpanel/webpanel.h:255
 msgid "Typography awareness for IM"
 msgstr "Typografibevidsthed for inputmetode"
 
-#: webpanel/webpanel.h:256
+#: webpanel/webpanel.h:258
 msgid "Vertical comments align right"
 msgstr "Lodrette kommentarer højrestilles"
 
-#: webpanel/webpanel.h:260
+#: webpanel/webpanel.h:262
 msgid "Paging buttons style"
 msgstr "Sideknaps-stil"
 
-#: webpanel/webpanel.h:266
+#: webpanel/webpanel.h:268
 msgid "Image"
 msgstr "Billede"
 
-#: webpanel/webpanel.h:269
+#: webpanel/webpanel.h:271
 msgid "Keep panel color when has image"
 msgstr "Behold panelfarve når billede vises"
 
-#: webpanel/webpanel.h:273
+#: webpanel/webpanel.h:275
 msgid "Shadow"
 msgstr "Skygge"
 
-#: webpanel/webpanel.h:283
+#: webpanel/webpanel.h:285
 msgid "Text font family"
 msgstr "Tekstskriftfamilie"
 
-#: webpanel/webpanel.h:285
+#: webpanel/webpanel.h:287
 msgid "Text font size"
 msgstr "Tekstskriftstørrelse"
 
-#: webpanel/webpanel.h:287
+#: webpanel/webpanel.h:289
 msgid "Text font weight"
 msgstr "Tekstskrifttyngde"
 
-#: webpanel/webpanel.h:290
+#: webpanel/webpanel.h:292
 msgid "Label font family"
 msgstr "Etiketskriftfamilie"
 
-#: webpanel/webpanel.h:292
+#: webpanel/webpanel.h:294
 msgid "Label font size"
 msgstr "Etiketskriftstørrelse"
 
-#: webpanel/webpanel.h:294
+#: webpanel/webpanel.h:296
 msgid "Label font weight"
 msgstr "Etiketskrifttyngde"
 
-#: webpanel/webpanel.h:297
+#: webpanel/webpanel.h:299
 msgid "Comment font family"
 msgstr "Kommentarskriftfamilie"
 
-#: webpanel/webpanel.h:299
+#: webpanel/webpanel.h:301
 msgid "Comment font size"
 msgstr "Kommentarskriftstørrelse"
 
-#: webpanel/webpanel.h:302
+#: webpanel/webpanel.h:304
 msgid "Comment font weight"
 msgstr "Kommentarskrifttyngde"
 
-#: webpanel/webpanel.h:305
+#: webpanel/webpanel.h:307
 msgid "Preedit font family"
 msgstr "Forudredigeringsskriftfamilie"
 
-#: webpanel/webpanel.h:307
+#: webpanel/webpanel.h:309
 msgid "Preedit font size"
 msgstr "Forudredigeringsskriftstørrelse"
 
-#: webpanel/webpanel.h:310
+#: webpanel/webpanel.h:312
 msgid "Preedit font weight"
 msgstr "Forudredigeringsskrifttyngde"
 
-#: webpanel/webpanel.h:312
+#: webpanel/webpanel.h:314
 msgid "User font dir"
 msgstr "Brugerskriftmappe"
 
-#: webpanel/webpanel.h:313
+#: webpanel/webpanel.h:315
 msgid "System font dir"
 msgstr "Systemskriftmappe"
 
-#: webpanel/webpanel.h:318
+#: webpanel/webpanel.h:320
 msgid "Style"
 msgstr "Stil"
 
-#: webpanel/webpanel.h:324
+#: webpanel/webpanel.h:326
 msgid "Mark style"
 msgstr "Markeringsstil"
 
-#: webpanel/webpanel.h:325
+#: webpanel/webpanel.h:327
 msgid "Mark text"
 msgstr "Marker tekst"
 
-#: webpanel/webpanel.h:327
+#: webpanel/webpanel.h:329
 msgid "Hover behavior"
 msgstr "Svæveopførsel"
 
-#: webpanel/webpanel.h:334
+#: webpanel/webpanel.h:336
 msgid "Border width (px)"
 msgstr "Kantbredde (px)"
 
-#: webpanel/webpanel.h:337
+#: webpanel/webpanel.h:339
 msgid "Border radius (px)"
 msgstr "Kantradius (px)"
 
-#: webpanel/webpanel.h:338
+#: webpanel/webpanel.h:340
 msgid "Margin (px)"
 msgstr "Margen (px)"
 
-#: webpanel/webpanel.h:341
+#: webpanel/webpanel.h:343
 msgid "Highlight radius (px)"
 msgstr "Fremhævningsradius (px)"
 
-#: webpanel/webpanel.h:344
+#: webpanel/webpanel.h:346
 msgid "Top padding (px)"
 msgstr "Toppolstring (px)"
 
-#: webpanel/webpanel.h:346
+#: webpanel/webpanel.h:348
 msgid "Right padding (px)"
 msgstr "Højrepolstring (px)"
 
-#: webpanel/webpanel.h:348
+#: webpanel/webpanel.h:350
 msgid "Bottom padding (px)"
 msgstr "Bundpolstring (px)"
 
-#: webpanel/webpanel.h:351
+#: webpanel/webpanel.h:353
 msgid "Left padding (px)"
 msgstr "Venstrepolstring (px)"
 
-#: webpanel/webpanel.h:353
+#: webpanel/webpanel.h:355
 msgid "Gap between label, text and comment (px)"
 msgstr "Afstand mellem etiket, tekst og kommentar (px)"
 
-#: webpanel/webpanel.h:356
+#: webpanel/webpanel.h:358
 msgid "Vertical minimum width (px)"
 msgstr "Lodret minimumsbredde (px)"
 
-#: webpanel/webpanel.h:359
+#: webpanel/webpanel.h:361
 msgid "Scroll cell width (px)"
 msgstr "Rulscellebredde (px)"
 
-#: webpanel/webpanel.h:362
+#: webpanel/webpanel.h:364
 msgid "Horizontal divider width (px)"
 msgstr "Vandret adskillelsesbredde (px)"
 
-#: webpanel/webpanel.h:371
+#: webpanel/webpanel.h:373
 msgid "User CSS"
 msgstr "Bruger-CSS"
 
-#: webpanel/webpanel.h:372
+#: webpanel/webpanel.h:374
 msgid "Copy HTML"
 msgstr "Kopier HTML"
 
-#: webpanel/webpanel.h:373
+#: webpanel/webpanel.h:375
 msgid "Plugin dir"
 msgstr "Plugin-mappe"
 
-#: webpanel/webpanel.h:375
+#: webpanel/webpanel.h:377
 msgid "I know there may be risks for using plugins"
 msgstr "Jeg er klar over, at der kan være risici ved at bruge plugins"
 
-#: webpanel/webpanel.h:378
+#: webpanel/webpanel.h:380
 msgid "Plugins"
 msgstr "Plugins"
 
-#: webpanel/webpanel.h:380
+#: webpanel/webpanel.h:382
 msgid "Dangerous API for JavaScript plugins"
 msgstr "Farligt API til JavaScript-plugins"
 
-#: webpanel/webpanel.h:383
+#: webpanel/webpanel.h:385
 msgid "Basic"
 msgstr "Grundlæggende"
 
-#: webpanel/webpanel.h:384
+#: webpanel/webpanel.h:386
 msgid "Light mode"
 msgstr "Lystilstand"
 
-#: webpanel/webpanel.h:385
+#: webpanel/webpanel.h:387
 msgid "Dark mode"
 msgstr "Mørk tilstand"
 
-#: webpanel/webpanel.h:386
+#: webpanel/webpanel.h:388
 msgid "Typography"
 msgstr "Typografi"
 
-#: webpanel/webpanel.h:387
+#: webpanel/webpanel.h:389
 msgid "Scroll mode"
 msgstr "Rulningstilstand"
 
-#: webpanel/webpanel.h:388
+#: webpanel/webpanel.h:390
 msgid "Background"
 msgstr "Baggrund"
 
-#: webpanel/webpanel.h:389
+#: webpanel/webpanel.h:391
 msgid "Font"
 msgstr "Skrifttype"
 
-#: webpanel/webpanel.h:390
+#: webpanel/webpanel.h:392
 msgid "Caret"
 msgstr "Markør"
 
-#: webpanel/webpanel.h:391
+#: webpanel/webpanel.h:393
 msgid "Highlight"
 msgstr "Fremhævning"
 
-#: webpanel/webpanel.h:392
+#: webpanel/webpanel.h:394
 msgid "Size"
 msgstr "Størrelse"
 
-#: webpanel/webpanel.h:393
+#: webpanel/webpanel.h:395
 msgid "Advanced"
 msgstr "Avanceret"
 
