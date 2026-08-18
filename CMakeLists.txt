@@ -50,6 +50,13 @@ set_target_properties(Libuv_static PROPERTIES
 )
 set(LIBUV_TARGET Libuv_static)
 
+# Workaround duplicated libxkbcommon.a for ECM 6.27.0 (fa26209).
+add_library(XKBCommon::XKBCommon UNKNOWN IMPORTED)
+set_target_properties(XKBCommon::XKBCommon PROPERTIES
+    IMPORTED_LOCATION "${PREBUILDER_LIB_DIR}/libxkbcommon.a"
+    INTERFACE_INCLUDE_DIRECTORIES "${PREBUILDER_INCLUDE_DIR}"
+)
+
 option(ENABLE_TESTING_ADDONS "" OFF)
 option(ENABLE_TEST "" OFF)
 option(ENABLE_COVERAGE "" OFF)
