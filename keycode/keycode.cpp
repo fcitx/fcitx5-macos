@@ -207,37 +207,6 @@ static struct {
 };
 
 static struct {
-    uint16_t osxKeycode;
-    char asciiChar;
-    char shiftedAsciiChar;
-} char_mappings[] = {
-    // number row with shift mappings
-    {kVK_ANSI_0, '0', ')'},
-    {kVK_ANSI_1, '1', '!'},
-    {kVK_ANSI_2, '2', '@'},
-    {kVK_ANSI_3, '3', '#'},
-    {kVK_ANSI_4, '4', '$'},
-    {kVK_ANSI_5, '5', '%'},
-    {kVK_ANSI_6, '6', '^'},
-    {kVK_ANSI_7, '7', '&'},
-    {kVK_ANSI_8, '8', '*'},
-    {kVK_ANSI_9, '9', '('},
-
-    // symbols with shift
-    {kVK_ANSI_Grave, '`', '~'},
-    {kVK_ANSI_Backslash, '\\', '|'},
-    {kVK_ANSI_LeftBracket, '[', '{'},
-    {kVK_ANSI_RightBracket, ']', '}'},
-    {kVK_ANSI_Comma, ',', '<'},
-    {kVK_ANSI_Period, '.', '>'},
-    {kVK_ANSI_Equal, '=', '+'},
-    {kVK_ANSI_Minus, '-', '_'},
-    {kVK_ANSI_Quote, '\'', '"'},
-    {kVK_ANSI_Semicolon, ';', ':'},
-    {kVK_ANSI_Slash, '/', '?'},
-};
-
-static struct {
     fcitx::KeySym sym;
     uint16_t osxFunctionKey;
 } function_key_mappings[] = {
@@ -274,8 +243,19 @@ static struct {
     {NSEventModifierFlagCommand, fcitx::KeyState::Super},
 };
 
-std::string currentLayout = "us";
+static constexpr const char *kUsLayout = "us";
+
+std::string currentLayout = kUsLayout;
 bool pinyinKeyboard = false;
+
+// The us keymap is built once and reused. It backs char_mappings-free symbol
+// lookup for PinyinKeyboard and the recorder's PinyinKeyboard fallback.
+std::pair<struct xkb_context *, struct xkb_keymap *> &
+cached_us_keymap() noexcept {
+    static std::pair<struct xkb_context *, struct xkb_keymap *> cached =
+        make_xkb_keymap(kUsLayout);
+    return cached;
+}
 
 fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
                                           uint32_t osxModifiers,
@@ -287,22 +267,14 @@ fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
     }
     // If com.apple.keylayout.PinyinKeyboard is used, we need to map Chinese
     // punctuations back to ASCII so that engines can handle them properly, e.g.
-    // Rime when typing pinyin followed by comma.
+    // Rime when typing pinyin followed by comma. The us layout gives the
+    // same characters for these keys, so reuse the recorder mapping.
     if (pinyinKeyboard) {
-        for (int i = 0; i < sizeof(char_mappings) / sizeof(char_mappings[0]);
-             i++) {
-            if (char_mappings[i].osxKeycode == osxKeycode) {
-                // Only remap shifted punctuation when it is a genuine Shift
-                // key, i.e. no Control/Option/Command is involved. Otherwise
-                // the key is e.g. Control+Shift+comma, which should stay comma.
-                unicode = ((osxModifiers & NSEventModifierFlagShift) &&
-                           !(osxModifiers & (NSEventModifierFlagControl |
-                                             NSEventModifierFlagOption |
-                                             NSEventModifierFlagCommand)))
-                              ? char_mappings[i].shiftedAsciiChar
-                              : char_mappings[i].asciiChar;
-                break;
-            }
+        // Map Chinese punctuation back to ASCII using the us layout, which
+        // produces the same characters as the old char_mappings table.
+        auto ascii = osx_keycode_to_osx_unicode(osxKeycode, osxModifiers);
+        if (ascii != 0) {
+            unicode = ascii;
         }
     }
     return fcitx::Key::keySymFromUnicode(unicode);
@@ -432,7 +404,9 @@ uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
     // PinyinKeyboard doesn't exist in xkb, fall back to us which is equivalent
     // for the characters the IM receives (Chinese punctuation is mapped back to
     // ASCII using keycode+shift, see osx_unicode_to_fcitx_keysym).
-    auto [ctx, keymap] = make_xkb_keymap(pinyinKeyboard ? "us" : currentLayout);
+    std::string layoutStr = pinyinKeyboard ? kUsLayout : currentLayout;
+    auto [ctx, keymap] = layoutStr == kUsLayout ? cached_us_keymap()
+                                                : make_xkb_keymap(layoutStr);
     if (!ctx || !keymap) {
         return 0;
     }
@@ -456,8 +430,10 @@ uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
     }
     xkb_keymap_key_get_syms_by_level(keymap, keycode, 0, level, &syms);
     uint32_t result = syms ? syms[0] : 0;
-    xkb_keymap_unref(keymap);
-    xkb_context_unref(ctx);
+    if (layoutStr != kUsLayout) {
+        xkb_keymap_unref(keymap);
+        xkb_context_unref(ctx);
+    }
     return xkb_keysym_to_utf32(result);
 }
 
