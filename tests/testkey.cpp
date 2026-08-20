@@ -69,8 +69,66 @@ void test_fcitx_string() {
     FCITX_ASSERT(fcitx_string_to_osx_keycode("Shift_R") == kVK_RightShift);
 }
 
+void test_keycode_to_unicode() {
+    // Layout-independent special keys have no unicode.
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_F1, 0) == 0);
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_Shift, 0) == 0);
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_Return, 0) == 0);
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_Keypad0, 0) == 0);
+
+    // Alphabet: lowercase without shift, uppercase with shift, caps handled.
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_A, 0) == 'a');
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_A,
+                                            NSEventModifierFlagShift) == 'A');
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(
+                     kVK_ANSI_A, NSEventModifierFlagCapsLock) == 'A');
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(
+                     kVK_ANSI_A, NSEventModifierFlagCapsLock |
+                                     NSEventModifierFlagShift) == 'a');
+
+    // Symbols: Shift+comma -> less, Control+Shift+comma -> comma.
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_Comma, 0) == ',');
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_Comma,
+                                            NSEventModifierFlagShift) == '<');
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(
+                     kVK_ANSI_Comma, NSEventModifierFlagShift |
+                                         NSEventModifierFlagControl) == ',');
+
+    // Dvorak maps the Q key to apostrophe.
+    currentLayout = "us-dvorak";
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_Q, 0) == '\'');
+
+    // PinyinKeyboard falls back to us.
+    currentLayout = "PinyinKeyboard";
+    pinyinKeyboard = true;
+    FCITX_ASSERT(osx_keycode_to_osx_unicode(kVK_ANSI_Comma,
+                                            NSEventModifierFlagShift) == '<');
+}
+
+void test_unicode_to_fcitx_string() {
+    FCITX_ASSERT(osx_key_to_fcitx_string('a', NSEventModifierFlagControl, 0) ==
+                 "Control+A");
+    FCITX_ASSERT(osx_key_to_fcitx_string(
+                     'A', NSEventModifierFlagControl | NSEventModifierFlagShift,
+                     0) == "Control+Shift+A");
+    FCITX_ASSERT(osx_key_to_fcitx_string(
+                     ',', NSEventModifierFlagControl | NSEventModifierFlagShift,
+                     kVK_ANSI_Comma) == "Control+comma");
+    FCITX_ASSERT(osx_key_to_fcitx_string('<', NSEventModifierFlagShift,
+                                         kVK_ANSI_Comma) == "less");
+    FCITX_ASSERT(osx_key_to_fcitx_string(
+                     0, NSEventModifierFlagOption | NSEventModifierFlagShift,
+                     kVK_Shift) == "Alt+Shift+Shift_L");
+}
+
 int main() {
+    setenv(
+        "XKB_CONFIG_ROOT",
+        "/Library/Input Methods/Fcitx5.app/Contents/share/xkeyboard-config-2",
+        1);
     test_osx_to_fcitx();
     test_fcitx_to_osx();
     test_fcitx_string();
+    test_keycode_to_unicode();
+    test_unicode_to_fcitx_string();
 }

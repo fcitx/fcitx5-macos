@@ -9,13 +9,6 @@ public func keyToUnicode(_ key: String) -> UInt32 {
   return usv[usv.startIndex].value
 }
 
-func macKeyToFcitxString(_ key: String, _ modifiers: NSEvent.ModifierFlags, _ code: UInt16)
-  -> String
-{
-  let unicode = keyToUnicode(key)
-  return String(osx_key_to_fcitx_string(unicode, UInt32(modifiers.rawValue), code))
-}
-
 /// Resolve the unicode point to send to fcitx for a keyDown event.
 ///
 /// For Shift+comma, charactersIgnoringModifiers is comma, characters is less.

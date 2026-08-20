@@ -15,17 +15,13 @@ struct KeyView: OptionViewProtocol {
 
   @State private var showRecorder = false
   @State private var recordedShortcut: (String, String?) = ("", nil)
-  @State private var recordedKey = ""
-  @State private var recordedModifiers = NSEvent.ModifierFlags()
-  @State private var recordedCode: UInt16 = 0
+  @State private var recordedFcitxKey = ""
 
   var body: some View {
     let optionId = data["Option"] as? String ?? ""
     return Button {
       recordedShortcut = ("", nil)
-      recordedKey = ""
-      recordedModifiers = NSEvent.ModifierFlags()
-      recordedCode = 0
+      recordedFcitxKey = ""
       showRecorder = true
     } label: {
       recordedKeyView(
@@ -38,8 +34,7 @@ struct KeyView: OptionViewProtocol {
         recordedKeyView(recordedShortcut)
           .background(
             RecordingOverlay(
-              recordedShortcut: $recordedShortcut, recordedKey: $recordedKey,
-              recordedModifiers: $recordedModifiers, recordedCode: $recordedCode)
+              recordedShortcut: $recordedShortcut, recordedFcitxKey: $recordedFcitxKey)
           )
           .frame(minWidth: 200, minHeight: 50)
           .accessibilityIdentifier("\(optionId)_key")
@@ -50,7 +45,7 @@ struct KeyView: OptionViewProtocol {
             Text("Cancel")
           }.accessibilityIdentifier("\(optionId)_cancel")
           Button {
-            value = macKeyToFcitxString(recordedKey, recordedModifiers, recordedCode)
+            value = recordedFcitxKey
             showRecorder = false
           } label: {
             Text("OK")

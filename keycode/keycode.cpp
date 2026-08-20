@@ -1,6 +1,9 @@
 #include "keycode.h"
 #include <cstring>
+#include <string>
+#include <xkbcommon/xkbcommon.h>
 #include "../deps/input-event-codes.h"
+#include "../fcitx5/src/lib/fcitx/misc_p.h"
 
 static struct {
     uint16_t osxKeycode;
@@ -271,6 +274,7 @@ static struct {
     {NSEventModifierFlagCommand, fcitx::KeyState::Super},
 };
 
+std::string currentLayout = "us";
 bool pinyinKeyboard = false;
 
 fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
@@ -388,6 +392,73 @@ fcitx::Key osx_key_to_fcitx_key(uint32_t unicode, uint32_t modifiers,
         osx_modifiers_to_fcitx_keystates(modifiers),
         osx_keycode_to_fcitx_keycode(code),
     };
+}
+
+std::pair<struct xkb_context *, struct xkb_keymap *>
+make_xkb_keymap(const std::string &layout) noexcept {
+    auto [base, variant] = fcitx::parseLayout(layout);
+
+    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    if (!ctx) {
+        return {nullptr, nullptr};
+    }
+    struct xkb_rule_names names = {.rules = "evdev",
+                                   .model = "pc105",
+                                   .layout = base.c_str(),
+                                   .variant = variant.empty() ? nullptr
+                                                              : variant.c_str(),
+                                   .options = nullptr};
+    struct xkb_keymap *keymap =
+        xkb_keymap_new_from_names(ctx, &names, XKB_KEYMAP_COMPILE_NO_FLAGS);
+    if (!keymap) {
+        xkb_context_unref(ctx);
+        return {nullptr, nullptr};
+    }
+    return {ctx, keymap};
+}
+
+uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
+                                    uint32_t osxModifiers) noexcept {
+    for (const auto &pair : sym_mappings) {
+        if (pair.osxKeycode == osxKeycode) {
+            return 0;
+        }
+    }
+    uint16_t keycode = osx_keycode_to_fcitx_keycode(osxKeycode);
+    if (keycode == 0) {
+        return 0;
+    }
+    // The layout is maintained in real-time by get_current_group_layout().
+    // PinyinKeyboard doesn't exist in xkb, fall back to us which is equivalent
+    // for the characters the IM receives (Chinese punctuation is mapped back to
+    // ASCII using keycode+shift, see osx_unicode_to_fcitx_keysym).
+    auto [ctx, keymap] = make_xkb_keymap(pinyinKeyboard ? "us" : currentLayout);
+    if (!ctx || !keymap) {
+        return 0;
+    }
+    // Replicate keyEventUnicode: for a-z keys use level 1 when caps XOR shift,
+    // otherwise for non-alphabet without Control/Option/Command use the shifted
+    // symbol; everything else stays at level 0.
+    const xkb_keysym_t *syms = nullptr;
+    xkb_keymap_key_get_syms_by_level(keymap, keycode, 0, 0, &syms);
+    uint32_t baseSym = syms ? syms[0] : 0;
+    int level = 0;
+    bool shift = osxModifiers & NSEventModifierFlagShift;
+    bool caps = osxModifiers & NSEventModifierFlagCapsLock;
+    if (baseSym >= FcitxKey_a && baseSym <= FcitxKey_z) {
+        if (caps != shift) {
+            level = 1;
+        }
+    } else if (!(osxModifiers &
+                 (NSEventModifierFlagControl | NSEventModifierFlagOption |
+                  NSEventModifierFlagCommand))) {
+        level = shift ? 1 : 0;
+    }
+    xkb_keymap_key_get_syms_by_level(keymap, keycode, 0, level, &syms);
+    uint32_t result = syms ? syms[0] : 0;
+    xkb_keymap_unref(keymap);
+    xkb_context_unref(ctx);
+    return xkb_keysym_to_utf32(result);
 }
 
 std::string osx_key_to_fcitx_string(uint32_t unicode, uint32_t modifiers,

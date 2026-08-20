@@ -1,32 +1,9 @@
-func expect(_ name: String, _ expected: String, _ actual: String) -> Bool {
-  if actual == expected {
-    return true
-  }
-  print("\(name): expected \(expected), got \(actual)")
-  return false
-}
-
 func expectShortcut(_ name: String, _ expected: (String, String?), _ actual: (String, String?)) -> Bool {
   if actual.0 == expected.0 && actual.1 == expected.1 {
     return true
   }
   print("\(name): expected \(expected), got \(actual)")
   return false
-}
-
-func testMacToFcitx() -> Bool {
-  var ok = true
-  ok = expect("macToFcitx a", "Control+A", macKeyToFcitxString("a", .control, 0)) && ok
-  ok = expect(
-    "macToFcitx Shift+A", "Control+Shift+A",
-    macKeyToFcitxString("A", .control.union(.shift), 0)) && ok
-  ok = expect(
-    "macToFcitx Shift_L", "Alt+Shift+Shift_L",
-    macKeyToFcitxString("", .option.union(.shift), 0x38)) && ok
-  ok = expect(
-    "macToFcitx Shift_R", "Shift+Super+Shift_R",
-    macKeyToFcitxString("", .command.union(.shift), 0x3c)) && ok
-  return ok
 }
 
 func testFcitxToMac() -> Bool {
@@ -50,7 +27,6 @@ func testFcitxToMac() -> Bool {
 
 @_cdecl("main")
 func main() -> Int {
-  let macToFcitxOk = testMacToFcitx()
   let fcitxToMacOk = testFcitxToMac()
-  return macToFcitxOk && fcitxToMacOk ? 0 : 1
+  return fcitxToMacOk ? 0 : 1
 }

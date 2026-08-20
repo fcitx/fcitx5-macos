@@ -2,27 +2,11 @@
 #include <xkbcommon/xkbcommon.h>
 #include "fcitx-public.h"
 #include "../fcitx5/src/lib/fcitx-utils/key.h"
-#include "../fcitx5/src/lib/fcitx/misc_p.h"
+#include "../keycode/keycode-public.h"
 
 std::string getSymbolsOfLayout(const char *layout, bool shift) noexcept {
-    auto [layoutStr, variant] = fcitx::parseLayout(layout);
-
-    struct xkb_context *ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    if (!ctx) {
-        return "[]";
-    }
-
-    struct xkb_rule_names names = {.rules = "evdev",
-                                   .model = "pc105",
-                                   .layout = layoutStr.c_str(),
-                                   .variant = variant.empty() ? nullptr
-                                                              : variant.c_str(),
-                                   .options = nullptr};
-
-    struct xkb_keymap *keymap =
-        xkb_keymap_new_from_names(ctx, &names, XKB_KEYMAP_COMPILE_NO_FLAGS);
-    if (!keymap) {
-        xkb_context_unref(ctx);
+    auto [ctx, keymap] = make_xkb_keymap(layout);
+    if (!ctx || !keymap) {
         return "[]";
     }
 
