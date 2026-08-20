@@ -1,4 +1,5 @@
 import Carbon
+import Keycode
 import SwiftUI
 
 private let codeMap = [
@@ -32,8 +33,8 @@ private let codeMap = [
   kVK_ANSI_KeypadEnter: "⌅",
   kVK_Escape: "⎋",
   kVK_ForwardDelete: "⌦",
-  kVK_Return: "↵",
-  kVK_Space: "␣",
+  kVK_Return: "⏎",
+  kVK_Space: "Space",
   kVK_Tab: "⇥",
   // cursor
   kVK_UpArrow: "▲",
@@ -86,9 +87,7 @@ func shortcutRepr(_ key: String, _ modifiers: NSEvent.ModifierFlags, _ code: UIn
 
 struct RecordingOverlay: NSViewRepresentable {
   @Binding var recordedShortcut: (String, String?)
-  @Binding var recordedKey: String
-  @Binding var recordedModifiers: NSEvent.ModifierFlags
-  @Binding var recordedCode: UInt16
+  @Binding var recordedFcitxKey: String
 
   func makeNSView(context: Context) -> NSView {
     let view = KeyCaptureView()
@@ -110,7 +109,6 @@ struct RecordingOverlay: NSViewRepresentable {
   @MainActor
   class Coordinator: NSObject {
     private var parent: RecordingOverlay
-    private var key = ""
     private var modifiers = NSEvent.ModifierFlags()
     private var code: UInt16 = 0
 
@@ -118,8 +116,7 @@ struct RecordingOverlay: NSViewRepresentable {
       self.parent = parent
     }
 
-    func handleKeyCapture(key: String, code: UInt16) {
-      self.key = key
+    func handleKeyCapture(code: UInt16) {
       self.code = code
       updateParent()
     }
@@ -132,7 +129,6 @@ struct RecordingOverlay: NSViewRepresentable {
         if modifiers.isSuperset(of: self.modifiers) {
           // Don't change on release
           self.modifiers = modifiers
-          self.key = ""
           self.code = code
         }
         updateParent()
@@ -140,10 +136,14 @@ struct RecordingOverlay: NSViewRepresentable {
     }
 
     private func updateParent() {
-      parent.recordedKey = key
-      parent.recordedModifiers = modifiers
-      parent.recordedCode = code
-      parent.recordedShortcut = shortcutRepr(key, modifiers, code)
+      // Compute the unicode the key produces from the OSX keycode and
+      // modifiers on the fly so a layout switch during recording is always
+      // reflected. Special keys have no unicode and are shown via codeMap.
+      let unicode = osx_keycode_to_osx_unicode(code, UInt32(modifiers.rawValue))
+      parent.recordedShortcut = shortcutRepr(
+        UnicodeScalar(unicode).map { String($0) } ?? "", modifiers, code)
+      parent.recordedFcitxKey = String(
+        osx_key_to_fcitx_string(unicode, UInt32(modifiers.rawValue), code))
     }
   }
 }
@@ -157,12 +157,11 @@ class KeyCaptureView: NSView {
   }
 
   override func keyDown(with event: NSEvent) {
-    // For Control+Shift+comma, charactersIgnoringModifiers is less, characters is comma.
-    // For Shift+comma, both are less.
-    // This behavior is different with what IM gets.
-    // We need less for Control+Shift+comma, so we use charactersIgnoringModifiers.
-    coordinator?.handleKeyCapture(
-      key: event.charactersIgnoringModifiers ?? "", code: event.keyCode)
+    // Map the physical keycode through xkbcommon with the current layout so we
+    // get the same keysym the IM receives, e.g. comma for Control+Shift+comma.
+    // characters and charactersIgnoringModifiers are inconsistent with IMKit
+    // and can't be unified anyway.
+    coordinator?.handleKeyCapture(code: event.keyCode)
   }
 
   override func flagsChanged(with event: NSEvent) {
