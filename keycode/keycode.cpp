@@ -342,6 +342,11 @@ uint32_t fcitx_keystates_to_osx_modifiers(fcitx::KeyStates ks) {
     return ret;
 }
 
+std::string fcitx_string_to_localized_string(const char *s) noexcept {
+    fcitx::Key key{s};
+    return key.toString(fcitx::KeyStringFormat::Localized);
+}
+
 std::string fcitx_string_to_osx_keysym(const char *s) noexcept {
     fcitx::Key key{s};
     return fcitx_keysym_to_osx_keysym(key.sym());

@@ -1,6 +1,7 @@
+import Keycode
 import SwiftUI
 
-func recordedKeyView(_ pair: (String, String?)) -> some View {
+private func recordedKeyView(_ pair: (String, String?)) -> some View {
   let (normalFont, smallerFont) = pair
   if let smallerFont = smallerFont {
     return Text(normalFont) + Text(smallerFont).font(.caption)
@@ -27,8 +28,7 @@ struct KeyView: OptionViewProtocol {
       recordedKeyView(
         value as? String == "" ? ("●REC", nil) : fcitxStringToMacShortcut(value as? String ?? "")
       )
-      .frame(
-        minWidth: 100)
+      .frame(minWidth: 100)
     }.sheet(isPresented: $showRecorder) {
       VStack {
         recordedKeyView(recordedShortcut)
@@ -55,7 +55,8 @@ struct KeyView: OptionViewProtocol {
       }.padding()
     }.help(
       value as? String == ""
-        ? NSLocalizedString("Click to record", comment: "") : value as? String ?? ""
+        ? NSLocalizedString("Click to record", comment: "")
+        : String(fcitx_string_to_localized_string(value as? String ?? ""))
     )
     .accessibilityIdentifier(data["Option"] as? String ?? "")
   }
