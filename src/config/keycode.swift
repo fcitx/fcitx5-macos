@@ -47,7 +47,7 @@ func fcitxStringToMacShortcut(_ s: String) -> (String, String?) {
   let modifiers = NSEvent.ModifierFlags(rawValue: UInt(fcitx_string_to_osx_modifiers(s)))
   let code = fcitx_string_to_osx_keycode(s)
   if key.isEmpty && code == 0 {
-    return (s, nil)
+    return (String(fcitx_string_to_localized_string(s)), nil)
   }
   return shortcutRepr(key, modifiers, code)
 }
