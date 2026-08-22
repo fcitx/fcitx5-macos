@@ -124,7 +124,8 @@ class FcitxInputController: IMKInputController {
       } else if (modsVal == 0 || modsVal == capsLock) && lastEventIsShiftPress && selectionChanged {
         // Shift release following press when text selection is changed.
         // Send a no-op key event to fcitx so that Shift+Click doesn't trigger im toggle.
-        process_key(uuid, 0, 0, 0, false, isPassword, surroundingText, cursor, anchor)
+        // Code should not be 0 as it's macOS's kVK_ANSI_A.
+        process_key(uuid, 0, 0, 0xff, false, isPassword, surroundingText, cursor, anchor)
       }
       Task { @MainActor in
         ModifierState.shared.shift = isShiftPress

@@ -2,11 +2,16 @@
 #include "fcitx-utils/log.h"
 #include "keycode.h"
 
+#define kVK_DUMMY 0xff
+
 void test_osx_to_fcitx() {
-    FCITX_ASSERT(osx_unicode_to_fcitx_keysym('0', 0, 0) == FcitxKey_0);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym('0', 0, kVK_DUMMY) == FcitxKey_0);
     FCITX_ASSERT(osx_unicode_to_fcitx_keysym('0', 0, kVK_ANSI_Keypad0) ==
                  FcitxKey_KP_0);
-    FCITX_ASSERT(osx_unicode_to_fcitx_keysym('a', 0, 0) == FcitxKey_a);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym('a', 0, kVK_DUMMY) == FcitxKey_a);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(0, 0, kVK_DUMMY) == FcitxKey_None);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(
+                     0, 0, kVK_ANSI_A /* 0, common error */) == FcitxKey_None);
 
     ::pinyinKeyboard = true;
     FCITX_ASSERT(osx_unicode_to_fcitx_keysym(65292 /* ， */, 0,
@@ -18,6 +23,9 @@ void test_osx_to_fcitx() {
                      12299 /* 》 */,
                      NSEventModifierFlagShift | NSEventModifierFlagControl,
                      kVK_ANSI_Period) == FcitxKey_period);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(0, 0, kVK_DUMMY) == FcitxKey_None);
+    FCITX_ASSERT(osx_unicode_to_fcitx_keysym(
+                     0, 0, kVK_ANSI_A /* 0, common error */) == FcitxKey_None);
     ::pinyinKeyboard = false;
 
     FCITX_ASSERT(osx_keycode_to_fcitx_keycode(kVK_ANSI_0) == 11 + 8);
