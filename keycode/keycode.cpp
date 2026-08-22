@@ -265,6 +265,9 @@ fcitx::KeySym osx_unicode_to_fcitx_keysym(uint32_t unicode,
             return pair.sym;
         }
     }
+    if (unicode == 0) {
+        return FcitxKey_None;
+    }
     // If com.apple.keylayout.PinyinKeyboard is used, we need to map Chinese
     // punctuations back to ASCII so that engines can handle them properly, e.g.
     // Rime when typing pinyin followed by comma. The us layout gives the
