@@ -27,17 +27,17 @@ class QuickPhraseVM: ObservableObject {
     builtinFiles = Set(globalFiles)
     userFiles = getFileNamesWithExtension(localQuickphrasePath, ".mb")
     disabledFiles = Set(getFileNamesWithExtension(localQuickphrasePath, ".mb.disable"))
-    for file in userFiles {
+
+    files = globalFiles
+    for file in globalFiles {
+      quickPhrases[file] = stringToQuickPhrases(
+        readUTF8(globalQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
+    }
+    // Don't override built-in files with the same name, otherwise user won't receive upgrade for them.
+    for file in userFiles where !builtinFiles.contains(file) {
+      files.append(file)
       quickPhrases[file] = stringToQuickPhrases(
         readUTF8(localQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
-    }
-    files = userFiles
-    for file in globalFiles {
-      if !userFiles.contains(file) {
-        files.append(file)
-        quickPhrases[file] = stringToQuickPhrases(
-          readUTF8(globalQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
-      }
     }
     if files.isEmpty {
       current = ""
@@ -300,7 +300,7 @@ struct QuickPhraseView: View {
             } label: {
               Text("Create")
             }.buttonStyle(.borderedProminent)
-              .disabled(newFileName.isEmpty || quickphraseVM.userFiles.contains(newFileName))
+              .disabled(newFileName.isEmpty || quickphraseVM.files.contains(newFileName))
           }
         }.padding()
           .frame(minWidth: 200)
