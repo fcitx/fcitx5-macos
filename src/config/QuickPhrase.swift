@@ -16,29 +16,42 @@ class QuickPhraseVM: ObservableObject {
     }
   }
   @Published private(set) var userFiles: [String] = []
+  @Published private(set) var builtinFiles = Set<String>()
+  @Published private(set) var disabledFiles = Set<String>()
   @Published private(set) var files: [String] = []
   @Published var quickPhrases: [String: [QuickPhrase]] = [:]
 
   func refreshFiles() {
     quickPhrases = [:]
+    let globalFiles = getFileNamesWithExtension(globalQuickphrasePath, ".mb")
+    builtinFiles = Set(globalFiles)
     userFiles = getFileNamesWithExtension(localQuickphrasePath, ".mb")
-    for file in userFiles {
+    disabledFiles = Set(getFileNamesWithExtension(localQuickphrasePath, ".mb.disable"))
+
+    files = globalFiles
+    for file in globalFiles {
+      quickPhrases[file] = stringToQuickPhrases(
+        readUTF8(globalQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
+    }
+    // Don't override built-in files with the same name, otherwise user won't receive upgrade for them.
+    for file in userFiles where !builtinFiles.contains(file) {
+      files.append(file)
       quickPhrases[file] = stringToQuickPhrases(
         readUTF8(localQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
-    }
-    files = userFiles
-    for file in getFileNamesWithExtension(globalQuickphrasePath, ".mb") {
-      if !userFiles.contains(file) {
-        files.append(file)
-        quickPhrases[file] = stringToQuickPhrases(
-          readUTF8(globalQuickphraseDir.appendingPathComponent(file + ".mb")) ?? "")
-      }
     }
     if files.isEmpty {
       current = ""
     } else if current.isEmpty || !files.contains(current) {
       current = files[0]
     }
+  }
+
+  func isBuiltin(_ file: String) -> Bool {
+    builtinFiles.contains(file)
+  }
+
+  func isDisabled(_ file: String) -> Bool {
+    disabledFiles.contains(file)
   }
 }
 
@@ -95,6 +108,22 @@ struct QuickPhraseView: View {
     Fcitx.setConfig("fcitx://config/addon/quickphrase/editor", "{}")
   }
 
+  private var isCurrentFileEditable: Bool {
+    let file = quickphraseVM.current
+    return !file.isEmpty && !quickphraseVM.isBuiltin(file) && !quickphraseVM.isDisabled(file)
+  }
+
+  private func setBuiltinQuickPhraseEnabled(_ enabled: Bool) -> Bool {
+    let file = quickphraseVM.current
+    let disabledURL = localQuickphraseDir.appendingPathComponent(file + ".mb.disable")
+
+    mkdirP(localQuickphrasePath)
+    if enabled {
+      return removeFile(disabledURL)
+    }
+    return writeUTF8(disabledURL, "")
+  }
+
   var body: some View {
     HStack {
       VStack {
@@ -118,14 +147,24 @@ struct QuickPhraseView: View {
               set: { quickphraseVM.quickPhrases[quickphraseVM.current] = $0 }
             )
           ) { $quickPhrase in
+            // Disallow editing built-in files, but still use TextField for disabled status so that there is visual difference for enabled/disabled.
             HStack {
-              TextField("Keyword", text: $quickPhrase.keyword).frame(
-                minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
-              TextField("Phrase", text: $quickPhrase.phrase).frame(
-                minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
+              if quickphraseVM.isBuiltin(quickphraseVM.current)
+                && !quickphraseVM.isDisabled(quickphraseVM.current)
+              {
+                Text(quickPhrase.keyword).frame(
+                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
+                Text(quickPhrase.phrase).frame(
+                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
+              } else {
+                TextField("Keyword", text: $quickPhrase.keyword).frame(
+                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
+                TextField("Phrase", text: $quickPhrase.phrase).frame(
+                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
+              }
             }
           }
-        }
+        }.disabled(quickphraseVM.isDisabled(quickphraseVM.current))
       }
       VStack {
         Button {
@@ -147,7 +186,8 @@ struct QuickPhraseView: View {
           quickphraseVM.selectedRows = [newItem.id]
         } label: {
           Text("Add item")
-        }
+        }.disabled(!isCurrentFileEditable)
+          .accessibilityIdentifier("AddItem")
 
         Button {
           quickphraseVM.quickPhrases[quickphraseVM.current]?.removeAll {
@@ -156,7 +196,8 @@ struct QuickPhraseView: View {
           quickphraseVM.selectedRows.removeAll()
         } label: {
           Text("Remove items")
-        }.disabled(quickphraseVM.selectedRows.isEmpty)
+        }.disabled(quickphraseVM.selectedRows.isEmpty || !isCurrentFileEditable)
+          .accessibilityIdentifier("RemoveItems")
 
         Button {
           mkdirP(localQuickphrasePath)
@@ -171,18 +212,18 @@ struct QuickPhraseView: View {
           }
         } label: {
           Text("Save")
-        }.disabled(quickphraseVM.current.isEmpty)
+        }.disabled(!isCurrentFileEditable)
+          .accessibilityIdentifier("Save")
           .buttonStyle(.borderedProminent)
 
         Button {
           let localURL = localQuickphraseDir.appendingPathComponent(quickphraseVM.current + ".mb")
           var ret: Bool
-          if quickphraseVM.userFiles.contains(quickphraseVM.current) {
-            ret = removeFile(localURL)
+          if quickphraseVM.isBuiltin(quickphraseVM.current) {
+            ret = setBuiltinQuickPhraseEnabled(
+              quickphraseVM.isDisabled(quickphraseVM.current))
           } else {
-            // Create an empty file to disable the global one
-            mkdirP(localQuickphrasePath)
-            ret = writeUTF8(localURL, "")
+            ret = removeFile(localURL)
           }
           if ret {
             reloadQuickPhrase()
@@ -190,8 +231,17 @@ struct QuickPhraseView: View {
             showRemoveFailed = true
           }
         } label: {
-          Text("Remove")
+          if quickphraseVM.isBuiltin(quickphraseVM.current) {
+            if quickphraseVM.isDisabled(quickphraseVM.current) {
+              Text("Enable")
+            } else {
+              Text("Disable")
+            }
+          } else {
+            Text("Remove")
+          }
         }.disabled(quickphraseVM.current.isEmpty)
+          .accessibilityIdentifier("ToggleOrRemove")
 
         Button {
           mkdirP(localQuickphrasePath)
@@ -208,7 +258,8 @@ struct QuickPhraseView: View {
           openInEditor(url: localURL)
         } label: {
           Text("Open in editor")
-        }.disabled(quickphraseVM.current.isEmpty)
+        }.disabled(!isCurrentFileEditable)
+          .accessibilityIdentifier("OpenInEditor")
 
         Button {
           mkdirP(localQuickphrasePath)
@@ -221,7 +272,7 @@ struct QuickPhraseView: View {
           dismiss()
         } label: {
           Text("Close")
-        }
+        }.accessibilityIdentifier("CloseSheet")
       }
       .sheet(isPresented: $showNewFile) {
         VStack {
@@ -249,7 +300,7 @@ struct QuickPhraseView: View {
             } label: {
               Text("Create")
             }.buttonStyle(.borderedProminent)
-              .disabled(newFileName.isEmpty || quickphraseVM.userFiles.contains(newFileName))
+              .disabled(newFileName.isEmpty || quickphraseVM.files.contains(newFileName))
           }
         }.padding()
           .frame(minWidth: 200)

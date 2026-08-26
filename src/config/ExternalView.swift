@@ -86,6 +86,7 @@ struct ExternalView: OptionViewProtocol {
         .sheet(isPresented: $showQuickPhrase) {
           QuickPhraseView().refreshFiles()
         }
+        .accessibilityIdentifier("QuickPhrase")
       default:
         Button {
           if let external = external, external.starts(with: "fcitx://config/") {
