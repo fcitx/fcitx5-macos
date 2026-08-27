@@ -23,7 +23,13 @@ ADDON_ID = "chttrans"
         # static enum
         ("Engine", "OpenCC", "OpenCC", "Native", "Native"),
         # dynamic enum
-        ("OpenCCS2TProfile", "Default", "default", "s2t.json", "s2t.json"),
+        (
+            "OpenCCS2TProfile",
+            "Default",
+            "default",
+            "s2t: Simplified Chinese to Traditional Chinese (OpenCC Standard)",
+            "s2t.json",
+        ),
     ],
 )
 def test_enum_selection(
