@@ -91,6 +91,8 @@ struct QuickPhraseView: View {
 
   @State private var showNewFile = false
   @State private var newFileName = ""
+  private let pageSize = 10
+  @State private var currentPage = 0
   @ObservedObject private var quickphraseVM = QuickPhraseVM()
   @State private var showReloaded = false
   @State private var showCreateFailed = false
@@ -99,6 +101,7 @@ struct QuickPhraseView: View {
   @State private var showSavedFailure = false
 
   func refreshFiles() -> some View {
+    currentPage = 0
     quickphraseVM.refreshFiles()
     return self
   }
@@ -111,6 +114,35 @@ struct QuickPhraseView: View {
   private var isCurrentFileEditable: Bool {
     let file = quickphraseVM.current
     return !file.isEmpty && !quickphraseVM.isBuiltin(file) && !quickphraseVM.isDisabled(file)
+  }
+
+  private var totalPages: Int {
+    let itemCount = quickphraseVM.quickPhrases[quickphraseVM.current]?.count ?? 0
+    return max(1, (itemCount + pageSize - 1) / pageSize)
+  }
+
+  private var currentPageItems: Range<Int> {
+    let itemCount = quickphraseVM.quickPhrases[quickphraseVM.current]?.count ?? 0
+    let start = currentPage * pageSize
+    let end = min(start + pageSize, itemCount)
+    guard start < end else { return 0..<0 }
+    return start..<end
+  }
+
+  private var currentPageSlice: Binding<[QuickPhrase]> {
+    let file = quickphraseVM.current
+    let range = currentPageItems
+    return Binding(
+      get: {
+        guard let quickPhrases = quickphraseVM.quickPhrases[file] else { return [] }
+        return Array(quickPhrases[range])
+      },
+      set: { newValue in
+        for (i, item) in zip(range, newValue) {
+          quickphraseVM.quickPhrases[file]?[i] = item
+        }
+      }
+    )
   }
 
   private func setBuiltinQuickPhraseEnabled(_ enabled: Bool) -> Bool {
@@ -132,6 +164,10 @@ struct QuickPhraseView: View {
             Text(file)
           }
         }
+        .accessibilityIdentifier("QuickPhraseFile")
+        .onChange(of: quickphraseVM.current) { _ in
+          currentPage = 0
+        }
         List(selection: $quickphraseVM.selectedRows) {
           HStack {
             Text("Keyword").frame(
@@ -141,30 +177,34 @@ struct QuickPhraseView: View {
           }
           .font(.headline)
 
-          ForEach(
-            Binding(
-              get: { quickphraseVM.quickPhrases[quickphraseVM.current] ?? [] },
-              set: { quickphraseVM.quickPhrases[quickphraseVM.current] = $0 }
-            )
-          ) { $quickPhrase in
+          ForEach(currentPageSlice) { $quickPhrase in
             // Disallow editing built-in files, but still use TextField for disabled status so that there is visual difference for enabled/disabled.
             HStack {
               if quickphraseVM.isBuiltin(quickphraseVM.current)
                 && !quickphraseVM.isDisabled(quickphraseVM.current)
               {
                 Text(quickPhrase.keyword).frame(
-                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
+                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading
+                )
+                .accessibilityIdentifier("Keyword")
                 Text(quickPhrase.phrase).frame(
-                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
+                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading
+                )
+                .accessibilityIdentifier("Phrase")
               } else {
                 TextField("Keyword", text: $quickPhrase.keyword).frame(
-                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading)
+                  minWidth: minKeywordColumnWidth, maxWidth: .infinity, alignment: .leading
+                )
+                .accessibilityIdentifier("Keyword")
                 TextField("Phrase", text: $quickPhrase.phrase).frame(
-                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading)
+                  minWidth: minPhraseColumnWidth, maxWidth: .infinity, alignment: .leading
+                )
+                .accessibilityIdentifier("Phrase")
               }
             }
           }
         }.disabled(quickphraseVM.isDisabled(quickphraseVM.current))
+        PaginationView(currentPage: $currentPage, totalPages: totalPages)
       }
       VStack {
         Button {
@@ -178,11 +218,12 @@ struct QuickPhraseView: View {
           showNewFile = true
         } label: {
           Text("New file")
-        }
+        }.accessibilityIdentifier("NewFile")
 
         Button {
           let newItem = QuickPhrase(keyword: "", phrase: "")
           quickphraseVM.quickPhrases[quickphraseVM.current]?.append(newItem)
+          currentPage = totalPages - 1
           quickphraseVM.selectedRows = [newItem.id]
         } label: {
           Text("Add item")
@@ -194,6 +235,9 @@ struct QuickPhraseView: View {
             quickphraseVM.selectedRows.contains($0.id)
           }
           quickphraseVM.selectedRows.removeAll()
+          if currentPage >= totalPages {
+            currentPage = totalPages - 1
+          }
         } label: {
           Text("Remove items")
         }.disabled(quickphraseVM.selectedRows.isEmpty || !isCurrentFileEditable)
@@ -279,6 +323,7 @@ struct QuickPhraseView: View {
           HStack {
             Text("Name")
             TextField("", text: $newFileName)
+              .accessibilityIdentifier("NewFileName")
           }
           HStack {
             Button {
@@ -301,12 +346,13 @@ struct QuickPhraseView: View {
               Text("Create")
             }.buttonStyle(.borderedProminent)
               .disabled(newFileName.isEmpty || quickphraseVM.files.contains(newFileName))
+              .accessibilityIdentifier("CreateFile")
           }
         }.padding()
           .frame(minWidth: 200)
       }
     }.padding()
-      .frame(minWidth: 500, minHeight: 300)
+      .frame(minWidth: 600, minHeight: 400)
       .toast(isPresenting: $showReloaded) {
         AlertToast(
           displayMode: .hud, type: .complete(Color.green),
