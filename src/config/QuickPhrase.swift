@@ -55,23 +55,18 @@ class QuickPhraseVM: ObservableObject {
   }
 }
 
-struct QuickPhrase: Identifiable {
+struct QuickPhrase: Identifiable, Codable {
   let id = UUID()
   var keyword: String
   var phrase: String
+
+  enum CodingKeys: String, CodingKey {
+    case keyword, phrase
+  }
 }
 
 private func parseLine(_ s: String) -> QuickPhrase? {
-  let regex = try! NSRegularExpression(pattern: "(\\S+)\\s+(\\S.*)", options: [])
-  let matches = regex.matches(
-    in: s, options: [], range: NSRange(location: 0, length: s.utf16.count))
-
-  if let match = matches.first {
-    let keyword = String(s[Range(match.range(at: 1), in: s)!])
-    let phrase = String(s[Range(match.range(at: 2), in: s)!])
-    return QuickPhrase(keyword: keyword, phrase: phrase)
-  }
-  return nil
+  decodeJSON(String(quickphrase_parse_line(s)), QuickPhrase?.none)
 }
 
 private func stringToQuickPhrases(_ s: String) -> [QuickPhrase] {
@@ -82,7 +77,7 @@ private func stringToQuickPhrases(_ s: String) -> [QuickPhrase] {
 
 private func quickPhrasesToString(_ quickPhrases: [QuickPhrase]) -> String {
   return quickPhrases.map { quickPhrase in
-    "\(quickPhrase.keyword) \(quickPhrase.phrase)"
+    String(quickphrase_serialize_line(quickPhrase.keyword, quickPhrase.phrase))
   }.joined(separator: "\n")
 }
 
@@ -212,7 +207,7 @@ struct QuickPhraseView: View {
           showReloaded = true
         } label: {
           Text("Reload")
-        }
+        }.accessibilityIdentifier("Reload")
 
         Button {
           showNewFile = true
