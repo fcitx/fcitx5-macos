@@ -27,6 +27,42 @@ extension View {
   }
 }
 
+struct PaginationView: View {
+  @Binding var currentPage: Int
+  let totalPages: Int
+
+  private var lastPage: Int {
+    max(0, totalPages - 1)
+  }
+
+  var body: some View {
+    HStack {
+      Button {
+        currentPage = max(0, currentPage - 1)
+      } label: {
+        Image(systemName: "chevron.left")
+      }.disabled(currentPage == 0)
+      TextField(
+        "",
+        value: Binding(
+          get: { currentPage + 1 },
+          set: { currentPage = max(0, min(lastPage, $0 - 1)) }
+        ), formatter: numberFormatter
+      )
+      .frame(width: 50)
+      .multilineTextAlignment(.center)
+      .accessibilityIdentifier("Page")
+      Text("/ \(totalPages)")
+        .accessibilityIdentifier("TotalPages")
+      Button {
+        currentPage = min(lastPage, currentPage + 1)
+      } label: {
+        Image(systemName: "chevron.right")
+      }.disabled(currentPage >= lastPage)
+    }
+  }
+}
+
 func urlButton(_ text: String, _ link: String) -> some View {
   Link(text, destination: URL(string: link)!)
 }

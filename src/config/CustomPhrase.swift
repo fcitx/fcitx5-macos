@@ -117,30 +117,7 @@ struct CustomPhraseView: View {
             }
           }
         }
-        HStack {
-          Button {
-            currentPage = max(0, currentPage - 1)
-          } label: {
-            Image(systemName: "chevron.left")
-          }.disabled(currentPage == 0)
-          TextField(
-            "",
-            value: Binding(
-              get: { currentPage + 1 },
-              set: { currentPage = max(0, min(totalPages - 1, $0 - 1)) }
-            ), formatter: numberFormatter
-          )
-          .frame(width: 50)
-          .multilineTextAlignment(.center)
-          .accessibilityIdentifier("Page")
-          Text("/ \(totalPages)")
-            .accessibilityIdentifier("TotalPages")
-          Button {
-            currentPage = min(totalPages - 1, currentPage + 1)
-          } label: {
-            Image(systemName: "chevron.right")
-          }.disabled(currentPage >= totalPages - 1)
-        }
+        PaginationView(currentPage: $currentPage, totalPages: totalPages)
       }
 
       VStack {
