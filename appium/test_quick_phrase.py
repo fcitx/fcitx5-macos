@@ -26,6 +26,7 @@ GLOBAL_QUICKPHRASE_DIR = Path(
     "/Library/Input Methods/Fcitx5.app/Contents/share/fcitx5/data/quickphrase.d"
 )
 CUSTOM_NAME = "test"
+ESCAPED_NAME = "escaped"
 
 
 def _open_quick_phrase(driver: WebDriver) -> None:
@@ -126,4 +127,26 @@ def test_create_quick_phrase_file(driver: WebDriver, app: str):
 
     find_element_by_id(driver, "ToggleOrRemove").click()
     assert not custom_file.exists(), CHANGE_NOT_SAVED
+    close_sheet(driver)
+
+
+def test_parse_escaped_quick_phrase(driver: WebDriver, app: str):
+    quickphrase_dir = Path(app).parent / "data" / "data" / "quickphrase.d"
+    escaped_file = quickphrase_dir / f"{ESCAPED_NAME}.mb"
+
+    assert not escaped_file.exists(), ASSUMPTION_OUTDATED
+    _open_quick_phrase(driver)
+
+    quickphrase_dir.mkdir(parents=True, exist_ok=True)
+    escaped_file.write_text('greeting "hello world"\n')
+    find_element_by_id(driver, "Reload").click()
+    select_enum_option(find_element_by_id(driver, "QuickPhraseFile"), ESCAPED_NAME)
+
+    assert get_string_value(find_element_by_id(driver, "Keyword")) == "greeting", (
+        UI_NOT_UPDATED
+    )
+    assert get_string_value(find_element_by_id(driver, "Phrase")) == "hello world", (
+        UI_NOT_UPDATED
+    )
+
     close_sheet(driver)

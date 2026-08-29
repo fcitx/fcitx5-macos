@@ -2,5 +2,6 @@ module Fcitx {
   header "fcitx-public.h"
   header "config/config-public.h"
   header "config/customphrase-public.h"
+  header "config/quickphrase-public.h"
   export *
 }

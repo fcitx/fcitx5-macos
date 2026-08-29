@@ -17,6 +17,7 @@ add_library(Fcitx5Objs STATIC
     tunnel.cpp
     config/config.cpp
     config/customphrase.cpp
+    config/quickphrase.cpp
 )
 
 target_include_directories(Fcitx5Objs PRIVATE
