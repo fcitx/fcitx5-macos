@@ -194,10 +194,13 @@ public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {
   }
   var rect = NSRect(x: 0, y: 0, width: 0, height: 0)
   // n characters have n+1 caret positions, but character index only accepts 0 to n-1,
-  // and passing n results in (0,0). So if caret is in the end, go back and add 10px
-  let isEnd = u16pos == currentPreedit.count
+  // and passing n results in (0,0). So if caret is in the end, go back and add some width.
+  // For dummy preedit, index is 0. For no preedit at all, don't apply it.
+  let shouldGoBack = followCaret && currentPreedit.count > 0 && u16pos == currentPreedit.utf16.count
+  let lastCharacter = currentPreedit.last.map(String.init) ?? ""
   client.attributes(
-    forCharacterIndex: followCaret ? (isEnd ? u16pos - 1 : u16pos) : 0,
+    forCharacterIndex: followCaret
+      ? (shouldGoBack ? u16pos - lastCharacter.utf16.count : u16pos) : 0,
     lineHeightRectangle: &rect)
   if rect.width == 0 && rect.height == 0 {
     return []
@@ -205,8 +208,12 @@ public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {
   var x = Double(NSMinX(rect))
   let y = Double(NSMinY(rect))
   let height = Double(rect.height)
-  if followCaret && isEnd {
-    x += 10
+  if shouldGoBack {
+    let fontSize = ceil(height / 1.2)
+    let rect = (lastCharacter as NSString).size(withAttributes: [
+      .font: NSFont.systemFont(ofSize: fontSize)
+    ])
+    x += height / rect.height * rect.width
   }
   return [x, y, height]
 }
