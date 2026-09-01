@@ -199,7 +199,8 @@ public func getCaretCoordinates(_ followCaret: Bool) -> [Double] {
   let shouldGoBack = followCaret && currentPreedit.count > 0 && u16pos == currentPreedit.utf16.count
   let lastCharacter = currentPreedit.last.map(String.init) ?? ""
   client.attributes(
-    forCharacterIndex: followCaret ? (shouldGoBack ? u16pos - lastCharacter.utf16.count : u16pos) : 0,
+    forCharacterIndex: followCaret
+      ? (shouldGoBack ? u16pos - lastCharacter.utf16.count : u16pos) : 0,
     lineHeightRectangle: &rect)
   if rect.width == 0 && rect.height == 0 {
     return []
