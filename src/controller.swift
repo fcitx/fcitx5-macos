@@ -86,6 +86,9 @@ class FcitxInputController: IMKInputController {
       let runningApp = pid == nil ? nil : NSRunningApplication(processIdentifier: pid!)
       obeySecureInput = runningApp?.bundleIdentifier == appId
       if !obeySecureInput {
+        // Logged:
+        // In Software Update, System Settings (com.apple.systempreferences) enables secure input,
+        // but password is typed into com.apple.LocalAuthenticationRemoteService.
         FCITX_WARN(
           "Secure input is abused by (possibly) \(runningApp?.localizedName ?? "?"): \(runningApp?.bundleIdentifier ?? "?") pid=\(pid ?? -1)"
         )
