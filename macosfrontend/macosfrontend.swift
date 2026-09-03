@@ -13,7 +13,7 @@ private let passwordOnlyApps: Set<String> = [
   // Below are apps that only have password fields but don't call EnableSecureEventInput.
   "com.apple.wifi.WiFiAgent",  // join wifi from wifi menu
   "com.apple.wifi-settings-extension",  // join wifi from System Settings
-  "com.apple.LocalAuthenticationRemoteService", // Software Update
+  "com.apple.LocalAuthenticationRemoteService",  // Software Update
 ]
 
 // Given issues when no preedit is so widespread regardless of UI framework,
