@@ -183,7 +183,7 @@ WebPanel::WebPanel(Instance *instance)
                         candidate_window::scroll_key_action_t::eight,
                         candidate_window::scroll_key_action_t::nine,
                         candidate_window::scroll_key_action_t::zero,
-                    };
+                };
                 static const KeyList mainKeyboardNumberKeys = {
                     Key(FcitxKey_1), Key(FcitxKey_2), Key(FcitxKey_3),
                     Key(FcitxKey_4), Key(FcitxKey_5), Key(FcitxKey_6),
@@ -243,7 +243,7 @@ WebPanel::WebPanel(Instance *instance)
                          candidate_window::scroll_key_action_t::page_down},
                         {config_.scrollMode->commit,
                          candidate_window::scroll_key_action_t::commit},
-                    }; // Can't be static because config could be modified.
+                }; // Can't be static because config could be modified.
                 for (const auto &pair : actionMap) {
                     if (key.checkKeyList(*pair.first)) {
                         if (!keyEvent.isRelease()) {
