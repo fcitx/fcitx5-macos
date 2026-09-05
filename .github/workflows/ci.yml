@@ -18,6 +18,8 @@ jobs:
           submodules: true # needs fcitx5/.clang-format
 
       - name: Install dependencies
+        env:
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
           brew install clang-format swift-format
           pip install ruff
@@ -51,15 +53,13 @@ jobs:
         with:
           xcode-version: 26.6
 
+      # Ensure everything we use is up-to-date, including those already provided by image,
+      # as it's the only way to unify with local development. But skip dependents to save time.
       - name: Install dependencies
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
-          brew update && brew upgrade || true
-          brew install \
-            extra-cmake-modules \
-            librsvg \
-            md5sha1sum
+          brew install cmake extra-cmake-modules gettext librsvg ninja pkgconf
           ./scripts/install-deps.sh ${{ matrix.arch }}
           npm i -g pnpm
           pnpm --prefix=fcitx5-webview i
