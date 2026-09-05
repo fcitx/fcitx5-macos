@@ -14,6 +14,14 @@ project(fcitx5-macos VERSION 0.4.0 LANGUAGES CXX Swift)
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# VSCode's Swift extension only searches build/compile_commands.json to start sourcekit-lsp.
+execute_process(
+    COMMAND "${CMAKE_COMMAND}" -E create_symlink
+        "${CMAKE_OSX_ARCHITECTURES}/compile_commands.json"
+        "${PROJECT_BINARY_DIR}/../compile_commands.json"
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
 # On x86 /Library/Frameworks/Mono.framework will mess up libintl.
 set(CMAKE_FIND_FRAMEWORK LAST)
 
