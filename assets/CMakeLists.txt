@@ -66,7 +66,7 @@ install(DIRECTORY "${PREBUILDER_SHARE_DIR}/locale"
 # Use 'GenerateStrings' to update .strings files.
 #
 set(LOCALES en # en must be first
-    ca da de es fr he ja ka ko ru vi zh-Hans zh-Hant)
+    ca da de es fr he ja ka ko ru sv vi zh-Hans zh-Hant)
 
 list(TRANSFORM LOCALES APPEND ".lproj" OUTPUT_VARIABLE LPROJS)
 list(TRANSFORM LPROJS PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/" OUTPUT_VARIABLE LPROJ_DIRS)
