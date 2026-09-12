@@ -68,9 +68,25 @@ struct ImageView: OptionViewProtocol {
         .accessibilityIdentifier("ImageURL")
       }
     }.onChange(of: file) {
-      value = $0.isEmpty ? "" : fcitxPrefix + $0
+      let newValue = $0.isEmpty ? "" : fcitxPrefix + $0
+      if mode == 0, (value as? String) != newValue {
+        value = newValue
+      }
     }.onChange(of: url) {
-      value = $0
+      if mode == 1, (value as? String) != $0 {
+        value = $0
+      }
+    }.onChange(of: value as? String) {
+      let newValue = $0 ?? ""
+      if newValue.isEmpty || newValue.starts(with: fcitxPrefix) {
+        mode = 0
+        file = String(newValue.dropFirst(fcitxPrefix.count))
+        url = ""
+      } else {
+        mode = 1
+        file = ""
+        url = newValue
+      }
     }
   }
 }

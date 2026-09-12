@@ -10,7 +10,7 @@ from util.file import select_files
 from util.key import press
 from util.message import ASSUMPTION_OUTDATED, CHANGE_NOT_SAVED, UI_NOT_UPDATED
 from util.string import get_string_value
-from util.window import find_element_by_id, open_theme_config
+from util.window import find_element_by_id, open_theme_config, reset_option
 
 BACKGROUND = "Background"
 PNG = "customized.png"
@@ -49,3 +49,8 @@ def test_image(driver: WebDriver, app: str):
     press(driver, [Keys.ENTER])
     assert get_string_value(url) == URL, UI_NOT_UPDATED
     assert read_config_value() == URL, CHANGE_NOT_SAVED
+
+    reset_option(driver, "ImageUrl")
+    assert read_config_value() == "", CHANGE_NOT_SAVED
+    assert get_enum_value(mode) == "Local", UI_NOT_UPDATED
+    assert get_label(get_button()) == prompt_label, UI_NOT_UPDATED
