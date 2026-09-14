@@ -197,7 +197,8 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
   var afterStr =
     client.string(from: NSRange(location: preeditEnd, length: afterLength), actualRange: &actual)
     ?? ""
-  if preeditEnd + afterLength < totalLength {
+  let afterIsCut = preeditEnd + afterLength < totalLength
+  if afterIsCut {
     afterStr = dropSplitCharacter(afterStr, atStart: false)
   }
   let fullText = beforeStr + afterStr
@@ -210,7 +211,7 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
       client.string(
         from: NSRange(location: location, length: min(length, afterLength)), actualRange: &actual)
       ?? ""
-    if length > afterLength {
+    if afterIsCut && length >= afterLength {
       selectionStr = dropSplitCharacter(selectionStr, atStart: false)
     }
     return (fullText, anchor + UInt32(selectionStr.unicodeScalars.count), anchor)
