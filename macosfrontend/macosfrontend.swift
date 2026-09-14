@@ -165,14 +165,12 @@ public func commitAsync(_ commit: String) {
 // text near the cursor.
 private let surroundingTextWindow = 1024
 
-// A window edge can split a surrogate pair, and the half left in the string
-// becomes U+FFFD. Drop it, so engines do not see a character that is not there.
-private func dropSplitCharacter(_ text: String, atStart: Bool) -> String {
-  var scalars = text.unicodeScalars
-  if atStart ? scalars.first == "\u{FFFD}" : scalars.last == "\u{FFFD}" {
-    _ = atStart ? scalars.removeFirst() : scalars.removeLast()
-  }
-  return String(scalars)
+// Whether a surrogate pair spans the UTF-16 offset, so that a window edge there
+// would split it and leave half of a character in the string.
+private func splitsSurrogatePair(_ client: IMKTextInput, _ offset: Int) -> Bool {
+  var actual = NSRange(location: 0, length: 0)
+  let pair = client.string(from: NSRange(location: offset - 1, length: 2), actualRange: &actual)
+  return pair?.unicodeScalars.count == 1
 }
 
 public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt32, UInt32) {
@@ -183,37 +181,37 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
   // currentPreedit is inserted at location - u16pos
   let preeditStart = max(0, location - u16pos)
   let preeditEnd = preeditStart + currentPreedit.utf16.count
-  let windowStart = max(0, preeditStart - surroundingTextWindow)
-  let afterLength = min(max(0, totalLength - preeditEnd), surroundingTextWindow)
+  // Move a window edge off the middle of a surrogate pair, e.g. an emoji.
+  var windowStart = max(0, preeditStart - surroundingTextWindow)
+  if windowStart > 0 && splitsSurrogatePair(client, windowStart) {
+    windowStart += 1
+  }
+  var afterLength = min(max(0, totalLength - preeditEnd), surroundingTextWindow)
+  if preeditEnd + afterLength < totalLength
+    && splitsSurrogatePair(client, preeditEnd + afterLength)
+  {
+    afterLength -= 1
+  }
 
   var actual = NSRange(location: 0, length: 0)
-  var beforeStr =
+  let beforeStr =
     client.string(
       from: NSRange(location: windowStart, length: preeditStart - windowStart),
       actualRange: &actual) ?? ""
-  if windowStart > 0 {
-    beforeStr = dropSplitCharacter(beforeStr, atStart: true)
-  }
-  var afterStr =
-    client.string(from: NSRange(location: preeditEnd, length: afterLength), actualRange: &actual)
-    ?? ""
-  let afterIsCut = preeditEnd + afterLength < totalLength
-  if afterIsCut {
-    afterStr = dropSplitCharacter(afterStr, atStart: false)
-  }
-  let fullText = beforeStr + afterStr
+  let fullText =
+    beforeStr
+    + (client.string(
+      from: NSRange(location: preeditEnd, length: afterLength), actualRange: &actual) ?? "")
 
   // fcitx5 expects Unicode code point count for anchor and cursor in surrounding text.
   let anchor = UInt32(beforeStr.unicodeScalars.count)
   if currentPreedit.isEmpty && length > 0 {
-    // The selection starts where afterStr starts, so cut it at the same place.
-    var selectionStr =
+    // The selection starts where the text after the cursor starts. Cut it at
+    // the same place, so the cursor stays within the text.
+    let selectionStr =
       client.string(
         from: NSRange(location: location, length: min(length, afterLength)), actualRange: &actual)
       ?? ""
-    if afterIsCut && length >= afterLength {
-      selectionStr = dropSplitCharacter(selectionStr, atStart: false)
-    }
     return (fullText, anchor + UInt32(selectionStr.unicodeScalars.count), anchor)
   }
   return (fullText, anchor, anchor)
