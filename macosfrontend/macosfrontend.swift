@@ -159,6 +159,22 @@ public func commitAsync(_ commit: String) {
   }
 }
 
+// UTF-16 units of surrounding text read on each side of the cursor. This runs
+// on every key, and reading the whole document gets slow in a client with a
+// long buffer, such as a terminal with a long scrollback. Engines only look at
+// text near the cursor.
+private let surroundingTextWindow = 1024
+
+// A window edge can split a surrogate pair, and the half left in the string
+// becomes U+FFFD. Drop it, so engines do not see a character that is not there.
+private func dropSplitCharacter(_ text: String, atStart: Bool) -> String {
+  var scalars = text.unicodeScalars
+  if atStart ? scalars.first == "\u{FFFD}" : scalars.last == "\u{FFFD}" {
+    _ = atStart ? scalars.removeFirst() : scalars.removeLast()
+  }
+  return String(scalars)
+}
+
 public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt32, UInt32) {
   guard let client = controller?.client(), location != NSNotFound else {
     return ("", 0, 0)
@@ -167,21 +183,36 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
   // currentPreedit is inserted at location - u16pos
   let preeditStart = max(0, location - u16pos)
   let preeditEnd = preeditStart + currentPreedit.utf16.count
+  let windowStart = max(0, preeditStart - surroundingTextWindow)
+  let afterLength = min(max(0, totalLength - preeditEnd), surroundingTextWindow)
 
   var actual = NSRange(location: 0, length: 0)
-  let beforeStr =
-    client.string(from: NSRange(location: 0, length: preeditStart), actualRange: &actual) ?? ""
-  let fullText =
-    beforeStr
-    + (client.string(
-      from: NSRange(location: preeditEnd, length: max(0, totalLength - preeditEnd)),
-      actualRange: &actual) ?? "")
+  var beforeStr =
+    client.string(
+      from: NSRange(location: windowStart, length: preeditStart - windowStart),
+      actualRange: &actual) ?? ""
+  if windowStart > 0 {
+    beforeStr = dropSplitCharacter(beforeStr, atStart: true)
+  }
+  var afterStr =
+    client.string(from: NSRange(location: preeditEnd, length: afterLength), actualRange: &actual)
+    ?? ""
+  if preeditEnd + afterLength < totalLength {
+    afterStr = dropSplitCharacter(afterStr, atStart: false)
+  }
+  let fullText = beforeStr + afterStr
 
   // fcitx5 expects Unicode code point count for anchor and cursor in surrounding text.
   let anchor = UInt32(beforeStr.unicodeScalars.count)
   if currentPreedit.isEmpty && length > 0 {
-    let selectionStr =
-      client.string(from: NSRange(location: location, length: length), actualRange: &actual) ?? ""
+    // The selection starts where afterStr starts, so cut it at the same place.
+    var selectionStr =
+      client.string(
+        from: NSRange(location: location, length: min(length, afterLength)), actualRange: &actual)
+      ?? ""
+    if length > afterLength {
+      selectionStr = dropSplitCharacter(selectionStr, atStart: false)
+    }
     return (fullText, anchor + UInt32(selectionStr.unicodeScalars.count), anchor)
   }
   return (fullText, anchor, anchor)
