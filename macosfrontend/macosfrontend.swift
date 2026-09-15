@@ -159,6 +159,12 @@ public func commitAsync(_ commit: String) {
   }
 }
 
+// UTF-16 units of surrounding text read on each side of the cursor. This runs
+// on every key, and reading the whole document gets slow in a client with a
+// long buffer, such as a terminal with a long scrollback (reproducible on Terminal
+// by `seq 1 1000000`). Engines only look at text near the cursor.
+private let surroundingTextWindow = 1024
+
 public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt32, UInt32) {
   guard let client = controller?.client(), location != NSNotFound else {
     return ("", 0, 0)
@@ -167,21 +173,33 @@ public func getSurroundingText(_ location: Int, _ length: Int) -> (String, UInt3
   // currentPreedit is inserted at location - u16pos
   let preeditStart = max(0, location - u16pos)
   let preeditEnd = preeditStart + currentPreedit.utf16.count
+  let windowStart = max(0, preeditStart - surroundingTextWindow)
+  let afterLength = min(max(0, totalLength - preeditEnd), surroundingTextWindow)
+  let afterIsCut = preeditEnd + afterLength < totalLength
 
   var actual = NSRange(location: 0, length: 0)
-  let beforeStr =
-    client.string(from: NSRange(location: 0, length: preeditStart), actualRange: &actual) ?? ""
-  let fullText =
-    beforeStr
-    + (client.string(
-      from: NSRange(location: preeditEnd, length: max(0, totalLength - preeditEnd)),
-      actualRange: &actual) ?? "")
+  var beforeStr =
+    client.string(
+      from: NSRange(location: windowStart, length: preeditStart - windowStart),
+      actualRange: &actual) ?? ""
+  if windowStart > 0 {  // The first char may be partial grapheme so simply drop it.
+    beforeStr = String(beforeStr.dropFirst())
+  }
+  var afterStr =
+    client.string(from: NSRange(location: preeditEnd, length: afterLength), actualRange: &actual)
+    ?? ""
+  if afterIsCut {
+    afterStr = String(afterStr.dropLast())
+  }
+  let fullText = beforeStr + afterStr
 
   // fcitx5 expects Unicode code point count for anchor and cursor in surrounding text.
   let anchor = UInt32(beforeStr.unicodeScalars.count)
   if currentPreedit.isEmpty && length > 0 {
-    let selectionStr =
-      client.string(from: NSRange(location: location, length: length), actualRange: &actual) ?? ""
+    // The selection starts where the text after the cursor starts. Cut it at
+    // the same place, so the cursor stays within the text.
+    let selectionStr = (afterStr as NSString).substring(
+      with: NSRange(location: 0, length: min(length, afterStr.utf16.count)))
     return (fullText, anchor + UInt32(selectionStr.unicodeScalars.count), anchor)
   }
   return (fullText, anchor, anchor)
