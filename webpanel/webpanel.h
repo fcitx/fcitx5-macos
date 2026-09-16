@@ -254,7 +254,7 @@ FCITX_CONFIGURATION(
                                           true};
     Option<bool> verticalCommentsAlignRight{this, "VerticalCommentsAlignRight",
                                             _("Vertical comments align right"),
-                                            false};
+                                            true};
     OptionWithAnnotation<PagingButtonsStyle, PagingButtonsStyleI18NAnnotation>
         pagingButtonsStyle{this, "PagingButtonsStyle",
                            _("Paging buttons style"),
