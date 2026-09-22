@@ -26,7 +26,7 @@ if(NOT CMAKE_Swift_COMPILER OR CMAKE_Swift_COMPILER STREQUAL "/usr/bin/swiftc")
     set(CMAKE_Swift_COMPILER "${SWIFTC}" CACHE FILEPATH "Swift compiler" FORCE)
 endif()
 
-project(fcitx5-macos VERSION 0.4.0 LANGUAGES CXX Swift)
+project(fcitx5-macos VERSION 0.4.1 LANGUAGES CXX Swift)
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
