@@ -14,6 +14,18 @@ let configWindowHeight: CGFloat = 600
 let styleMask: NSWindow.StyleMask = [.titled, .closable, .resizable, .fullSizeContentView]
 
 extension View {
+  @ViewBuilder
+  func condition<Content: View>(
+    _ isActive: Bool,
+    transform: (Self) -> Content
+  ) -> some View {
+    if isActive {
+      transform(self)
+    } else {
+      self
+    }
+  }
+
   func tooltip(_ text: String) -> some View {
     HStack {
       self

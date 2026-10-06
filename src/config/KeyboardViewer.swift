@@ -137,7 +137,7 @@ struct KeyboardViewer: View {
   var body: some View {
     VStack {
       if symbols.count == 4 {
-        let keyboard = VStack(spacing: spacing) {
+        VStack(spacing: spacing) {
           HStack(spacing: spacing) {
             ForEach(symbols[0].indices, id: \.self) { col in
               Key(symbols[0][col], fixed: false)
@@ -190,13 +190,15 @@ struct KeyboardViewer: View {
         }
         .padding(spacing)
         .environment(\.layoutDirection, .leftToRight)  // Keep layout on RTL locales (e.g. Hebrew).
-
-        if colorScheme == .dark {
-          keyboard.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))
-        } else {
-          keyboard.overlay(
+        .condition(colorScheme == .dark) {
+          $0.background(Color(.sRGB, red: 75 / 255, green: 75 / 255, blue: 75 / 255))
+        }
+        .condition(colorScheme != .dark) {
+          $0.overlay(
             RoundedRectangle(cornerRadius: keyCornerRadius)
-              .stroke(Color(.sRGB, red: 199 / 255, green: 206 / 255, blue: 211 / 255), lineWidth: 1)
+              .stroke(
+                Color(.sRGB, red: 199 / 255, green: 206 / 255, blue: 211 / 255),
+                lineWidth: 1)
           )
         }
       }
