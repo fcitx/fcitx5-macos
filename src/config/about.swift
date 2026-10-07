@@ -79,7 +79,7 @@ struct AboutView: View {
       HStack {
         Text(arch)
         if isDebug {
-          Text("Debug")
+          Text(verbatim: "Debug")
         }
       }
 
@@ -237,11 +237,11 @@ struct AboutView: View {
         }.sheet(isPresented: $uninstallFailed) {
           VStack {
             Text("Uninstall failed, you may need to manually remove")
-            Text("/Library/Input Methods/Fcitx5.app")
-            Text("~/Library/fcitx5")
-            Text("~/.config/fcitx5")
+            Text(verbatim: "/Library/Input Methods/Fcitx5.app")
+            Text(verbatim: "~/Library/fcitx5")
+            Text(verbatim: "~/.config/fcitx5")
             if removeUserData {
-              Text("~/.local/share/fcitx5")
+              Text(verbatim: "~/.local/share/fcitx5")
             }
             Button {
               uninstallFailed = false

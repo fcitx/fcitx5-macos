@@ -50,24 +50,21 @@ struct EnumView: OptionViewProtocol {
     if isThemeWithLiquidGlass() {
       HStack {
         Text("Follow App background (Liquid Glass)")
-        Button {
+        HelpButton {
           showHelp = true
-        } label: {
-          Text("?")
-        }.frame(width: 20, height: 20)
-          .clipShape(Circle())
-          .sheet(isPresented: $showHelp) {
-            VStack {
-              Text(
-                "When Liquid Glass is enabled, theme follows App background, which is the same behavior with built-in input methods.\nTo set fixed light/dark theme, please change Background → Blur to \"None\" or \"Blur\"."
-              )
-              Button {
-                showHelp = false
-              } label: {
-                Text("OK")
-              }.buttonStyle(.borderedProminent)
-            }.padding()
-          }
+        }
+        .sheet(isPresented: $showHelp) {
+          VStack {
+            Text(
+              "When Liquid Glass is enabled, theme follows App background, which is the same behavior with built-in input methods.\nTo set fixed light/dark theme, please change Background → Blur to \"None\" or \"Blur\"."
+            )
+            Button {
+              showHelp = false
+            } label: {
+              Text("OK")
+            }.buttonStyle(.borderedProminent)
+          }.padding()
+        }
       }
     } else {
       Picker(

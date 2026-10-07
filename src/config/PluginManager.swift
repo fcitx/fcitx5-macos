@@ -225,7 +225,7 @@ struct PluginView: View {
                 NSWorkspace.shared.open(url)
               } label: {
                 Image(systemName: "arrow.up.forward.app.fill")
-              }.buttonStyle(.plain).help("\(url)")
+              }.buttonStyle(.plain).help(Text(verbatim: url.absoluteString))
             }
           }
           .listRowSeparator(.hidden)

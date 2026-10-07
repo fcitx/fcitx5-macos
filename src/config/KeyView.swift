@@ -59,13 +59,9 @@ struct KeyView: OptionViewProtocol {
           }
           .toggleStyle(.switch)
           .accessibilityIdentifier("\(optionId)_key_position")
-          Button {
+          HelpButton {
             showKeyPositionHelp = true
-          } label: {
-            Text("?")
           }
-          .frame(width: 20, height: 20)
-          .clipShape(Circle())
           .accessibilityLabel(Text("About matching key position"))
           .sheet(isPresented: $showKeyPositionHelp) {
             VStack(spacing: 16) {

@@ -128,7 +128,7 @@ struct InputMethodConfigView: View {
               }
               .buttonStyle(BorderlessButtonStyle())
               .foregroundColor(.secondary)  // As if it's in section header.
-              .help(NSLocalizedString("Rename", comment: "") + " '\(group.name)'")
+              .help(Text("Rename") + Text(verbatim: " '\(group.name)'"))
 
               Button {
                 selectedGroup = group
@@ -138,7 +138,7 @@ struct InputMethodConfigView: View {
               }
               .buttonStyle(BorderlessButtonStyle())
               .foregroundColor(.secondary)
-              .help(NSLocalizedString("Set keyboard layout of group", comment: ""))
+              .help(Text("Set keyboard layout of group"))
             }
             // Make right-click available in the whole line.
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,7 +170,7 @@ struct InputMethodConfigView: View {
                       Image(systemName: "keyboard.macwindow")
                     }
                     .buttonStyle(BorderlessButtonStyle())
-                    .help(NSLocalizedString("Show keyboard layout", comment: ""))
+                    .help(Text("Show keyboard layout"))
                   } else {
                     Button {
                       selectedGroup = group
@@ -180,7 +180,7 @@ struct InputMethodConfigView: View {
                       Image(systemName: "keyboard.macwindow")
                     }
                     .buttonStyle(BorderlessButtonStyle())
-                    .help(NSLocalizedString("Set keyboard layout of input method", comment: ""))
+                    .help(Text("Set keyboard layout of input method"))
                   }
                   Button {
                     viewModel.removeItem(group.name, inputMethod.id)

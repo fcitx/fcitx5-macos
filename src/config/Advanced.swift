@@ -61,7 +61,7 @@ struct AdvancedView: View {
               Text(addon.name)
                 .accessibilityIdentifier(addon.id)
                 .condition(!addon.comment.isEmpty) {
-                  $0.tooltip(addon.comment)
+                  $0.tooltip(Text(verbatim: addon.comment))
                 }
             }
           }
