@@ -1,5 +1,6 @@
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
+from util.boolean import get_boolean_value
 from util.button import get_label, get_undo_redo
 from util.config import read_global_config
 from util.key import press
@@ -18,6 +19,8 @@ INDEX = 0
 KEYS = [Keys.CONTROL, Keys.SHIFT, "A"]
 KEYS_LABEL = "⌃⇧A"
 KEYS_VALUE = "Control+Shift+A"
+KEYS_CODE_VALUE = "Control+Shift+<38>"
+KEY_POSITION_LABEL = f"Match key position, {KEYS_LABEL}"
 
 
 def test_record_shortcut(driver: WebDriver, app: str):
@@ -56,3 +59,32 @@ def test_record_shortcut(driver: WebDriver, app: str):
     assert get_label(button) == initial_label, UI_NOT_UPDATED
     assert undo.is_enabled() is False, BUTTON_SHOULD_BE_DISABLED
     assert read_config_value() != KEYS_VALUE, CHANGE_NOT_SAVED
+
+
+def test_record_key_position_shortcut(driver: WebDriver, app: str):
+    open_global_config(driver)
+
+    def read_config_value() -> str:
+        cfg = read_global_config(app)
+        return cfg[f"Hotkey/{KEY_ID}"][str(INDEX)]
+
+    button = find_elements_by_id(driver, KEY_ID)[INDEX]
+    button.click()
+    find_element_by_id(driver, f"{KEY_ID}_key_position").click()
+    press(driver, KEYS)
+
+    assert (
+        find_element_by_id(driver, f"{KEY_ID}_key").get_attribute("value") == KEYS_LABEL
+    ), UI_NOT_UPDATED
+
+    find_element_by_id(driver, f"{KEY_ID}_ok").click()
+    button = find_elements_by_id(driver, KEY_ID)[INDEX]
+    assert get_label(button) == KEY_POSITION_LABEL, UI_NOT_UPDATED
+    assert "<38>" not in get_label(button), UI_WRONGLY_UPDATED
+    assert read_config_value() == KEYS_CODE_VALUE, CHANGE_NOT_SAVED
+
+    button.click()
+    assert (
+        get_boolean_value(find_element_by_id(driver, f"{KEY_ID}_key_position")) is True
+    ), UI_NOT_UPDATED
+    find_element_by_id(driver, f"{KEY_ID}_cancel").click()

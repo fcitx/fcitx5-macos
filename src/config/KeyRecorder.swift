@@ -87,7 +87,9 @@ func shortcutRepr(_ key: String, _ modifiers: NSEvent.ModifierFlags, _ code: UIn
 
 struct RecordingOverlay: NSViewRepresentable {
   @Binding var recordedShortcut: (String, String?)
+  @Binding var recordedPositionShortcut: (String, String?)
   @Binding var recordedFcitxKey: String
+  @Binding var recordedFcitxCode: String
 
   func makeNSView(context: Context) -> NSView {
     let view = KeyCaptureView()
@@ -144,6 +146,9 @@ struct RecordingOverlay: NSViewRepresentable {
         UnicodeScalar(unicode).map { String($0) } ?? "", modifiers, code)
       parent.recordedFcitxKey = String(
         osx_key_to_fcitx_string(unicode, UInt32(modifiers.rawValue), code))
+      let fcitxCode = String(osx_key_to_fcitx_code_string(UInt32(modifiers.rawValue), code))
+      parent.recordedPositionShortcut = fcitxStringToMacShortcut(fcitxCode)
+      parent.recordedFcitxCode = fcitxCode
     }
   }
 }

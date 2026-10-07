@@ -43,11 +43,20 @@ public func keyEventUnicode(
 }
 
 func fcitxStringToMacShortcut(_ s: String) -> (String, String?) {
-  let key = String(fcitx_string_to_osx_keysym(s))
   let modifiers = NSEvent.ModifierFlags(rawValue: UInt(fcitx_string_to_osx_modifiers(s)))
-  let code = fcitx_string_to_osx_keycode(s)
+  let displayKey = String(fcitx_string_to_display_key(s))
+  if displayKey.isEmpty && !s.isEmpty {
+    return shortcutRepr("???", modifiers, UInt16.max)
+  }
+
+  let key = String(fcitx_string_to_osx_keysym(displayKey))
+  let code = fcitx_string_to_osx_keycode(displayKey)
   if key.isEmpty && code == 0 {
-    return (String(fcitx_string_to_localized_string(s)), nil)
+    return (String(fcitx_string_to_localized_string(displayKey)), nil)
   }
   return shortcutRepr(key, modifiers, code)
+}
+
+func fcitxStringIsKeycode(_ s: String) -> Bool {
+  return String(fcitx_string_to_display_key(s)) != s
 }

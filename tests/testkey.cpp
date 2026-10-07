@@ -127,13 +127,30 @@ void test_unicode_to_fcitx_string() {
     FCITX_ASSERT(osx_key_to_fcitx_string(
                      0, NSEventModifierFlagOption | NSEventModifierFlagShift,
                      kVK_Shift) == "Alt+Shift+Shift_L");
+
+    FCITX_ASSERT(osx_key_to_fcitx_code_string(NSEventModifierFlagControl,
+                                              kVK_ANSI_A) == "Control+<38>");
+    FCITX_ASSERT(osx_key_to_fcitx_code_string(
+                     NSEventModifierFlagControl | NSEventModifierFlagShift,
+                     kVK_ANSI_Comma) == "Control+Shift+<59>");
+    FCITX_ASSERT(osx_key_to_fcitx_code_string(NSEventModifierFlagShift,
+                                              kVK_Shift) == "Shift+<50>");
+    FCITX_ASSERT(osx_key_to_fcitx_code_string(0, kVK_ISO_Section).empty());
+
+    FCITX_ASSERT(fcitx_string_to_display_key("Control+<38>") == "Control+a");
+    FCITX_ASSERT(fcitx_string_to_display_key("Shift+<59>") == "Shift+less");
+    FCITX_ASSERT(fcitx_string_to_display_key("Control+Shift+<59>") ==
+                 "Control+Shift+comma");
+    FCITX_ASSERT(fcitx_string_to_display_key("<67>") == "F1");
+    FCITX_ASSERT(fcitx_string_to_display_key("Control+A") == "Control+A");
+    FCITX_ASSERT(fcitx_string_to_display_key("Control+<999>").empty());
+    FCITX_ASSERT(
+        osx_key_to_fcitx_key('a', NSEventModifierFlagControl, kVK_ANSI_A)
+            .normalize()
+            .check(fcitx::Key("Control+<38>")));
 }
 
 int main() {
-    setenv(
-        "XKB_CONFIG_ROOT",
-        "/Library/Input Methods/Fcitx5.app/Contents/share/xkeyboard-config-2",
-        1);
     test_osx_to_fcitx();
     test_fcitx_to_osx();
     test_fcitx_string();
