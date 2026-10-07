@@ -27,8 +27,8 @@ struct BasicConfigView: View {
               .accessibilityIdentifier("\(option)_label")
               .help(
                 isGroup
-                  ? NSLocalizedString("Right click to reset this group", comment: "")
-                  : NSLocalizedString("Right click to reset this item", comment: "")
+                  ? Text("Right click to reset this group")
+                  : Text("Right click to reset this item")
               ).contextMenu {
                 Button {
                   onUpdate(mergeChild(value, option, extractValue(child, reset: true)))

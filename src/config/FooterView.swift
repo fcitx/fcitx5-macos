@@ -23,10 +23,7 @@ struct FooterView: View {
         manager.reset()
       } label: {
         Text("Reset to default").tooltip(
-          NSLocalizedString(
-            "Reset current page. To reset a single item/group, right click on its label.",
-            comment: ""
-          ))
+          Text("Reset current page. To reset a single item/group, right click on its label."))
       }.accessibilityIdentifier("ResetPage")
 
       Spacer()

@@ -26,7 +26,7 @@ extension View {
     }
   }
 
-  func tooltip(_ text: String) -> some View {
+  func tooltip(_ text: Text) -> some View {
     HStack {
       self
       Image(systemName: "questionmark.circle.fill")
@@ -36,6 +36,18 @@ extension View {
   // Enlarge clickable area for border-less icon button, especially minus.
   func square() -> some View {
     self.frame(width: 20, height: 20).background(Color.black.opacity(0.001))
+  }
+}
+
+struct HelpButton: View {
+  let action: () -> Void
+
+  var body: some View {
+    Button(action: action) {
+      Text(verbatim: "?")
+    }
+    .frame(width: 20, height: 20)
+    .clipShape(Circle())
   }
 }
 
@@ -64,7 +76,7 @@ struct PaginationView: View {
       .frame(width: 50)
       .multilineTextAlignment(.center)
       .accessibilityIdentifier("Page")
-      Text("/ \(totalPages)")
+      Text(verbatim: "/ \(totalPages)")
         .accessibilityIdentifier("TotalPages")
       Button {
         currentPage = min(lastPage, currentPage + 1)

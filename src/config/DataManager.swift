@@ -198,7 +198,7 @@ struct DataView: View {
         allowedSuffixes: [".zip"],
         initialDirectory: importDataSelectedDirectory.flatMap { URL(fileURLWithPath: $0) },
         hasFile: false,
-        label: { Text("Hamster") },
+        label: { Text(verbatim: "Hamster") },
         onSelect: { urls in
           if let file = urls.first {
             importZip(file, $showImportHamster) {
