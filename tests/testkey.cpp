@@ -135,12 +135,14 @@ void test_unicode_to_fcitx_string() {
                      kVK_ANSI_Comma) == "Control+Shift+<59>");
     FCITX_ASSERT(osx_key_to_fcitx_code_string(NSEventModifierFlagShift,
                                               kVK_Shift) == "Shift+<50>");
+    FCITX_ASSERT(osx_key_to_fcitx_code_string(0, kVK_ANSI_Keypad0) == "<90>");
     FCITX_ASSERT(osx_key_to_fcitx_code_string(0, kVK_ISO_Section).empty());
 
     FCITX_ASSERT(fcitx_string_to_display_key("Control+<38>") == "Control+a");
     FCITX_ASSERT(fcitx_string_to_display_key("Shift+<59>") == "Shift+less");
     FCITX_ASSERT(fcitx_string_to_display_key("Control+Shift+<59>") ==
                  "Control+Shift+comma");
+    FCITX_ASSERT(fcitx_string_to_display_key("<90>") == "KP_0");
     FCITX_ASSERT(fcitx_string_to_display_key("<67>") == "F1");
     FCITX_ASSERT(fcitx_string_to_display_key("Control+A") == "Control+A");
     FCITX_ASSERT(fcitx_string_to_display_key("Control+<999>").empty());

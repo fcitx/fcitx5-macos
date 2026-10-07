@@ -32,6 +32,7 @@ func testFcitxToMac() -> Bool {
   ok = expectShortcut("Super+Home", ("⌘⤒", nil), fcitxStringToMacShortcut("Super+Home")) && ok
   ok = expectShortcut("Control+<38>", ("⌃A", nil), fcitxStringToMacShortcut("Control+<38>")) && ok
   ok = expectShortcut("Shift+<59>", ("⇧<", nil), fcitxStringToMacShortcut("Shift+<59>")) && ok
+  ok = expectShortcut("keypad 0 code", ("🄋", nil), fcitxStringToMacShortcut("<90>")) && ok
   ok = expectShortcut("F1 code", ("", "F1"), fcitxStringToMacShortcut("<67>")) && ok
   ok = expectShortcut("unknown code", ("???", nil), fcitxStringToMacShortcut("<999>")) && ok
   ok = expectBool("code key", true, fcitxStringIsKeycode("Control+<38>")) && ok

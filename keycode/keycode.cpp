@@ -292,6 +292,21 @@ uint16_t osx_keycode_to_fcitx_keycode(uint16_t osxKeycode) {
     return 0;
 }
 
+static fcitx::KeySym fcitx_keycode_to_mapped_keysym(int fcitxKeycode) {
+    for (const auto &codePair : code_mappings) {
+        if (codePair.linuxKeycode + 8 != fcitxKeycode) {
+            continue;
+        }
+        for (const auto &symPair : sym_mappings) {
+            if (symPair.osxKeycode == codePair.osxKeycode) {
+                return symPair.sym;
+            }
+        }
+        break;
+    }
+    return FcitxKey_None;
+}
+
 uint16_t fcitx_keysym_to_osx_keycode(fcitx::KeySym sym) {
     for (const auto &pair : sym_mappings) {
         if (pair.sym == sym) {
@@ -481,11 +496,14 @@ std::string fcitx_string_to_display_key(const char *s) noexcept {
     if (key.code() == 0 || key.sym() != FcitxKey_None) {
         return s;
     }
-    auto sym = xkb_keycode_to_keysym(
-        key.code(), fcitx_keystates_to_osx_modifiers(key.states()),
-        cached_us_keymap().second);
-    if (sym == XKB_KEY_NoSymbol) {
+    auto sym = fcitx_keycode_to_mapped_keysym(key.code());
+    if (sym == FcitxKey_None) {
+        sym = static_cast<fcitx::KeySym>(xkb_keycode_to_keysym(
+            key.code(), fcitx_keystates_to_osx_modifiers(key.states()),
+            cached_us_keymap().second));
+    }
+    if (sym == FcitxKey_None) {
         return {};
     }
-    return fcitx::Key{static_cast<fcitx::KeySym>(sym), key.states()}.toString();
+    return fcitx::Key{sym, key.states()}.toString();
 }
