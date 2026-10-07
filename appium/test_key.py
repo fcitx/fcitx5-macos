@@ -19,8 +19,10 @@ INDEX = 0
 KEYS = [Keys.CONTROL, Keys.SHIFT, "A"]
 KEYS_LABEL = "⌃⇧A"
 KEYS_VALUE = "Control+Shift+A"
-KEYS_CODE_VALUE = "Control+Shift+<38>"
-KEY_POSITION_LABEL = f"Match key position, {KEYS_LABEL}"
+KEY_POSITION_KEYS = ["'"]
+KEY_POSITION_SYMBOL_LABEL = "'"
+KEY_POSITION_LABEL = "Match key position, Q"
+KEY_POSITION_VALUE = "<24>"
 
 
 def test_record_shortcut(driver: WebDriver, app: str):
@@ -70,18 +72,23 @@ def test_record_key_position_shortcut(driver: WebDriver, app: str):
 
     button = find_elements_by_id(driver, KEY_ID)[INDEX]
     button.click()
-    find_element_by_id(driver, f"{KEY_ID}_key_position").click()
-    press(driver, KEYS)
+    press(driver, KEY_POSITION_KEYS)
 
     assert (
-        find_element_by_id(driver, f"{KEY_ID}_key").get_attribute("value") == KEYS_LABEL
+        find_element_by_id(driver, f"{KEY_ID}_key").get_attribute("value")
+        == KEY_POSITION_SYMBOL_LABEL
     ), UI_NOT_UPDATED
+
+    find_element_by_id(driver, f"{KEY_ID}_key_position").click()
+    assert find_element_by_id(driver, f"{KEY_ID}_key").get_attribute("value") == "Q", (
+        UI_NOT_UPDATED
+    )
 
     find_element_by_id(driver, f"{KEY_ID}_ok").click()
     button = find_elements_by_id(driver, KEY_ID)[INDEX]
     assert get_label(button) == KEY_POSITION_LABEL, UI_NOT_UPDATED
-    assert "<38>" not in get_label(button), UI_WRONGLY_UPDATED
-    assert read_config_value() == KEYS_CODE_VALUE, CHANGE_NOT_SAVED
+    assert "<24>" not in get_label(button), UI_WRONGLY_UPDATED
+    assert read_config_value() == KEY_POSITION_VALUE, CHANGE_NOT_SAVED
 
     button.click()
     assert (
