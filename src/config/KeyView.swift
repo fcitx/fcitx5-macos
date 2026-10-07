@@ -15,29 +15,73 @@ struct KeyView: OptionViewProtocol {
   @Binding var value: Any
 
   @State private var showRecorder = false
+  @State private var showKeyPositionHelp = false
+  @State private var matchKeyPosition = false
   @State private var recordedShortcut: (String, String?) = ("", nil)
+  @State private var recordedPositionShortcut: (String, String?) = ("", nil)
   @State private var recordedFcitxKey = ""
+  @State private var recordedFcitxCode = ""
 
   var body: some View {
     let optionId = data["Option"] as? String ?? ""
+    let shortcut = value as? String ?? ""
+    let usesKeyPosition = fcitxStringIsKeycode(shortcut)
     return Button {
       recordedShortcut = ("", nil)
+      recordedPositionShortcut = ("", nil)
       recordedFcitxKey = ""
+      recordedFcitxCode = ""
+      matchKeyPosition = usesKeyPosition
       showRecorder = true
     } label: {
-      recordedKeyView(
-        value as? String == "" ? ("●REC", nil) : fcitxStringToMacShortcut(value as? String ?? "")
-      )
+      HStack(spacing: 6) {
+        if usesKeyPosition {
+          Image(systemName: "keyboard")
+            .accessibilityLabel(Text("Match key position"))
+        }
+        recordedKeyView(shortcut.isEmpty ? ("●REC", nil) : fcitxStringToMacShortcut(shortcut))
+      }
       .frame(minWidth: 100)
     }.sheet(isPresented: $showRecorder) {
       VStack {
-        recordedKeyView(recordedShortcut)
+        recordedKeyView(matchKeyPosition ? recordedPositionShortcut : recordedShortcut)
           .background(
             RecordingOverlay(
-              recordedShortcut: $recordedShortcut, recordedFcitxKey: $recordedFcitxKey)
+              recordedShortcut: $recordedShortcut,
+              recordedPositionShortcut: $recordedPositionShortcut,
+              recordedFcitxKey: $recordedFcitxKey, recordedFcitxCode: $recordedFcitxCode)
           )
           .frame(minWidth: 200, minHeight: 50)
           .accessibilityIdentifier("\(optionId)_key")
+        HStack(spacing: 8) {
+          Toggle(isOn: $matchKeyPosition) {
+            Text("Match key position")
+          }
+          .toggleStyle(.switch)
+          .accessibilityIdentifier("\(optionId)_key_position")
+          Button {
+            showKeyPositionHelp = true
+          } label: {
+            Text("?")
+          }
+          .frame(width: 20, height: 20)
+          .clipShape(Circle())
+          .accessibilityLabel(Text("About matching key position"))
+          .sheet(isPresented: $showKeyPositionHelp) {
+            VStack(spacing: 16) {
+              Text(
+                "Normally, shortcuts match the character produced by the current keyboard layout. When this option is enabled, the shortcut ignores the keyboard layout and matches only the key's position. For example, a shortcut recorded on the QWERTY A key continues to use that same position after switching to Dvorak."
+              )
+              .frame(maxWidth: 420, alignment: .leading)
+              .fixedSize(horizontal: false, vertical: true)
+              Button {
+                showKeyPositionHelp = false
+              } label: {
+                Text("OK")
+              }.buttonStyle(.borderedProminent)
+            }.padding()
+          }
+        }
         HStack {
           Button {
             showRecorder = false
@@ -45,19 +89,20 @@ struct KeyView: OptionViewProtocol {
             Text("Cancel")
           }.accessibilityIdentifier("\(optionId)_cancel")
           Button {
-            value = recordedFcitxKey
+            value = matchKeyPosition ? recordedFcitxCode : recordedFcitxKey
             showRecorder = false
           } label: {
             Text("OK")
           }.buttonStyle(.borderedProminent)
             .accessibilityIdentifier("\(optionId)_ok")
+            .disabled(matchKeyPosition ? recordedFcitxCode.isEmpty : recordedFcitxKey.isEmpty)
         }
       }.padding()
-    }.help(
-      value as? String == ""
-        ? NSLocalizedString("Click to record", comment: "")
-        : String(fcitx_string_to_localized_string(value as? String ?? ""))
-    )
+    }.condition(shortcut.isEmpty) {
+      $0.help(Text("Click to record"))
+    }.condition(usesKeyPosition) {
+      $0.help(Text("Match key position"))
+    }
     .accessibilityIdentifier(data["Option"] as? String ?? "")
   }
 }

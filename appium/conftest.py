@@ -53,7 +53,15 @@ def launch_app(driver: WebDriver, session_base_dir: str, test_name: str) -> str:
             f.write("".join(f"{chr(ord('a') + i)},{i + 1}=w{i}\n" for i in range(21)))
 
     profile_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profile")
-    shutil.copy2(profile_src, os.path.join(config_home, "profile"))
+    profile = os.path.join(config_home, "profile")
+    shutil.copy2(profile_src, profile)
+    if test_name == "test_record_key_position_shortcut":
+        with open(profile) as f:
+            content = f.read()
+        with open(profile, "w") as f:
+            f.write(content.replace("Default Layout=us", "Default Layout=us-dvorak"))
+        switch_keyboard_layout("Dvorak")
+
     app_path = os.path.join(
         project_root, "build", platform.machine(), "appium/FcitxTestApp.app"
     )
@@ -76,17 +84,22 @@ def terminate_app(driver: WebDriver) -> None:
     driver.execute_script("macos: terminateApp", {"bundleId": BUNDLE_ID})
 
 
+def switch_keyboard_layout(layout: str) -> None:
+    """Switch the current macOS keyboard layout."""
+    subprocess.run(
+        [
+            os.path.join(project_root, "build", platform.machine(), "assets/switch_im"),
+            f"com.apple.keylayout.{layout}",
+        ],
+        check=True,
+    )
+
+
 @pytest.fixture(scope="session")
 def appium_server() -> Generator[str, None, None]:
     """Start Appium server at session start and stop it at session end."""
     subprocess.run(["pkill", "-9", "FcitxTestApp"], check=False)
-    subprocess.run(
-        [
-            os.path.join(project_root, "build", platform.machine(), "assets/switch_im"),
-            "com.apple.keylayout.ABC",
-        ],
-        check=True,
-    )
+    switch_keyboard_layout("ABC")
     proc = subprocess.Popen(
         ["appium"],
         stdout=subprocess.DEVNULL,
@@ -138,7 +151,12 @@ def app(
 ) -> Generator[str, None, None]:
     """Manage test app lifecycle for a single test case."""
     # Launch fresh app
-    config_home = launch_app(driver, session_base_dir, request.node.name)
-    yield config_home
-    # Clean up after test
-    terminate_app(driver)
+    test_name = request.node.name
+    config_home = launch_app(driver, session_base_dir, test_name)
+    try:
+        yield config_home
+    finally:
+        # Clean up after test
+        terminate_app(driver)
+        if test_name == "test_record_key_position_shortcut":
+            switch_keyboard_layout("ABC")

@@ -248,8 +248,8 @@ static constexpr const char *kUsLayout = "us";
 std::string currentLayout = kUsLayout;
 bool pinyinKeyboard = false;
 
-// The us keymap is built once and reused. It backs char_mappings-free symbol
-// lookup for PinyinKeyboard and the recorder's PinyinKeyboard fallback.
+// The us keymap is built once and reused for physical-key display and the
+// PinyinKeyboard fallback.
 std::pair<struct xkb_context *, struct xkb_keymap *> &
 cached_us_keymap() noexcept {
     static std::pair<struct xkb_context *, struct xkb_keymap *> cached =
@@ -290,6 +290,21 @@ uint16_t osx_keycode_to_fcitx_keycode(uint16_t osxKeycode) {
         }
     }
     return 0;
+}
+
+static fcitx::KeySym fcitx_keycode_to_mapped_keysym(int fcitxKeycode) {
+    for (const auto &codePair : code_mappings) {
+        if (codePair.linuxKeycode + 8 != fcitxKeycode) {
+            continue;
+        }
+        for (const auto &symPair : sym_mappings) {
+            if (symPair.osxKeycode == codePair.osxKeycode) {
+                return symPair.sym;
+            }
+        }
+        break;
+    }
+    return FcitxKey_None;
 }
 
 uint16_t fcitx_keysym_to_osx_keycode(fcitx::KeySym sym) {
@@ -397,25 +412,10 @@ make_xkb_keymap(const std::string &layout) noexcept {
     return {ctx, keymap};
 }
 
-uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
-                                    uint32_t osxModifiers) noexcept {
-    for (const auto &pair : sym_mappings) {
-        if (pair.osxKeycode == osxKeycode) {
-            return 0;
-        }
-    }
-    uint16_t keycode = osx_keycode_to_fcitx_keycode(osxKeycode);
-    if (keycode == 0) {
-        return 0;
-    }
-    // The layout is maintained in real-time by get_current_group_layout().
-    // PinyinKeyboard doesn't exist in xkb, fall back to us which is equivalent
-    // for the characters the IM receives (Chinese punctuation is mapped back to
-    // ASCII using keycode+shift, see osx_unicode_to_fcitx_keysym).
-    std::string layoutStr = pinyinKeyboard ? kUsLayout : currentLayout;
-    auto [ctx, keymap] = layoutStr == kUsLayout ? cached_us_keymap()
-                                                : make_xkb_keymap(layoutStr);
-    if (!ctx || !keymap) {
+static xkb_keysym_t xkb_keycode_to_keysym(xkb_keycode_t keycode,
+                                          uint32_t osxModifiers,
+                                          struct xkb_keymap *keymap) noexcept {
+    if (!keymap) {
         return 0;
     }
     // Replicate keyEventUnicode: for a-z keys use level 1 when caps XOR shift,
@@ -437,12 +437,37 @@ uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
         level = shift ? 1 : 0;
     }
     xkb_keymap_key_get_syms_by_level(keymap, keycode, 0, level, &syms);
-    uint32_t result = syms ? syms[0] : 0;
+    return syms ? syms[0] : XKB_KEY_NoSymbol;
+}
+
+uint32_t osx_keycode_to_osx_unicode(uint16_t osxKeycode,
+                                    uint32_t osxModifiers) noexcept {
+    for (const auto &pair : sym_mappings) {
+        if (pair.osxKeycode == osxKeycode) {
+            return 0;
+        }
+    }
+    uint16_t keycode = osx_keycode_to_fcitx_keycode(osxKeycode);
+    if (keycode == 0) {
+        return 0;
+    }
+    // The layout is maintained in real-time by get_current_group_layout().
+    // PinyinKeyboard doesn't exist in xkb, fall back to us which is equivalent
+    // for the characters the IM receives (Chinese punctuation is mapped back to
+    // ASCII using keycode+shift, see osx_unicode_to_fcitx_keysym).
+    std::string layoutStr = pinyinKeyboard ? kUsLayout : currentLayout;
+    auto [ctx, keymap] = layoutStr == kUsLayout ? cached_us_keymap()
+                                                : make_xkb_keymap(layoutStr);
+    if (!ctx || !keymap) {
+        return 0;
+    }
+    uint32_t result = xkb_keysym_to_utf32(
+        xkb_keycode_to_keysym(keycode, osxModifiers, keymap));
     if (layoutStr != kUsLayout) {
         xkb_keymap_unref(keymap);
         xkb_context_unref(ctx);
     }
-    return xkb_keysym_to_utf32(result);
+    return result;
 }
 
 std::string osx_key_to_fcitx_string(uint32_t unicode, uint32_t modifiers,
@@ -453,4 +478,32 @@ std::string osx_key_to_fcitx_string(uint32_t unicode, uint32_t modifiers,
     return osx_key_to_fcitx_key(unicode, modifiers, code)
         .normalize()
         .toString();
+}
+
+std::string osx_key_to_fcitx_code_string(uint32_t modifiers,
+                                         uint16_t code) noexcept {
+    auto fcitxCode = osx_keycode_to_fcitx_keycode(code);
+    if (fcitxCode == 0) {
+        return {};
+    }
+    return fcitx::Key::fromKeyCode(fcitxCode,
+                                   osx_modifiers_to_fcitx_keystates(modifiers))
+        .toString();
+}
+
+std::string fcitx_string_to_display_key(const char *s) noexcept {
+    fcitx::Key key{s};
+    if (key.code() == 0 || key.sym() != FcitxKey_None) {
+        return s;
+    }
+    auto sym = fcitx_keycode_to_mapped_keysym(key.code());
+    if (sym == FcitxKey_None) {
+        sym = static_cast<fcitx::KeySym>(xkb_keycode_to_keysym(
+            key.code(), fcitx_keystates_to_osx_modifiers(key.states()),
+            cached_us_keymap().second));
+    }
+    if (sym == FcitxKey_None) {
+        return {};
+    }
+    return fcitx::Key{sym, key.states()}.toString();
 }

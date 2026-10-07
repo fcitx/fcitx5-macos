@@ -1,3 +1,4 @@
+import CxxFrontend
 import Fcitx
 import SwiftUI
 
@@ -30,6 +31,9 @@ class TestAppDelegate: NSObject, NSApplicationDelegate {
   func applicationDidFinishLaunching(_ notification: Notification) {
     installSignalHandlers()
     start_fcitx_thread("")
+    // The production input controller keeps this in sync. The test app has no
+    // input controller, so initialize it from the test profile explicitly.
+    _ = get_current_group_layout()
   }
 
   func applicationWillTerminate(_ notification: Notification) {

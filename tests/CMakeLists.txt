@@ -41,6 +41,10 @@ target_compile_options(KeyEventSwift PRIVATE "-cxx-interoperability-mode=default
 target_link_libraries(KeyEventSwift Keycode)
 add_test(NAME KeyEventSwift COMMAND KeyEventSwift)
 
+set_tests_properties(key-cpp KeySwift KeyEventSwift PROPERTIES
+    ENVIRONMENT "XKB_CONFIG_ROOT=${CMAKE_BINARY_DIR}/usr/share/xkeyboard-config-2"
+)
+
 add_executable(TagSwift testtag.swift
     ${PROJECT_SOURCE_DIR}/src/config/tag.swift
 )
