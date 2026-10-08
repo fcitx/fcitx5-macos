@@ -1,0 +1,25 @@
+diff --git a/src/lib/fcitx/instance.cpp b/src/lib/fcitx/instance.cpp
+index 9372e7ae..583b5be0 100644
+--- a/src/lib/fcitx/instance.cpp
++++ b/src/lib/fcitx/instance.cpp
+@@ -1662,7 +1662,7 @@ bool Instance::postEvent(Event &event) const {
+     if (iter != d->eventHandlers_.end()) {
+         const auto &handlers = iter->second;
+         EventWatcherPhase phaseOrder[] = {
+-            EventWatcherPhase::ReservedFirst, EventWatcherPhase::PreInputMethod,
++            EventWatcherPhase::ReservedFirst, EventWatcherPhase::PreTempMode, EventWatcherPhase::PreInputMethod,
+             EventWatcherPhase::InputMethod, EventWatcherPhase::PostInputMethod,
+             EventWatcherPhase::ReservedLast};
+ 
+diff --git a/src/lib/fcitx/instance.h b/src/lib/fcitx/instance.h
+index 46ff2eed..c0bdfdc0 100644
+--- a/src/lib/fcitx/instance.h
++++ b/src/lib/fcitx/instance.h
+@@ -80,6 +80,7 @@ enum class EventWatcherPhase {
+     ReservedFirst,
+     /// Internal phase to be executed last
+     ReservedLast,
++    PreTempMode,
+     Default = PostInputMethod
+ };
+ 
