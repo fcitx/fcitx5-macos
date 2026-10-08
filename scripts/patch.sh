@@ -13,4 +13,5 @@ apply_patch() {
     fi
 }
 
+apply_patch fcitx5 patches/tempmode.patch
 apply_patch fcitx5-webview/webview fcitx5-webview/patches/webview.patch
