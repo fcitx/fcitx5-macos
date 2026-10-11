@@ -402,9 +402,44 @@ void imSetGroups(const char *json) noexcept {
     });
 }
 
-void imSetCurrentIM(const char *imName) noexcept {
-    return with_fcitx(
-        [=](Fcitx &fcitx) { fcitx.instance()->setCurrentInputMethod(imName); });
+static fcitx::KeyList imSelectorSwitchKeys(Fcitx &fcitx) {
+    auto *addon = fcitx.addonMgr().addon("imselector");
+    const auto *config = addon ? addon->getConfig() : nullptr;
+    if (!config) {
+        return {};
+    }
+    fcitx::RawConfig raw;
+    config->save(raw);
+    const auto switchKey = raw.get("SwitchKey");
+    fcitx::KeyList keys;
+    if (switchKey) {
+        fcitx::unmarshallOption(keys, *switchKey, true);
+    }
+    return keys;
+}
+
+void imSetCurrentIM(const char *imName, bool hotkey) noexcept {
+    return with_fcitx([=](Fcitx &fcitx) {
+        if (hotkey) {
+            if (auto *ic = fcitx.instance()->mostRecentInputContext()) {
+                const auto &list = fcitx.instance()
+                                       ->inputMethodManager()
+                                       .currentGroup()
+                                       .inputMethodList();
+                const auto keys = imSelectorSwitchKeys(fcitx);
+                for (size_t i = 0; i < keys.size() && i < list.size(); ++i) {
+                    if (list[i].name() == imName) {
+                        // Recover the key press intercepted by the menu, as
+                        // activateActionById does for status area shortcuts.
+                        auto keyEvent = fcitx::KeyEvent(ic, keys[i], false);
+                        ic->keyEvent(keyEvent);
+                        return;
+                    }
+                }
+            }
+        }
+        fcitx.instance()->setCurrentInputMethod(imName);
+    });
 }
 
 void setInputMethodLayout(const char *group, const char *im,
@@ -490,6 +525,35 @@ bool isRegexValid(const char *regex) noexcept {
     return fcitx::RegexConstrain().check(regex);
 }
 
+static nlohmann::json keyToJson(const fcitx::Key &key) {
+    auto sym = fcitx_keysym_to_osx_keysym(key.sym());
+    auto functionKey = fcitx_keysym_to_osx_function_key(key.sym());
+    if (sym.empty() && functionKey == 0) {
+        return nullptr;
+    }
+    return {{"sym", std::move(sym)},
+            {"functionKey", functionKey},
+            {"states", fcitx_keystates_to_osx_modifiers(key.states())}};
+}
+
+std::string imGetSwitchKeys() noexcept {
+    return with_fcitx([](Fcitx &fcitx) {
+        auto j = nlohmann::json::object();
+        const auto keys = imSelectorSwitchKeys(fcitx);
+        const auto &list = fcitx.instance()
+                               ->inputMethodManager()
+                               .currentGroup()
+                               .inputMethodList();
+        for (size_t i = 0; i < keys.size() && i < list.size(); ++i) {
+            auto key = keyToJson(keys[i]);
+            if (!key.is_null()) {
+                j[list[i].name()] = std::move(key);
+            }
+        }
+        return j.dump();
+    });
+}
+
 static nlohmann::json actionToJson(fcitx::Action *action,
                                    fcitx::InputContext *ic) {
     nlohmann::json j;
@@ -509,15 +573,10 @@ static nlohmann::json actionToJson(fcitx::Action *action,
         }
     }
     for (const auto &key : action->hotkey()) {
-        auto sym = fcitx_keysym_to_osx_keysym(key.sym());
-        auto functionKey = fcitx_keysym_to_osx_function_key(key.sym());
-        if (sym.empty() && functionKey == 0) {
-            continue;
+        auto hotkey = keyToJson(key);
+        if (!hotkey.is_null()) {
+            j["hotkey"].push_back(std::move(hotkey));
         }
-        j["hotkey"].push_back(
-            {{"sym", std::move(sym)},
-             {"functionKey", functionKey},
-             {"states", fcitx_keystates_to_osx_modifiers(key.states())}});
     }
     return j;
 }
