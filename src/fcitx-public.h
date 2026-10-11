@@ -27,7 +27,10 @@ std::string imGetGroups() noexcept;
 void imSetGroups(const char *json) noexcept;
 
 std::string imGetCurrentIMName() noexcept;
-void imSetCurrentIM(const char *imName) noexcept;
+// Returns a json object mapping input method names to their imselector
+// SwitchKey.
+std::string imGetSwitchKeys() noexcept;
+void imSetCurrentIM(const char *imName, bool hotkey = false) noexcept;
 void setInputMethodLayout(const char *group, const char *im,
                           const char *layout) noexcept;
 void toggleInputMethod() noexcept;

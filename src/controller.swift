@@ -222,12 +222,15 @@ class FcitxInputController: IMKInputController {
     // Input method switcher
     let currentGroup = decodeJSON(String(Fcitx.imGetCurrentGroup()), [InputMethod]())
     let currentIM = String(Fcitx.imGetCurrentIMName())
+    let switchKeys = decodeJSON(String(Fcitx.imGetSwitchKeys()), [String: FcitxKey]())
     for inputMethod in currentGroup {
+      let key = switchKeys[inputMethod.name]
       let item = NSMenuItem(
         title: inputMethod.displayName,
         action: #selector(switchInputMethod),
-        keyEquivalent: ""
+        keyEquivalent: key?.keyEquivalent ?? ""
       )
+      item.keyEquivalentModifierMask = NSEvent.ModifierFlags(rawValue: key?.states ?? 0)
       item.representedObject = inputMethod.name
       if inputMethod.name == currentIM {
         item.state = .on
@@ -277,7 +280,9 @@ class FcitxInputController: IMKInputController {
 
   @objc func switchInputMethod(sender: Any?) {
     if let imName = repObjectIMK(sender) as? String {
-      Fcitx.imSetCurrentIM(imName)
+      let fromHotkey =
+        lastModifiers.rawValue != 0 && !(menuItemIMK(sender)?.keyEquivalent.isEmpty ?? true)
+      Fcitx.imSetCurrentIM(imName, fromHotkey)
     }
   }
 
@@ -299,10 +304,12 @@ class FcitxInputController: IMKInputController {
 ///     IMKMenuTitle = Other;
 /// }
 private func repObjectIMK(_ sender: Any?) -> Any? {
+  return menuItemIMK(sender)?.representedObject
+}
+
+private func menuItemIMK(_ sender: Any?) -> NSMenuItem? {
   if let sender = sender as? NSMutableDictionary {
-    if let menuItem = sender[kIMKCommandMenuItemName] as? NSMenuItem {
-      return menuItem.representedObject
-    }
+    return sender[kIMKCommandMenuItemName] as? NSMenuItem
   }
   return nil
 }
@@ -311,6 +318,16 @@ struct FcitxKey: Codable {
   let sym: String
   let functionKey: UInt16
   let states: UInt
+
+  var keyEquivalent: String {
+    if !sym.isEmpty {
+      return sym
+    }
+    if functionKey != 0 {
+      return String(utf16CodeUnits: [unichar(functionKey)], count: 1)
+    }
+    return ""
+  }
 }
 
 struct FcitxAction: Codable {
@@ -330,19 +347,10 @@ struct FcitxAction: Codable {
       return []
     }
 
-    var keyEquivalent = ""
-    if let key = hotkey?[0] {
-      if !key.sym.isEmpty {
-        keyEquivalent = key.sym
-      } else if key.functionKey != 0 {
-        keyEquivalent = String(
-          utf16CodeUnits: [unichar(key.functionKey)], count: 1)
-      }
-    }
     let item = NSMenuItem(
       title: String(repeating: "　　", count: depth) + desc,
       action: #selector(FcitxInputController.activateFcitxAction),
-      keyEquivalent: keyEquivalent)
+      keyEquivalent: hotkey?[0].keyEquivalent ?? "")
     item.keyEquivalentModifierMask = NSEvent.ModifierFlags(rawValue: hotkey?[0].states ?? 0)
     item.target = target
     item.representedObject = self
