@@ -341,13 +341,31 @@ std::string fcitx_keysym_to_osx_keysym(fcitx::KeySym keySym) {
     return sym;
 }
 
-uint16_t fcitx_keysym_to_osx_function_key(fcitx::KeySym keySym) {
+std::pair<std::string, uint16_t>
+fcitx_keysym_to_osx_menu_key(fcitx::KeySym keySym) {
     for (const auto &pair : function_key_mappings) {
         if (pair.sym == keySym) {
-            return pair.osxFunctionKey;
+            return {"", pair.osxFunctionKey};
         }
     }
-    return 0;
+    auto sym = fcitx_keysym_to_osx_keysym(keySym);
+    if (sym.size() != 1) {
+        return {};
+    }
+    const auto character = static_cast<unsigned char>(sym[0]);
+    if (character >= 0x20 && character <= 0x7e) {
+        return {std::move(sym), 0};
+    }
+    switch (character) {
+    case 0x08: // Backspace
+    case 0x09: // Tab
+    case 0x0d: // Return
+    case 0x1b: // Escape
+    case 0x7f: // Delete
+        return {std::move(sym), 0};
+    default:
+        return {};
+    }
 }
 
 uint32_t fcitx_keystates_to_osx_modifiers(fcitx::KeyStates ks) {
