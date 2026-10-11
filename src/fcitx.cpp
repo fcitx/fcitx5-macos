@@ -526,8 +526,7 @@ bool isRegexValid(const char *regex) noexcept {
 }
 
 static nlohmann::json keyToJson(const fcitx::Key &key) {
-    auto sym = fcitx_keysym_to_osx_keysym(key.sym());
-    auto functionKey = fcitx_keysym_to_osx_function_key(key.sym());
+    auto [sym, functionKey] = fcitx_keysym_to_osx_menu_key(key.sym());
     if (sym.empty() && functionKey == 0) {
         return nullptr;
     }

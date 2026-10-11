@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <Carbon/Carbon.h>
 #include <fcitx-utils/key.h>
 #include "keycode-public.h"
@@ -53,7 +54,9 @@ fcitx::Key osx_key_to_fcitx_key(uint32_t unicode, uint32_t modifiers,
 // Used for showing shortcut configuration and setting shortcut for menu items.
 // No need to be complete and sometimes must be inaccurate (e.g. A -> a).
 std::string fcitx_keysym_to_osx_keysym(fcitx::KeySym);
-uint16_t fcitx_keysym_to_osx_function_key(fcitx::KeySym);
+// Returns {ASCII character, 0} or {"", function key} for a menu key equivalent.
+// Unsupported keys return {"", 0}.
+std::pair<std::string, uint16_t> fcitx_keysym_to_osx_menu_key(fcitx::KeySym);
 
 uint16_t fcitx_keysym_to_osx_keycode(fcitx::KeySym);
 uint32_t fcitx_keystates_to_osx_modifiers(fcitx::KeyStates ks);

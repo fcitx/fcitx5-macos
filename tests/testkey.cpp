@@ -40,9 +40,6 @@ void test_osx_to_fcitx() {
 }
 
 void test_fcitx_to_osx() {
-    FCITX_ASSERT(fcitx_keysym_to_osx_function_key(FcitxKey_Up) == 0xF700);
-    FCITX_ASSERT(fcitx_keysym_to_osx_function_key(FcitxKey_F12) == 0xF70F);
-
     FCITX_ASSERT(fcitx_keysym_to_osx_keysym(FcitxKey_Left) == "");
     FCITX_ASSERT(fcitx_keysym_to_osx_keysym(FcitxKey_F12) == "");
     FCITX_ASSERT(fcitx_keysym_to_osx_keysym(FcitxKey_0) == "0");
@@ -61,6 +58,46 @@ void test_fcitx_to_osx() {
                                                   fcitx::KeyState::Super |
                                                   fcitx::KeyState::Alt) ==
                  (NSEventModifierFlagCommand | NSEventModifierFlagOption));
+}
+
+void test_menu_key() {
+    auto expect = [](fcitx::KeySym key, const std::string &sym,
+                     uint16_t functionKey = 0) {
+        auto actual = fcitx_keysym_to_osx_menu_key(key);
+        FCITX_ASSERT(actual.first == sym);
+        FCITX_ASSERT(actual.second == functionKey);
+    };
+    expect(FcitxKey_a, "a");
+    expect(FcitxKey_A, "a");
+    expect(FcitxKey_0, "0");
+    expect(FcitxKey_space, " ");
+    expect(FcitxKey_grave, "`");
+    expect(FcitxKey_slash, "/");
+    expect(FcitxKey_asciitilde, "~");
+    expect(FcitxKey_BackSpace, "\b");
+    expect(FcitxKey_Tab, "\t");
+    expect(FcitxKey_Return, "\r");
+    expect(FcitxKey_Escape, "\x1b");
+    expect(FcitxKey_Delete, "\x7f");
+
+    for (auto key : {FcitxKey_Thai_nonu, FcitxKey_eacute, FcitxKey_None,
+                     FcitxKey_Linefeed, FcitxKey_Clear, FcitxKey_Shift_L,
+                     FcitxKey_KP_0, FcitxKey_KP_Tab, FcitxKey_KP_Enter}) {
+        expect(key, "");
+    }
+    expect(fcitx::Key::keySymFromUnicode(U'中'), "");
+
+    expect(FcitxKey_Up, "", NSUpArrowFunctionKey);
+    expect(FcitxKey_Left, "", NSLeftArrowFunctionKey);
+    expect(FcitxKey_F12, "", NSF12FunctionKey);
+    expect(FcitxKey_Home, "", NSHomeFunctionKey);
+    expect(FcitxKey_End, "", NSEndFunctionKey);
+    expect(FcitxKey_Page_Up, "", NSPageUpFunctionKey);
+    expect(FcitxKey_Page_Down, "", NSPageDownFunctionKey);
+
+    // Configuration display still supports non-ASCII characters.
+    FCITX_ASSERT(fcitx_keysym_to_osx_keysym(FcitxKey_Thai_nonu) == "น");
+    FCITX_ASSERT(fcitx_string_to_osx_keysym("Control+Thai_nonu") == "น");
 }
 
 void test_fcitx_string() {
@@ -155,6 +192,7 @@ void test_unicode_to_fcitx_string() {
 int main() {
     test_osx_to_fcitx();
     test_fcitx_to_osx();
+    test_menu_key();
     test_fcitx_string();
     test_keycode_to_unicode();
     test_unicode_to_fcitx_string();
