@@ -5,6 +5,11 @@ import InputMethodKit
 import SwiftFrontend
 import SwiftNotify
 
+private struct ToggleShortcut: Decodable {
+  let key: FcitxKey?
+  let modifierOnly: String?
+}
+
 class NSManualApplication: NSApplication {
   private let appDelegate = AppDelegate()
 
@@ -28,7 +33,7 @@ private func redirectStderr() {
 }
 
 @main
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
   nonisolated(unsafe) static var server: IMKServer!
   nonisolated(unsafe) static var notificationDelegate: NotificationDelegate!
   nonisolated(unsafe) static var statusItem: NSStatusItem?
@@ -230,6 +235,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   @MainActor
   private func makeStatusItemMenu() -> NSMenu {
     let menu = NSMenu()
+    menu.delegate = self
 
     let toggle = NSMenuItem(
       title: NSLocalizedString("Toggle input method", comment: ""),
@@ -245,7 +251,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     hide.image = NSImage(systemSymbolName: "eye.slash", accessibilityDescription: nil)
     menu.addItem(hide)
 
+    menuNeedsUpdate(menu)
     return menu
+  }
+
+  @MainActor
+  func menuNeedsUpdate(_ menu: NSMenu) {
+    guard let toggle = menu.items.first else { return }
+    let shortcut = decodeJSON(String(Fcitx.imGetToggleKey()), Optional<ToggleShortcut>.none)
+    let title = NSLocalizedString("Toggle input method", comment: "")
+    if let modifierOnly = shortcut?.modifierOnly {
+      toggle.title = title + "　\(fcitxStringToMacShortcut(modifierOnly).0)"
+    } else {
+      toggle.title = title
+    }
+    // keyEquivalent doesn't work on modifier-only key, but we need to clear old values anyway.
+    let key = shortcut?.key
+    toggle.keyEquivalent = key?.keyEquivalent ?? ""
+    toggle.keyEquivalentModifierMask = NSEvent.ModifierFlags(rawValue: key?.states ?? 0)
   }
 
   @MainActor

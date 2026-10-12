@@ -535,6 +535,21 @@ static nlohmann::json keyToJson(const fcitx::Key &key) {
             {"states", fcitx_keystates_to_osx_modifiers(key.states())}};
 }
 
+std::string imGetToggleKey() noexcept {
+    return with_fcitx([](Fcitx &fcitx) {
+        const auto &keys = fcitx.instance()->globalConfig().triggerKeys();
+        if (keys.empty()) {
+            return std::string("null");
+        }
+        const auto &key = keys.front();
+        return nlohmann::json{
+            {"key", keyToJson(key)},
+            {"modifierOnly", key.isModifier() ? nlohmann::json(key.toString())
+                                              : nlohmann::json(nullptr)}}
+            .dump();
+    });
+}
+
 std::string imGetSwitchKeys() noexcept {
     return with_fcitx([](Fcitx &fcitx) {
         auto j = nlohmann::json::object();

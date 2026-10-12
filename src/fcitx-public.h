@@ -34,6 +34,9 @@ void imSetCurrentIM(const char *imName, bool hotkey = false) noexcept;
 void setInputMethodLayout(const char *group, const char *im,
                           const char *layout) noexcept;
 void toggleInputMethod() noexcept;
+// Returns {"key": menu key JSON, "modifierOnly": modifier shortcut string}
+// for the first global TriggerKeys entry, or null if no key is configured.
+std::string imGetToggleKey() noexcept;
 
 // Returns a json array of Input Methods.
 // type InputMethod := {name:str, displayName:str, languageCode:str}
