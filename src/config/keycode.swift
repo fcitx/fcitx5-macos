@@ -42,7 +42,7 @@ public func keyEventUnicode(
   return unicode
 }
 
-func fcitxStringToMacShortcut(_ s: String) -> (String, String?) {
+public func fcitxStringToMacShortcut(_ s: String) -> (String, String?) {
   let modifiers = NSEvent.ModifierFlags(rawValue: UInt(fcitx_string_to_osx_modifiers(s)))
   let displayKey = String(fcitx_string_to_display_key(s))
   if displayKey.isEmpty && !s.isEmpty {
