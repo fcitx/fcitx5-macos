@@ -13,12 +13,12 @@ CONFIG_FILE_PATH="$HOME/.config/fcitx5/conf/beast.conf"
 
 if [ -f "$CONFIG_FILE_PATH" ]
 then
-  COMMUNICATION=$(sed -n 's/Communication=\([^ ]*.*\)/\1/p' "$CONFIG_FILE_PATH")
-  UDS_PATH=$(sed -n 's/Path=\([^ ]*.*\)/\1/p' "$CONFIG_FILE_PATH")
-  TCP_PORT=$(sed -n 's/Port=\([^ ]*.*\)/\1/p' "$CONFIG_FILE_PATH")
+  COMMUNICATION=$(sed -n 's/^Communication=//p' "$CONFIG_FILE_PATH")
+  UDS_PATH=$(sed -n 's/^Path=//p' "$CONFIG_FILE_PATH")
+  TCP_PORT=$(sed -n 's/^Port=//p' "$CONFIG_FILE_PATH")
 fi
 
-COMMUNICATION="${COMMUNICATION:-UDS}"
+COMMUNICATION="${COMMUNICATION:-Unix Socket}"
 UDS_PATH="${UDS_PATH:-/tmp/fcitx5.sock}"
 TCP_PORT="${TCP_PORT:-32489}"
 
