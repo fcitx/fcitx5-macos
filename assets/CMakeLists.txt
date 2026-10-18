@@ -5,16 +5,17 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/fcitx.icns"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/Resources"
 )
 
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_26.pdf
-    COMMAND SOURCE_DATE_EPOCH=0 rsvg-convert -f pdf -o ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_26.pdf ${CMAKE_CURRENT_SOURCE_DIR}/penguin-26.svg
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/penguin-26.svg
-)
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_15.pdf
-    COMMAND SOURCE_DATE_EPOCH=0 rsvg-convert -f pdf -o ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_15.pdf ${CMAKE_CURRENT_SOURCE_DIR}/penguin-15.svg
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/penguin-15.svg
-)
+find_program(QPDF_EXECUTABLE qpdf REQUIRED)
+foreach(ICON_VERSION 15 26)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_${ICON_VERSION}.pdf
+        COMMAND ${CMAKE_COMMAND} -E env SOURCE_DATE_EPOCH=0 rsvg-convert -f pdf -o ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_${ICON_VERSION}.pdf ${CMAKE_CURRENT_SOURCE_DIR}/penguin-${ICON_VERSION}.svg
+        # Cairo embeds its version in Producer; omit metadata and use a content-based PDF ID.
+        COMMAND ${QPDF_EXECUTABLE} --remove-info --remove-metadata --deterministic-id --replace-input ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_${ICON_VERSION}.pdf
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/penguin-${ICON_VERSION}.svg
+        VERBATIM
+    )
+endforeach()
 add_custom_target(GeneratePDF ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_26.pdf ${CMAKE_CURRENT_BINARY_DIR}/menu_icon_15.pdf
 )
