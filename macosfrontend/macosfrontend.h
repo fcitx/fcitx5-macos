@@ -128,9 +128,9 @@ private:
 struct InputContextState {
     std::string commit;
     std::string preedit;
-    int caretPos;
-    bool dummyPreedit;
-    bool vimPreedit;
+    int caretPos = 0;
+    bool dummyPreedit = false;
+    bool vimPreedit = false;
 };
 
 class MacosInputContext : public InputContext {
@@ -154,6 +154,8 @@ public:
     void resetState() {
         state_.commit.clear();
         // Don't clear preedit as fcitx may not update it when it's not changed.
+        // Keep its caret position too. Dummy and Vim preedit flags persist
+        // until explicitly updated by the panel and key handling logic.
     }
     void setDummyPreedit(bool dummyPreedit) {
         state_.dummyPreedit = dummyPreedit;
