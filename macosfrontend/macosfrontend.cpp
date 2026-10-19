@@ -258,6 +258,10 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
     // The only exception is when Instance is destroyed,
     // InputContextManager deletes all InputContexts.
     auto ic = findIC(uuid);
+    if (!ic) {
+        FCITX_ERROR() << "Cannot destroy unknown input context";
+        return;
+    }
     // This check is necessary. Although system sends destroy event immediately
     // after focus out for most scenarios, when using fn+E to call out emoji
     // picker (com.apple.CharacterPaletteIM), the sequence is: user clicks emoji
