@@ -621,6 +621,10 @@ void activateActionById(int id, bool hotkey) noexcept {
     with_fcitx([=](Fcitx &fcitx) {
         auto *action =
             fcitx.instance()->userInterfaceManager().lookupActionById(id);
+        if (!action) {
+            FCITX_ERROR() << "Cannot activate unknown action ID " << id;
+            return;
+        }
         if (auto *ic = fcitx.instance()->mostRecentInputContext()) {
             // Binding a shortcut to a menu item will let system intercept the
             // key event, and send leftover key release to fcitx. e.g. On
