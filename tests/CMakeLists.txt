@@ -21,6 +21,11 @@ add_executable(key-cpp testkey.cpp)
 target_link_libraries(key-cpp Keycode)
 add_test(NAME key-cpp COMMAND key-cpp)
 
+add_executable(key-release-cpp testkeyrelease.cpp)
+target_link_libraries(key-release-cpp Fcitx5Objs SwiftFrontend)
+add_test(NAME key-release-cpp COMMAND key-release-cpp)
+set_tests_properties(key-release-cpp PROPERTIES TIMEOUT 10)
+
 add_executable(layout-cpp testlayout.cpp)
 target_link_libraries(layout-cpp Fcitx5Objs)
 add_test(NAME layout-cpp COMMAND layout-cpp)

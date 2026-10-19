@@ -189,9 +189,15 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
         keyEvent.accepted()) {
         auto timeEvent = instance()->eventLoop().addTimeEvent(
             CLOCK_MONOTONIC, now(CLOCK_MONOTONIC) + simulateKeyReleaseDelay_,
-            10000, [this, ic, key = key](EventSourceTime *source, uint64_t) {
-                FCITX_DEBUG() << "Simulate key release " << key.toString();
-                if (instance_->mostRecentInputContext() == ic) {
+            10000,
+            [this, icRef = ic->watch(), key = key](EventSourceTime *source,
+                                                   uint64_t) {
+                // A watched reference stays invalid even if a new IC reuses
+                // the original IC's address.
+                auto *ic = icRef.get();
+                if (ic && ic->hasFocus() &&
+                    instance_->mostRecentInputContext() == ic) {
+                    FCITX_DEBUG() << "Simulate key release " << key.toString();
                     KeyEvent releaseEvent(ic, key, true);
                     ic->keyEvent(releaseEvent);
                 }
