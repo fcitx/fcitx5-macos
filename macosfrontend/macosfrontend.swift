@@ -3,6 +3,69 @@ import CxxFrontend
 import InputMethodKit
 import Logging
 
+extension InputSessionRegistration {
+  public func toICUUID() -> ICUUID {
+    var uuid = ICUUID()
+    for index in 0..<16 {
+      uuid[index] = key.bytes[index]
+    }
+    return uuid
+  }
+}
+
+@MainActor
+private let inputSessions = InputSessionRegistry<IMKInputController>()
+
+@MainActor
+public func beginInputSessionRuntime() {
+  inputSessions.beginRuntime()
+}
+
+@MainActor
+public func endInputSessionRuntime() {
+  inputSessions.endRuntime()
+}
+
+public func registerInputSession(
+  _ uuid: ICUUID, _ controller: IMKInputController
+) -> InputSessionRegistration? {
+  // IMK's initializer is imported as nonisolated. Check its executor before
+  // borrowing the controller inside MainActor; no object crosses a queue.
+  dispatchPrecondition(condition: .onQueue(.main))
+  nonisolated(unsafe) let mainController = controller
+  let key = InputSessionKey((0..<16).map { uuid[$0] })
+  return MainActor.assumeIsolated {
+    let registration = inputSessions.register(key, controller: mainController)
+    if registration == nil {
+      FCITX_ERROR("Cannot register input session")
+    }
+    return registration
+  }
+}
+
+@MainActor
+@discardableResult
+public func activateInputSession(
+  _ registration: InputSessionRegistration
+) -> InputSessionToken? {
+  return inputSessions.activate(registration)
+}
+
+@MainActor
+public func deactivateInputSession(_ registration: InputSessionRegistration) {
+  inputSessions.deactivate(registration)
+}
+
+@MainActor
+public func inputSessionController(_ token: InputSessionToken) -> IMKInputController? {
+  return inputSessions.lookup(token)
+}
+
+@MainActor
+public func unregisterInputSession(_ registration: InputSessionRegistration) -> Bool {
+  return inputSessions.unregister(registration)
+}
+
 nonisolated(unsafe) private var u16pos = 0
 nonisolated(unsafe) private var currentPreedit = ""
 

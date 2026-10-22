@@ -1,4 +1,4 @@
-add_library(SwiftFrontend STATIC macosfrontend.swift layout.swift)
+add_library(SwiftFrontend STATIC macosfrontend.swift layout.swift session.swift)
 set_target_properties(SwiftFrontend PROPERTIES Swift_MODULE_NAME SwiftFrontend)
 target_compile_options(SwiftFrontend PUBLIC "$<$<COMPILE_LANGUAGE:Swift>:-cxx-interoperability-mode=default>")
 target_include_directories(SwiftFrontend PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

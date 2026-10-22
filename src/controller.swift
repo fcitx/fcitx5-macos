@@ -21,6 +21,7 @@ class FcitxInputController: IMKInputController {
   let appId: String
   let isPasswordOnlyApp: Bool
   let accentColor: String
+  private var sessionRegistration: InputSessionRegistration?
 
   var lastModifiers = NSEvent.ModifierFlags(rawValue: 0)
   var selection: NSRange? = nil
@@ -37,6 +38,7 @@ class FcitxInputController: IMKInputController {
     self.accentColor = getAccentColor(appId)
     self.uuid = create_input_context(appId, accentColor)
     super.init(server: server, delegate: delegate, client: client)
+    sessionRegistration = registerInputSession(uuid, self)
     setController(self)
     // On Chrome's home page execute document.addEventListener('keydown', console.log),
     // restart Fcitx5, click another app, then click blank area of Chrome's home page.
@@ -46,7 +48,25 @@ class FcitxInputController: IMKInputController {
   }
 
   deinit {
-    destroy_input_context(uuid)
+    guard let registration = sessionRegistration else { return }
+    if Thread.isMainThread {
+      MainActor.assumeIsolated {
+        FcitxInputController.destroyInputContext(registration)
+      }
+    } else {
+      // Capture only a Sendable value, never the controller being destroyed.
+      Task { @MainActor in
+        FcitxInputController.destroyInputContext(registration)
+      }
+    }
+  }
+
+  @MainActor
+  private static func destroyInputContext(_ registration: InputSessionRegistration) {
+    // A stale cleanup must neither remove a newer registration nor enter a
+    // stopped runtime. Shutdown and this cleanup are serialized on MainActor.
+    guard unregisterInputSession(registration) else { return }
+    destroy_input_context(registration.toICUUID())
   }
 
   override func commitComposition(_ sender: Any!) {
@@ -161,6 +181,10 @@ class FcitxInputController: IMKInputController {
     // the same purpose here.
     setController(self)
 
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { _ = activateInputSession(registration) }
+    }
+
     let code = event.keyCode
     let mods = event.modifierFlags
     let modsVal = UInt32(mods.rawValue)
@@ -190,6 +214,9 @@ class FcitxInputController: IMKInputController {
 
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { _ = activateInputSession(registration) }
+    }
     setController(self)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
@@ -199,6 +226,10 @@ class FcitxInputController: IMKInputController {
 
   override func deactivateServer(_ client: Any!) {
     focus_out(uuid)
+    if let registration = sessionRegistration {
+      // Keep the session active while the core handles focus out.
+      MainActor.assumeIsolated { deactivateInputSession(registration) }
+    }
   }
 
   override func menu() -> NSMenu! {
