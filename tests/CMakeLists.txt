@@ -64,3 +64,8 @@ add_executable(StatusSwift teststatus.swift
     ${PROJECT_SOURCE_DIR}/src/status.swift
 )
 add_test(NAME StatusSwift COMMAND StatusSwift)
+
+add_executable(SessionSwift testsession.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session.swift
+)
+add_test(NAME SessionSwift COMMAND SessionSwift)
