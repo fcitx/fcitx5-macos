@@ -30,9 +30,9 @@ struct EnumView: OptionViewProtocol {
     return options.count
   }
 
-  private func isThemeWithLiquidGlass() -> Bool {
+  private func isThemeFollowingAppBackground() -> Bool {
     if options.map({ $0.0 }).prefix(3) == ["System", "Light", "Dark"]
-      && osVersion.majorVersion >= 26
+      && osVersion.majorVersion == 26
     {
       let blur = ProcessInfo.processInfo.environment["BLUR"]
       return blur == "1" || blur == "3"
@@ -47,7 +47,7 @@ struct EnumView: OptionViewProtocol {
   }
 
   var body: some View {
-    if isThemeWithLiquidGlass() {
+    if isThemeFollowingAppBackground() {
       HStack {
         Text("Follow App background (Liquid Glass)")
         HelpButton {
