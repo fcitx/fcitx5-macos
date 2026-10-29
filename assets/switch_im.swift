@@ -14,7 +14,14 @@ if let array = TISCreateInputSourceList(conditions, true)?.takeRetainedValue()
   as? [TISInputSource]
 {
   for inputSource in array {
-    TISSelectInputSource(inputSource)
+    let status = TISSelectInputSource(inputSource)
+    guard status == noErr else {
+      fputs("Failed to select input source \(im) (OSStatus \(status))\n", stderr)
+      exit(1)
+    }
     exit(0)
   }
 }
+
+fputs("Input source not found: \(im)\n", stderr)
+exit(1)
