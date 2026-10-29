@@ -29,6 +29,7 @@ struct FontView: OptionViewProtocol {
   @Binding var value: Any
 
   @State private var selectorIsOpen = false
+  @State private var selectedTab = 0
   @State private var searchInput = ""
   @State private var previewInput = NSLocalizedString("Preview", comment: "")
 
@@ -61,50 +62,50 @@ struct FontView: OptionViewProtocol {
       .accessibilityIdentifier(data["Option"] as? String ?? "")
       .sheet(isPresented: $selectorIsOpen) {
         VStack {
-          TabView {
-            VStack {
-              TextField(NSLocalizedString("Search", comment: ""), text: $searchInput)
-                .accessibilityIdentifier("search")
-              TextField(NSLocalizedString("Preview", comment: ""), text: $previewInput)
-              Text(previewInput).font(Font.custom(selectedFontFamily ?? font, size: 32)).frame(
-                height: 64)
-              List(selection: $selectedFontFamily) {
-                ForEach(filteredFontFamilies, id: \.self) { family in
-                  HStack {
-                    Text(localize(family)).font(Font.custom(family, size: 14))
-                    Spacer()
-                    Text(localize(family))
-                  }
-                  .accessibilityElement(children: .combine)
-                  .accessibilityIdentifier(family)
-                }
-              }.contextMenu(forSelectionType: String.self) { items in
-              } primaryAction: { items in
-                // Double click
-                select()
-              }
-            }.padding()
-              .tabItem {
-                Text("Font family")
-                  .accessibilityIdentifier("FontFamilyTab")
-              }
-
-            VStack {
-              List(selection: $selectedFontFamily) {
-                ForEach(genericFamilies, id: \.self) { family in
-                  Text(family)
+          SegmentedTabView(tabs: [0, 1], selection: $selectedTab) { tab in
+            if tab == 0 {
+              Text("Font family").accessibilityIdentifier("FontFamilyTab")
+            } else {
+              Text("Generic font families").accessibilityIdentifier("GenericFontFamiliesTab")
+            }
+          } content: { tab in
+            if tab == 0 {
+              VStack {
+                TextField(NSLocalizedString("Search", comment: ""), text: $searchInput)
+                  .accessibilityIdentifier("search")
+                TextField(NSLocalizedString("Preview", comment: ""), text: $previewInput)
+                Text(previewInput).font(Font.custom(selectedFontFamily ?? font, size: 32)).frame(
+                  height: 64)
+                List(selection: $selectedFontFamily) {
+                  ForEach(filteredFontFamilies, id: \.self) { family in
+                    HStack {
+                      Text(localize(family)).font(Font.custom(family, size: 14))
+                      Spacer()
+                      Text(localize(family))
+                    }
+                    .accessibilityElement(children: .combine)
                     .accessibilityIdentifier(family)
+                  }
+                }.contextMenu(forSelectionType: String.self) { items in
+                } primaryAction: { items in
+                  // Double click
+                  select()
                 }
-              }.contextMenu(forSelectionType: String.self) { items in
-              } primaryAction: { items in
-                // Double click
-                select()
-              }
-            }.padding()
-              .tabItem {
-                Text("Generic font families")
-                  .accessibilityIdentifier("GenericFontFamiliesTab")
-              }
+              }.padding()
+            } else {
+              VStack {
+                List(selection: $selectedFontFamily) {
+                  ForEach(genericFamilies, id: \.self) { family in
+                    Text(family)
+                      .accessibilityIdentifier(family)
+                  }
+                }.contextMenu(forSelectionType: String.self) { items in
+                } primaryAction: { items in
+                  // Double click
+                  select()
+                }
+              }.padding()
+            }
           }
 
           HStack {
