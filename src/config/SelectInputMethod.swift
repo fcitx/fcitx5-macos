@@ -267,29 +267,33 @@ struct AvailableInputMethodView: View {
 
     SwiftUI.Group {
       if viewModel.availableIMs["zh_CN"]?.contains(where: { $0.name == "pinyin" }) == true {
-        TabView(selection: $selectedTab) {
-          splitView
-            .tabItem { Text("Input Methods") }
-            .tag(0)
-
-          ImportTableView(
-            onAdd: { newIMs in
-              onAdd(
-                Set(
-                  newIMs.map {
-                    InputMethod(name: $0, displayName: $0, languageCode: "", isKeyboard: false)
-                  }))
-            },
-            onError: { msg in
-              importTableErrorMsg = msg
-              showImportTableError = true
-            },
-            finalize: {
-              onImport()
-            }
-          )
-          .tabItem { Text("Import customized table").accessibilityIdentifier("ImportTableTab") }
-          .tag(1)
+        SegmentedTabView(tabs: [0, 1], selection: $selectedTab) { tab in
+          if tab == 0 {
+            Text("Input Methods")
+          } else {
+            Text("Import customized table").accessibilityIdentifier("ImportTableTab")
+          }
+        } content: { tab in
+          if tab == 0 {
+            splitView
+          } else {
+            ImportTableView(
+              onAdd: { newIMs in
+                onAdd(
+                  Set(
+                    newIMs.map {
+                      InputMethod(name: $0, displayName: $0, languageCode: "", isKeyboard: false)
+                    }))
+              },
+              onError: { msg in
+                importTableErrorMsg = msg
+                showImportTableError = true
+              },
+              finalize: {
+                onImport()
+              }
+            )
+          }
         }
         .padding(.top)
       } else {
