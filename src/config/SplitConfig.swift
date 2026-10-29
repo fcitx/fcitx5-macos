@@ -28,7 +28,6 @@ struct SplitConfigView: View {
           get: { manager.index },
           set: { index in
             // Let SwiftUI finish committing the old field before replacing its bindings.
-            NSApp.keyWindow?.makeFirstResponder(nil)
             DispatchQueue.main.async {
               manager.index = index
             }
