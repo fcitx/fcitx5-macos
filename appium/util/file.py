@@ -20,6 +20,9 @@ def select_files(driver: WebDriver, path: str, filenames: list[str]):
     """
     if filenames:
         find_element_by_id(driver, "square.and.arrow.down").click()
+    find_element_by_id(driver, "open-panel")
+    # Use icon view regardless of saved panel preferences.
+    press(driver, [Keys.COMMAND, "1"])
     find_open_panel_container(driver)
 
     if path:

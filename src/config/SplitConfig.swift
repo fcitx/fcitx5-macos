@@ -23,7 +23,16 @@ struct SplitConfigView: View {
 
   var body: some View {
     NavigationSplitView {
-      List(selection: $manager.index) {
+      List(
+        selection: Binding(
+          get: { manager.index },
+          set: { index in
+            // Let SwiftUI finish committing the old field before replacing its bindings.
+            DispatchQueue.main.async {
+              manager.index = index
+            }
+          })
+      ) {
         ForEach(0..<options.count, id: \.self) { i in
           Text(descriptions[i]).accessibilityIdentifier(options[i])
         }

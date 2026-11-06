@@ -25,11 +25,14 @@ def test_font_selection(driver: WebDriver, app: str):
 
     font_button = find_element_by_id(driver, TEXT_FONT_FAMILY_ID)
     font_button.click()
+    # Font ordering depends on the system language; search before accessing a row.
+    search = find_element_by_id(driver, "search")
+    search.click()
+    search.send_keys(FONT_EMOJI)
     emoji_elements = find_elements_by_id(driver, FONT_EMOJI)
     assert len(emoji_elements) == 1, ASSUMPTION_OUTDATED
 
-    search = find_element_by_id(driver, "search")
-    search.click()
+    search.clear()
     search.send_keys("helvetica")
     emoji_elements = find_elements_by_id(driver, FONT_EMOJI)
     assert len(emoji_elements) == 0, UI_NOT_UPDATED

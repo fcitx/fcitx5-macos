@@ -52,7 +52,7 @@ public func sendNotification(
   _ actionStrings: [String],
   _ timeout: Double
 ) {
-  Task { @MainActor in
+  _ = Task { @MainActor in
     let categoryIdent = "ACTION_CATEGORY_\(identifier)"
     var actions: [UNNotificationAction] = []
     for i in stride(from: 0, to: actionStrings.count, by: 2) {

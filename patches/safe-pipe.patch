@@ -1,0 +1,19 @@
+diff --git a/src/lib/fcitx-utils/misc_p.h b/src/lib/fcitx-utils/misc_p.h
+--- a/src/lib/fcitx-utils/misc_p.h
++++ b/src/lib/fcitx-utils/misc_p.h
+@@ -293,6 +293,7 @@
+     }
+ };
+
++#if 0
+ static inline int safePipe(int pipefd[2]) {
+ #if defined(HAVE_PIPE2)
+     return ::pipe2(pipefd, O_NONBLOCK | O_CLOEXEC);
+@@ -319,6 +320,7 @@
+     return 0;
+ #endif
+ }
++#endif
+
+ static inline bool checkBoolEnvVar(const char *name) {
+     auto var = getEnvironment(name);

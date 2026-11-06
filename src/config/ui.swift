@@ -51,6 +51,50 @@ struct HelpButton: View {
   }
 }
 
+struct SegmentedTabView<Tab: Hashable, Label: View, Content: View>: View {
+  let tabs: [Tab]
+  @Binding var selection: Tab
+  let label: (Tab) -> Label
+  let content: (Tab) -> Content
+
+  init(
+    tabs: [Tab],
+    selection: Binding<Tab>,
+    @ViewBuilder label: @escaping (Tab) -> Label,
+    @ViewBuilder content: @escaping (Tab) -> Content
+  ) {
+    self.tabs = tabs
+    _selection = selection
+    self.label = label
+    self.content = content
+  }
+
+  var body: some View {
+    VStack {
+      // Size titles independently of page content to avoid TabView compression on macOS 27.
+      Picker("", selection: $selection) {
+        ForEach(tabs, id: \.self) { tab in
+          label(tab).tag(tab)
+        }
+      }
+      .pickerStyle(.segmented)
+      .labelsHidden()
+      .fixedSize()
+
+      // Stable tab identities keep each page alive; inactive pages cannot receive input.
+      ZStack {
+        ForEach(tabs, id: \.self) { tab in
+          content(tab)
+            .opacity(selection == tab ? 1 : 0)
+            .allowsHitTesting(selection == tab)
+            .disabled(selection != tab)
+            .accessibilityHidden(selection != tab)
+        }
+      }
+    }
+  }
+}
+
 struct PaginationView: View {
   @Binding var currentPage: Int
   let totalPages: Int

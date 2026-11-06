@@ -1,3 +1,4 @@
+import pytest
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 from util.button import get_undo_redo
@@ -91,6 +92,31 @@ def test_default_page_size(driver: WebDriver, app: str) -> None:
     reset_value = get_integer_value(field)
     assert reset_value == initial_value, UI_NOT_UPDATED
     assert read_config_value() == str(initial_value), CHANGE_NOT_SAVED
+
+
+@pytest.mark.parametrize("text, expected", [("7", 7), ("100", INT_MAX)])
+def test_commit_integer_on_page_switch(
+    driver: WebDriver, app: str, text: str, expected: int
+) -> None:
+    open_global_config(driver)
+    find_element_by_id(driver, "Behavior").click()
+    field = find_element_by_id(driver, INTEGER_ID)
+    field.click()
+    field.clear()
+    field.send_keys(text)
+
+    # Switching pages must commit and validate the field on its original page.
+    find_element_by_id(driver, "Hotkey").click()
+    get_undo_redo(driver)
+    cfg = read_global_config(app)
+    assert cfg["Behavior"][INTEGER_ID] == str(expected), CHANGE_NOT_SAVED
+    assert cfg["Hotkey"]["ModifierOnlyKeyTimeout"] == "250", CHANGE_NOT_SAVED
+
+    find_element_by_id(driver, "Behavior").click()
+    get_undo_redo(driver)
+    assert get_integer_value(find_element_by_id(driver, INTEGER_ID)) == expected, (
+        UI_NOT_UPDATED
+    )
 
 
 def test_font_weight(driver: WebDriver, app: str) -> None:

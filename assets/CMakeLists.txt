@@ -25,9 +25,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/menu_icon_26.pdf"
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/menu_icon_15.pdf"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/Resources"
 )
-# When upgrade from old version, menu_icon.pdf will be used, so we have to make it the old version.
-# Afterwards, script will copy the correct one to overwrite it.
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/menu_icon_15.pdf"
+# Local builds require macOS >= 26.2; the updater selects the legacy icon on older systems.
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/menu_icon_26.pdf"
     RENAME menu_icon.pdf
     DESTINATION "${CMAKE_INSTALL_PREFIX}/Resources"
 )
