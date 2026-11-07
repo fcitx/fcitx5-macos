@@ -8,6 +8,7 @@
 #ifndef _FCITX5_MACOS_MACOSFRONTEND_H_
 #define _FCITX5_MACOS_MACOSFRONTEND_H_
 
+#include <optional>
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/event.h>
@@ -94,11 +95,18 @@ public:
     ICUUID createInputContext(const std::string &appId,
                               const std::string &accentColor);
     void destroyInputContext(ICUUID);
+    void bindInputSession(const InputSessionIdentity &identity);
+    void closeInputSession(const InputSessionIdentity &identity);
     std::string keyEvent(ICUUID, const Key &key, bool isRelease,
                          bool isPassword, const char *text, unsigned int cursor,
                          unsigned int anchor);
+    OrderedInputResponse keyEventOrdered(ICUUID, const Key &key, bool isRelease,
+                                         bool isPassword, const char *text,
+                                         unsigned int cursor,
+                                         unsigned int anchor);
     void focusIn(ICUUID, bool isPassword);
     std::string commitComposition(ICUUID uuid);
+    OrderedInputResponse commitCompositionOrdered(ICUUID uuid);
     void focusOut(ICUUID);
 
 private:
@@ -169,6 +177,14 @@ public:
     bool isSyncEvent = false;
     void commitAndSetPreeditAsync();
 
+    void bindSession(const InputSessionIdentity &identity) {
+        sessionIdentity_ = identity;
+    }
+    bool matchesSession(const InputSessionIdentity &identity) const {
+        return sessionIdentity_ && *sessionIdentity_ == identity;
+    }
+    void closeSession() { sessionIdentity_.reset(); }
+
     void setPassword(bool isPassword);
     void setVimMode(bool vimMode) { vimMode_ = vimMode; }
     bool vimMode() const { return vimMode_; }
@@ -179,6 +195,7 @@ public:
 private:
     MacosFrontend *frontend_;
     InputContextState state_;
+    std::optional<InputSessionIdentity> sessionIdentity_;
     std::string accentColor_;
     bool vimMode_ = false;
 

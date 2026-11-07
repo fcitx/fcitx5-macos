@@ -18,6 +18,7 @@
 #include <fcitx/inputmethodentry.h>
 #include <fcitx/inputmethodmanager.h>
 #include <fcitx/inputpanel.h>
+#include <fcitx/userinterfacemanager.h>
 #include <nlohmann/json.hpp>
 
 #include "../deps/url-filter/src/url-filter.hpp"
@@ -245,6 +246,15 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
     return ic->popState(keyEvent.accepted(), key);
 }
 
+OrderedInputResponse
+MacosFrontend::keyEventOrdered(ICUUID uuid, const Key &key, bool isRelease,
+                               bool isPassword, const char *text,
+                               unsigned int cursor, unsigned int anchor) {
+    auto response =
+        keyEvent(uuid, key, isRelease, isPassword, text, cursor, anchor);
+    return {std::move(response), SwiftFrontend::inputSessionOutputBoundary()};
+}
+
 MacosInputContext *MacosFrontend::findIC(ICUUID uuid) {
     return dynamic_cast<MacosInputContext *>(
         instance_->inputContextManager().findByUUID(uuid));
@@ -281,6 +291,25 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
     }
     FCITX_INFO() << "Destroy IC for " << ic->program();
     delete ic;
+}
+
+void MacosFrontend::bindInputSession(const InputSessionIdentity &identity) {
+    if (auto *ic = findIC(identity.uuid)) {
+        ic->bindSession(identity);
+    }
+}
+
+void MacosFrontend::closeInputSession(const InputSessionIdentity &identity) {
+    if (auto *ic = findIC(identity.uuid); ic && ic->matchesSession(identity)) {
+        // Include deferred client updates from focus out before the close
+        // marker. No main-thread work is awaited from the fcitx thread.
+        instance_->userInterfaceManager().flush();
+        if (auto *current = findIC(identity.uuid);
+            current && current->matchesSession(identity)) {
+            current->closeSession();
+        }
+    }
+    SwiftFrontend::closeInputSessionAsync(identity);
 }
 
 void MacosFrontend::useAppDefaultIM(const std::string &appId) {
@@ -345,6 +374,11 @@ std::string MacosFrontend::commitComposition(ICUUID uuid) {
     return state;
 }
 
+OrderedInputResponse MacosFrontend::commitCompositionOrdered(ICUUID uuid) {
+    auto response = commitComposition(uuid);
+    return {std::move(response), SwiftFrontend::inputSessionOutputBoundary()};
+}
+
 void MacosFrontend::focusOut(ICUUID uuid) {
     auto *ic = findIC(uuid);
     if (!ic)
@@ -394,7 +428,9 @@ void MacosInputContext::commitStringImpl(const std::string &text) {
     if (!isSyncEvent) {
         // When changing this, test Messages.app by clicking a candidate.
         // Previously buggy behavior is that preedit is appended after commit.
-        SwiftFrontend::commitAsync(state_.commit);
+        if (sessionIdentity_) {
+            SwiftFrontend::commitAsync(*sessionIdentity_, state_.commit);
+        }
         resetState();
     }
 }
@@ -438,8 +474,11 @@ std::string MacosInputContext::popState(bool accepted, const Key &key) {
 void MacosInputContext::commitAndSetPreeditAsync() {
     auto state = state_;
     resetState();
-    SwiftFrontend::commitAndSetPreeditAsync(state.commit, state.preedit,
-                                            state.caretPos, state.dummyPreedit);
+    if (sessionIdentity_) {
+        SwiftFrontend::commitAndSetPreeditAsync(*sessionIdentity_, state.commit,
+                                                state.preedit, state.caretPos,
+                                                state.dummyPreedit);
+    }
 }
 
 std::tuple<double, double, double>
@@ -484,6 +523,20 @@ std::string process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
     });
 }
 
+OrderedInputResponse process_key_ordered(ICUUID uuid, uint32_t unicode,
+                                         uint32_t osxModifiers,
+                                         uint16_t osxKeycode, bool isRelease,
+                                         bool isPassword, const char *text,
+                                         unsigned int cursor,
+                                         unsigned int anchor) noexcept {
+    const fcitx::Key parsedKey =
+        osx_key_to_fcitx_key(unicode, osxModifiers, osxKeycode);
+    return with_fcitx([=](Fcitx &fcitx) {
+        return fcitx.frontend()->keyEventOrdered(
+            uuid, parsedKey, isRelease, isPassword, text, cursor, anchor);
+    });
+}
+
 ICUUID create_input_context(const char *appId,
                             const char *accentColor) noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
@@ -495,6 +548,16 @@ void destroy_input_context(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) {
         return fcitx.frontend()->destroyInputContext(uuid);
     });
+}
+
+void bind_input_session(InputSessionIdentity identity) noexcept {
+    with_fcitx(
+        [=](Fcitx &fcitx) { fcitx.frontend()->bindInputSession(identity); });
+}
+
+void close_input_session(InputSessionIdentity identity) noexcept {
+    with_fcitx(
+        [=](Fcitx &fcitx) { fcitx.frontend()->closeInputSession(identity); });
 }
 
 void focus_in(ICUUID uuid, bool isPassword) noexcept {
@@ -511,6 +574,12 @@ std::string commit_composition(ICUUID uuid) noexcept {
 
 void focus_out(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
+}
+
+OrderedInputResponse commit_composition_ordered(ICUUID uuid) noexcept {
+    return with_fcitx([=](Fcitx &fcitx) {
+        return fcitx.frontend()->commitCompositionOrdered(uuid);
+    });
 }
 
 std::string get_current_group_layout() noexcept {

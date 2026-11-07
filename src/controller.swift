@@ -21,6 +21,7 @@ class FcitxInputController: IMKInputController {
   let appId: String
   let isPasswordOnlyApp: Bool
   let accentColor: String
+  private var sessionRegistration: InputSessionRegistration?
 
   var lastModifiers = NSEvent.ModifierFlags(rawValue: 0)
   var selection: NSRange? = nil
@@ -37,6 +38,7 @@ class FcitxInputController: IMKInputController {
     self.accentColor = getAccentColor(appId)
     self.uuid = create_input_context(appId, accentColor)
     super.init(server: server, delegate: delegate, client: client)
+    sessionRegistration = registerInputSession(uuid, self)
     setController(self)
     // On Chrome's home page execute document.addEventListener('keydown', console.log),
     // restart Fcitx5, click another app, then click blank area of Chrome's home page.
@@ -46,25 +48,49 @@ class FcitxInputController: IMKInputController {
   }
 
   deinit {
-    destroy_input_context(uuid)
+    guard let registration = sessionRegistration else { return }
+    if Thread.isMainThread {
+      MainActor.assumeIsolated {
+        FcitxInputController.destroyInputContext(registration)
+      }
+    } else {
+      // Capture only a Sendable value, never the controller being destroyed.
+      Task { @MainActor in
+        FcitxInputController.destroyInputContext(registration)
+      }
+    }
+  }
+
+  @MainActor
+  private static func destroyInputContext(_ registration: InputSessionRegistration) {
+    // A stale cleanup must neither remove a newer registration nor enter a
+    // stopped runtime. Shutdown and this cleanup are serialized on MainActor.
+    guard unregisterInputSession(registration) else { return }
+    destroy_input_context(registration.toICUUID())
   }
 
   override func commitComposition(_ sender: Any!) {
     guard let client = client() else {
       return
     }
-    let res = String(commit_composition(uuid))
+    MainActor.assumeIsolated { finishInputSessionTransition() }
+    let res = commit_composition_ordered(uuid)
     // Maybe commit and clear preedit synchronously if user switches to ABC by Ctrl+Space.
     // For Rime with CapsLock, the result will depend on ascii_composer/switch_key/Caps_Lock instead of fcitx5-rime config.
     let _ = processRes(client, res)
   }
 
-  func processRes(_ client: IMKTextInput, _ res: String) -> Bool {
-    guard let response = decodeJSON(res, nil as SyncResponse?) else {
+  func processRes(_ client: IMKTextInput, _ res: OrderedInputResponse) -> Bool {
+    // Output produced after the core returns must follow this sync result.
+    defer { MainActor.assumeIsolated { finishInputSessionTransition() } }
+    let boundary = res.outputBoundary
+    guard let response = decodeJSON(String(res.response), nil as SyncResponse?) else {
+      MainActor.assumeIsolated { discardSynchronousInput(boundary) }
       return false
     }
     commitAndSetPreeditSync(
-      client, response.commit, response.preedit, response.caretPos, response.dummyPreedit)
+      client, response.commit, response.preedit, response.caretPos, response.dummyPreedit,
+      outputBoundary: boundary, sourceController: self)
     return response.accepted
   }
 
@@ -102,6 +128,9 @@ class FcitxInputController: IMKInputController {
     guard let client = client() else {
       return false
     }
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { _ = activateInputSession(registration) }
+    }
     // It can change within an IMKInputController (e.g. sudo in Terminal), so must reevaluate before each key sent to IM.
     let isPassword = getSecureInputInfo(isOnFocus: false)
     let newSelection = client.selectedRange()
@@ -135,9 +164,8 @@ class FcitxInputController: IMKInputController {
       }
     }
     lastEventIsShiftPress = isShiftPress
-    let res = String(
-      process_key(
-        uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor))
+    let res = process_key_ordered(
+      uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor)
     return processRes(client, res)
   }
 
@@ -190,15 +218,23 @@ class FcitxInputController: IMKInputController {
 
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { _ = activateInputSession(registration) }
+    }
     setController(self)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
     focus_in(uuid, isPassword)
+    MainActor.assumeIsolated { finishInputSessionTransition() }
     overrideKeyboardLayout()
   }
 
   override func deactivateServer(_ client: Any!) {
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { deactivateInputSession(registration) }
+    }
     focus_out(uuid)
+    MainActor.assumeIsolated { finishInputSessionTransition() }
   }
 
   override func menu() -> NSMenu! {

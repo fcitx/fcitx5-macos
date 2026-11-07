@@ -26,6 +26,11 @@ target_link_libraries(key-release-cpp Fcitx5Objs SwiftFrontend)
 add_test(NAME key-release-cpp COMMAND key-release-cpp)
 set_tests_properties(key-release-cpp PROPERTIES TIMEOUT 10)
 
+add_executable(input-response-cpp testinputresponse.cpp)
+target_link_libraries(input-response-cpp Fcitx5Objs SwiftFrontend)
+add_test(NAME input-response-cpp COMMAND input-response-cpp)
+set_tests_properties(input-response-cpp PROPERTIES TIMEOUT 10)
+
 add_executable(layout-cpp testlayout.cpp)
 target_link_libraries(layout-cpp Fcitx5Objs)
 add_test(NAME layout-cpp COMMAND layout-cpp)
@@ -64,3 +69,15 @@ add_executable(StatusSwift teststatus.swift
     ${PROJECT_SOURCE_DIR}/src/status.swift
 )
 add_test(NAME StatusSwift COMMAND StatusSwift)
+
+add_executable(SessionSwift testsession.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session.swift
+)
+add_test(NAME SessionSwift COMMAND SessionSwift)
+
+add_executable(SessionOutputSwift testsessionoutput.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session-output.swift
+)
+add_test(NAME SessionOutputSwift COMMAND SessionOutputSwift)
+set_tests_properties(SessionOutputSwift PROPERTIES TIMEOUT 10)
