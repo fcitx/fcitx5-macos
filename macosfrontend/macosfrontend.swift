@@ -202,9 +202,10 @@ public func setStatusItemMode(_ mode: Int32) {
 }
 
 private func commitString(_ client: IMKTextInput, _ string: String) {
-  client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-  // Without it currentPreedit.count in commitAndSetPreeditSync will be wrong with pinyin prediction.
+  // Clear before insertText so a reentrant preedit update is not erased when
+  // it returns. Prediction's dummy-preedit calculation also needs this reset.
   currentPreedit = ""
+  client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
 }
 
 private func setPreedit(

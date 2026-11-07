@@ -1,5 +1,6 @@
 private final class Client {
   var events: [String] = []
+  var preedit = ""
 }
 
 private final class Controller {
@@ -11,7 +12,74 @@ private final class Controller {
 @main
 struct SessionOutputTests {
   @MainActor
+  static func testSynchronousReentry(combined: Bool, outputAfterSync: Bool = false) {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let client = Client()
+    let controller = Controller(client)
+    registry.beginRuntime()
+    let registration = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
+    let token = registry.activate(registration)!
+    var synchronousTransition: (() -> Void)?
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      controller, operation in
+      guard let client = controller.client else { preconditionFailure() }
+      switch operation {
+      case .commit(let text):
+        client.events.append("commit:\(text)")
+        synchronousTransition?()
+      case .commitAndPreedit(let commit, let preedit, _, _):
+        if !commit.isEmpty {
+          client.events.append("commit:\(commit)")
+          synchronousTransition?()
+        }
+        client.preedit = preedit
+        client.events.append("preedit:\(preedit)")
+      case .close:
+        preconditionFailure()
+      }
+    }
+    synchronousTransition = {
+      // Model processKey/commitComposition: drain older output, apply the
+      // synchronous response, then drain output produced after that response.
+      dispatcher.drain()
+      client.preedit = "new"
+      client.events.append("sync:new")
+      if outputAfterSync {
+        _ = queue.enqueue(
+          InputSessionOutput(
+            token: token,
+            operation: .commitAndPreedit(commit: "", preedit: "after", caret: 0, dummy: false)))
+      }
+      dispatcher.drain()
+    }
+    if combined {
+      _ = queue.enqueue(
+        InputSessionOutput(
+          token: token,
+          operation: .commitAndPreedit(commit: "trigger", preedit: "old", caret: 0, dummy: false)))
+    } else {
+      _ = queue.enqueue(InputSessionOutput(token: token, operation: .commit("trigger")))
+      _ = queue.enqueue(
+        InputSessionOutput(
+          token: token,
+          operation: .commitAndPreedit(commit: "", preedit: "old", caret: 0, dummy: false)))
+    }
+    withExtendedLifetime(controller) { dispatcher.drain() }
+    synchronousTransition = nil
+    precondition(
+      client.preedit == (outputAfterSync ? "after" : "new"),
+      "Queued preedit overwrote the reentrant sync result")
+    let expected = ["commit:trigger", "preedit:old", "sync:new"]
+    precondition(client.events == expected + (outputAfterSync ? ["preedit:after"] : []))
+  }
+
+  @MainActor
   static func main() async {
+    testSynchronousReentry(combined: false)
+    testSynchronousReentry(combined: true)
+    testSynchronousReentry(combined: true, outputAfterSync: true)
     let registry = InputSessionRegistry<Controller>()
     let queue = InputSessionOutputQueue()
     let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {

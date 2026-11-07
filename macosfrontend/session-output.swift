@@ -52,7 +52,8 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   private let registry: InputSessionRegistry<Controller>
   private let queue: InputSessionOutputQueue
   private let deliver: (Controller, InputSessionOutput.Operation) -> Void
-  private var isDraining = false
+  // Keep the unconsumed steps visible to reentrant synchronous transitions.
+  private var pending: ArraySlice<InputSessionOutput> = []
 
   init(
     registry: InputSessionRegistry<Controller>, queue: InputSessionOutputQueue,
@@ -64,18 +65,31 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   }
 
   func drain() {
-    guard !isDraining else { return }
-    isDraining = true
-    defer { isDraining = false }
     while true {
-      let pending = queue.takePending()
-      guard !pending.isEmpty else { return }
-      for output in pending {
-        if output.operation == .close {
-          registry.finishClosing(output.token)
-        } else if let controller = registry.lookupForOutput(output.token) {
-          deliver(controller, output.operation)
-        }
+      if pending.isEmpty {
+        pending = ArraySlice(
+          queue.takePending().flatMap { output in
+            guard
+              case .commitAndPreedit(let commit, let preedit, let caret, let dummy) =
+                output.operation, !commit.isEmpty
+            else { return [output] }
+            // insertText can reenter before the associated preedit is applied.
+            // Publish that preedit as the next step before calling the client.
+            return [
+              InputSessionOutput(token: output.token, operation: .commit(commit)),
+              InputSessionOutput(
+                token: output.token,
+                operation: .commitAndPreedit(
+                  commit: "", preedit: preedit, caret: caret, dummy: dummy)),
+            ]
+          })
+      }
+      // Advance before delivery so nested drains cannot deliver this step twice.
+      guard let output = pending.popFirst() else { return }
+      if output.operation == .close {
+        registry.finishClosing(output.token)
+      } else if let controller = registry.lookupForOutput(output.token) {
+        deliver(controller, output.operation)
       }
     }
   }
