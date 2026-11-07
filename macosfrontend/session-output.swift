@@ -101,7 +101,8 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
 
   init(
     registry: InputSessionRegistry<Controller>, queue: InputSessionOutputQueue,
-    deliver: @escaping (Controller, InputSessionOutput.Operation, InputSessionPresentationUpdate) ->
+    deliver:
+      @escaping (Controller, InputSessionOutput.Operation, InputSessionPresentationUpdate) ->
       Void
   ) {
     self.registry = registry
