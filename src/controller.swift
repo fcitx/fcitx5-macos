@@ -90,7 +90,7 @@ class FcitxInputController: IMKInputController {
     }
     commitAndSetPreeditSync(
       client, response.commit, response.preedit, response.caretPos, response.dummyPreedit,
-      outputBoundary: boundary, sourceController: self)
+      outputBoundary: boundary, sourceController: self, sourceSession: sessionRegistration)
     return response.accepted
   }
 

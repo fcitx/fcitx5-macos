@@ -67,14 +67,17 @@ final class InputSessionOutputQueue: Sendable {
 final class InputSessionOutputDispatcher<Controller: AnyObject> {
   private final class SynchronousResponse {
     let operation: InputSessionOutput.Operation?
-    var deliver: ((InputSessionOutput.Operation) -> Void)?
+    let registration: InputSessionRegistration?
+    var deliver: ((InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void)?
     var completed = false
 
     init(
       operation: InputSessionOutput.Operation?,
-      deliver: @escaping (InputSessionOutput.Operation) -> Void
+      registration: InputSessionRegistration?,
+      deliver: @escaping (InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void
     ) {
       self.operation = operation
+      self.registration = registration
       self.deliver = deliver
     }
   }
@@ -88,14 +91,18 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
 
   private let registry: InputSessionRegistry<Controller>
   private let queue: InputSessionOutputQueue
-  private let deliver: (Controller, InputSessionOutput.Operation) -> Void
+  private let deliver:
+    (Controller, InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void
+  // Preserve the legacy synchronous helper, whose callers have no registration.
+  private let legacyPresentation = InputSessionPresentation()
   // Keep the unconsumed steps visible to reentrant synchronous transitions.
   private var pending: ArraySlice<Step> = []
   private var synchronousResponses: [UInt64: SynchronousResponse] = [:]
 
   init(
     registry: InputSessionRegistry<Controller>, queue: InputSessionOutputQueue,
-    deliver: @escaping (Controller, InputSessionOutput.Operation) -> Void
+    deliver: @escaping (Controller, InputSessionOutput.Operation, InputSessionPresentationUpdate) ->
+      Void
   ) {
     self.registry = registry
     self.queue = queue
@@ -103,10 +110,12 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   }
 
   func applySynchronous(
-    at boundary: UInt64, operation: InputSessionOutput.Operation?,
-    deliver: @escaping (InputSessionOutput.Operation) -> Void
+    at boundary: UInt64, registration: InputSessionRegistration? = nil,
+    operation: InputSessionOutput.Operation?,
+    deliver: @escaping (InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void
   ) {
-    let response = SynchronousResponse(operation: operation, deliver: deliver)
+    let response = SynchronousResponse(
+      operation: operation, registration: registration, deliver: deliver)
     precondition(synchronousResponses[boundary] == nil)
     // Publish the entire response before draining anything that can call a
     // client. A nested transition must see the outer response's preedit too.
@@ -156,8 +165,13 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
       case .output(let output):
         if output.operation == .close {
           registry.finishClosing(output.token)
-        } else if let controller = registry.lookupForOutput(output.token) {
-          deliver(controller, output.operation)
+        } else if let controller = registry.lookupForOutput(output.token),
+          let presentation = registry.presentation(output.token.registration)
+        {
+          let update = presentation.beginUpdate { [registry] in
+            registry.lookupForOutput(output.token) != nil
+          }
+          deliver(controller, output.operation, update)
         }
       case .boundary(let id):
         guard let response = synchronousResponses.removeValue(forKey: id) else {
@@ -168,7 +182,17 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
           steps.map { Step.synchronous(response, $0) }
             + [.completion(response)] + pending)
       case .synchronous(let response, let operation):
-        response.deliver?(operation)
+        let update: InputSessionPresentationUpdate
+        if let registration = response.registration {
+          if let presentation = registry.presentation(registration) {
+            update = presentation.beginUpdate { [registry] in registry.lookup(registration) != nil }
+          } else {
+            update = InputSessionPresentationUpdate { false }
+          }
+        } else {
+          update = legacyPresentation.beginUpdate()
+        }
+        response.deliver?(operation, update)
       case .completion(let response):
         // An ArraySlice can retain consumed elements. Release borrowed IMK
         // clients even if a later unpublished boundary stops this drain.

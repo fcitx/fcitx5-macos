@@ -19,6 +19,29 @@ public struct InputSessionToken: Hashable, Sendable {
   public let activationGeneration: UInt64
 }
 
+@MainActor
+struct InputSessionPresentationUpdate {
+  private let validate: () -> Bool
+
+  init(validate: @escaping () -> Bool) { self.validate = validate }
+
+  var isCurrent: Bool { validate() }
+}
+
+@MainActor
+final class InputSessionPresentation {
+  // Queries can reenter after a step has left the FIFO. A newer delivery for
+  // this registration supersedes that in-flight presentation.
+  private var revision: UInt64 = 0
+
+  func beginUpdate(while isValid: @escaping () -> Bool = { true }) -> InputSessionPresentationUpdate
+  {
+    revision += 1
+    let current = revision
+    return InputSessionPresentationUpdate { [self] in revision == current && isValid() }
+  }
+}
+
 // Controller is generic so lifecycle tests do not need an IMKServer or client.
 // Production specializes the registry with IMKInputController.
 @MainActor
@@ -26,6 +49,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
   private struct Entry {
     weak var controller: Controller?
     let registration: InputSessionRegistration
+    let presentation: InputSessionPresentation
   }
 
   private var entries: [InputSessionKey: Entry] = [:]
@@ -65,7 +89,8 @@ final class InputSessionRegistry<Controller: AnyObject> {
     registrationGeneration += 1
     let registration = InputSessionRegistration(
       key: key, runtimeEpoch: runtimeEpoch, generation: registrationGeneration)
-    entries[key] = Entry(controller: controller, registration: registration)
+    entries[key] = Entry(
+      controller: controller, registration: registration, presentation: InputSessionPresentation())
     return registration
   }
 
@@ -79,6 +104,11 @@ final class InputSessionRegistry<Controller: AnyObject> {
   func lookup(_ token: InputSessionToken) -> Controller? {
     guard selected == token else { return nil }
     return lookup(token.registration)
+  }
+
+  func presentation(_ registration: InputSessionRegistration) -> InputSessionPresentation? {
+    guard lookup(registration) != nil else { return nil }
+    return entries[registration.key]?.presentation
   }
 
   func lookupForOutput(_ token: InputSessionToken) -> Controller? {

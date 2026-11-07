@@ -41,20 +41,22 @@ private let inputSessionOutputQueue = InputSessionOutputQueue()
 @MainActor
 private let inputSessionOutputs = InputSessionOutputDispatcher(
   registry: inputSessions, queue: inputSessionOutputQueue
-) { controller, operation in
-  guard let client = controller.client() else { return }
-  deliverClientOutput(client, controller, operation)
+) { controller, operation, update in
+  guard let client = controller.client(), update.isCurrent else { return }
+  deliverClientOutput(client, controller, operation, update)
 }
 
+@MainActor
 private func deliverClientOutput(
   _ client: IMKTextInput, _ sourceController: IMKInputController?,
-  _ operation: InputSessionOutput.Operation
+  _ operation: InputSessionOutput.Operation, _ update: InputSessionPresentationUpdate
 ) {
+  guard update.isCurrent else { return }
   switch operation {
   case .commit(let commit):
     commitString(client, commit)
   case .commitAndPreedit(let commit, let preedit, let caret, let dummy):
-    commitAndSetPreedit(client, sourceController, commit, preedit, caret, dummy)
+    commitAndSetPreedit(client, sourceController, commit, preedit, caret, dummy, update)
   case .close:
     break
   }
@@ -215,29 +217,33 @@ private func commitString(_ client: IMKTextInput, _ string: String) {
   client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
 }
 
+@MainActor
 private func setPreedit(
   _ client: IMKTextInput, _ sourceController: IMKInputController?,
-  _ preedit: String, _ caretPosUtf8: Int
+  _ preedit: String, _ caretPosUtf8: Int, _ update: InputSessionPresentationUpdate
 ) {
-  currentPreedit = preedit
   // The caretPos argument is specified in UTF-8 bytes.
   // Convert it to UTF-16.
   var u8pos = 0
-  u16pos = 0
+  var caretPosUtf16 = 0
   for ch in preedit {
     if u8pos == caretPosUtf8 {
       break
     }
     u8pos += ch.utf8.count
-    u16pos += ch.utf16.count  // Usually 1 but can be more, e.g. emoji.
+    caretPosUtf16 += ch.utf16.count  // Usually 1 but can be more, e.g. emoji.
   }
   // Make underline as thin as macOS pinyin.
   let attrs =
     sourceController?.mark(forStyle: kTSMHiliteConvertedText, at: NSMakeRange(NSNotFound, 0))
     as? [NSAttributedString.Key: Any]
+  guard update.isCurrent else { return }
+  // Publish cache and marked text together, after all reentrant queries.
+  currentPreedit = preedit
+  u16pos = caretPosUtf16
   client.setMarkedText(
     NSMutableAttributedString(string: preedit, attributes: attrs),
-    selectionRange: NSRange(location: u16pos, length: 0),
+    selectionRange: NSRange(location: caretPosUtf16, length: 0),
     replacementRange: NSRange(location: NSNotFound, length: 0)
   )
 }
@@ -254,17 +260,19 @@ public func commitAndSetPreeditSync(
 
 public func commitAndSetPreeditSync(
   _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
-  _ dummyPreedit: Bool, outputBoundary: UInt64, sourceController: IMKInputController
+  _ dummyPreedit: Bool, outputBoundary: UInt64, sourceController: IMKInputController,
+  sourceSession: InputSessionRegistration? = nil
 ) {
   applySynchronousInput(
     client, sourceController,
     .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit),
-    at: outputBoundary)
+    at: outputBoundary, registration: sourceSession)
 }
 
 private func applySynchronousInput(
   _ client: IMKTextInput, _ sourceController: IMKInputController?,
-  _ operation: InputSessionOutput.Operation, at boundary: UInt64
+  _ operation: InputSessionOutput.Operation, at boundary: UInt64,
+  registration: InputSessionRegistration? = nil
 ) {
   dispatchPrecondition(condition: .onQueue(.main))
   // IMK callbacks are imported nonisolated. These references are borrowed only
@@ -272,27 +280,32 @@ private func applySynchronousInput(
   nonisolated(unsafe) let mainClient = client
   nonisolated(unsafe) let mainController = sourceController
   MainActor.assumeIsolated {
-    inputSessionOutputs.applySynchronous(at: boundary, operation: operation) { step in
-      deliverClientOutput(mainClient, mainController, step)
+    inputSessionOutputs.applySynchronous(
+      at: boundary, registration: registration, operation: operation
+    ) { step, update in
+      deliverClientOutput(mainClient, mainController, step, update)
     }
   }
 }
 
 @MainActor
 public func discardSynchronousInput(_ boundary: UInt64) {
-  inputSessionOutputs.applySynchronous(at: boundary, operation: nil) { _ in
+  inputSessionOutputs.applySynchronous(at: boundary, operation: nil) { _, _ in
     preconditionFailure("Discarded synchronous response must not be delivered")
   }
 }
 
+@MainActor
 private func commitAndSetPreedit(
   _ client: IMKTextInput, _ sourceController: IMKInputController?,
-  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool
+  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool,
+  _ update: InputSessionPresentationUpdate
 ) {
   if !commit.isEmpty {
     commitString(client, commit)
   }
   let app = client.bundleIdentifier() ?? ""
+  guard update.isCurrent else { return }
   // Without client preedit, Backspace bypasses IM in Terminal, every key is both
   // processed by IM and passed to client in iTerm, JetBrains and VSCode terminal,
   // Backspace is double-processed in Chrome address bar/VSCode editor/Bruno URL input,
@@ -306,7 +319,9 @@ private func commitAndSetPreedit(
       return
     }
     let length = client.length()
+    guard update.isCurrent else { return }
     let selectedRange = client.selectedRange()
+    guard update.isCurrent else { return }
     // We prefer ZWS to avoid text layout shift after caret, e.g. VSCode.
     // For SwiftUI TextField, there is a bug that if caret is at the end of text, zero-width space preedit
     // spreads from the start to the end, making the whole text underlined. Fortunately, SwiftUI's length
@@ -315,12 +330,12 @@ private func commitAndSetPreedit(
     if (length > 0 && length - currentPreedit.count == NSMaxRange(selectedRange))
       || isJetBrains(app)
     {
-      setPreedit(client, sourceController, " ", 0)
+      setPreedit(client, sourceController, " ", 0, update)
     } else {
-      setPreedit(client, sourceController, zeroWidthSpace, 0)
+      setPreedit(client, sourceController, zeroWidthSpace, 0, update)
     }
   } else {
-    setPreedit(client, sourceController, preedit, caretPos)
+    setPreedit(client, sourceController, preedit, caretPos, update)
   }
 }
 

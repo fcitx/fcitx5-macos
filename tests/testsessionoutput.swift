@@ -12,6 +12,105 @@ private final class Controller {
 @main
 struct SessionOutputTests {
   @MainActor
+  static func testPresentationReentry(
+    outerSynchronous: Bool, innerSynchronous: Bool, differentSession: Bool
+  ) {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let client = Client()
+    let otherClient = Client()
+    let controller = Controller(client)
+    let otherController = Controller(otherClient)
+    registry.beginRuntime()
+    let registration = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
+    let otherRegistration = registry.register(
+      InputSessionKey(Array(repeating: 1, count: 16)), controller: otherController)!
+    let token = registry.activate(registration)!
+    // Keep A deliverable as a closing session while B is active.
+    let otherToken = registry.activate(otherRegistration)!
+    let innerRegistration = differentSession ? otherRegistration : registration
+    let innerToken = differentSession ? otherToken : token
+    let innerClient = differentSession ? otherClient : client
+    var reenter: (() -> Void)?
+    let deliver: (Client, InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void = {
+      client, operation, update in
+      guard update.isCurrent else { return }
+      guard case .commitAndPreedit(_, let preedit, _, _) = operation else {
+        preconditionFailure()
+      }
+      if preedit == "old" { reenter?() }
+      // Model an IMK query returning after a nested input callback. The
+      // dispatcher must invalidate this already-popped step for the same
+      // registration, including across synchronous/asynchronous delivery.
+      guard update.isCurrent else { return }
+      client.preedit = preedit
+      client.events.append("preedit:\(preedit)")
+    }
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      controller, operation, update in
+      deliver(controller.client!, operation, update)
+    }
+    let newer = InputSessionOutput.Operation.commitAndPreedit(
+      commit: "", preedit: "new", caret: 0, dummy: false)
+    reenter = {
+      if innerSynchronous {
+        dispatcher.applySynchronous(
+          at: queue.enqueueBoundary(), registration: innerRegistration, operation: newer
+        ) { operation, update in deliver(innerClient, operation, update) }
+      } else {
+        _ = queue.enqueue(InputSessionOutput(token: innerToken, operation: newer))
+        dispatcher.drain()
+      }
+    }
+    let older = InputSessionOutput.Operation.commitAndPreedit(
+      commit: "", preedit: "old", caret: 0, dummy: false)
+    withExtendedLifetime((controller, otherController)) {
+      if outerSynchronous {
+        dispatcher.applySynchronous(
+          at: queue.enqueueBoundary(), registration: registration, operation: older
+        ) { operation, update in deliver(client, operation, update) }
+      } else {
+        _ = queue.enqueue(InputSessionOutput(token: token, operation: older))
+        dispatcher.drain()
+      }
+    }
+    reenter = nil
+    precondition(client.events == ["preedit:\(differentSession ? "old" : "new")"])
+    precondition(otherClient.events == (differentSession ? ["preedit:new"] : []))
+  }
+
+  @MainActor
+  static func testPresentationLifetime() {
+    let registry = InputSessionRegistry<Controller>()
+    let controller = Controller(Client())
+    registry.beginRuntime()
+    let key = InputSessionKey(Array(repeating: 0, count: 16))
+    let registration = registry.register(key, controller: controller)!
+    let token = registry.activate(registration)!
+    let presentation = registry.presentation(registration)!
+    let update = presentation.beginUpdate { registry.lookupForOutput(token) != nil }
+    precondition(update.isCurrent)
+    registry.deactivate(registration)
+    precondition(update.isCurrent)
+    registry.finishClosing(token)
+    precondition(!update.isCurrent)
+    let synchronousUpdate = presentation.beginUpdate { registry.lookup(registration) != nil }
+    precondition(synchronousUpdate.isCurrent)
+    precondition(registry.unregister(registration))
+    precondition(!synchronousUpdate.isCurrent)
+    let replacement = registry.register(key, controller: controller)!
+    precondition(replacement != registration)
+    precondition(!synchronousUpdate.isCurrent)
+    let replacementUpdate = registry.presentation(replacement)!.beginUpdate {
+      registry.lookup(replacement) != nil
+    }
+    precondition(replacementUpdate.isCurrent)
+    registry.endRuntime()
+    precondition(!replacementUpdate.isCurrent)
+  }
+
+  @MainActor
   static func testSynchronousResponseReentry(earlierAsyncCommit: Bool, outputAfterInner: Bool) {
     let registry = InputSessionRegistry<Controller>()
     let queue = InputSessionOutputQueue()
@@ -22,7 +121,8 @@ struct SessionOutputTests {
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let token = registry.activate(registration)!
     var nestedTransition: (() -> Void)?
-    let deliver: (InputSessionOutput.Operation) -> Void = { operation in
+    let deliver: (InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void = {
+      operation, _ in
       switch operation {
       case .commit(let text):
         client.events.append("commit:\(text)")
@@ -36,8 +136,8 @@ struct SessionOutputTests {
       }
     }
     let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
-      _, operation in
-      deliver(operation)
+      _, operation, update in
+      deliver(operation, update)
     }
     nestedTransition = {
       dispatcher.drain()
@@ -86,7 +186,7 @@ struct SessionOutputTests {
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let token = registry.activate(registration)!
     let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
-      _, operation in
+      _, operation, _ in
       guard case .commitAndPreedit(_, let preedit, _, _) = operation else { preconditionFailure() }
       client.preedit = preedit
       client.events.append("async:\(preedit)")
@@ -104,7 +204,7 @@ struct SessionOutputTests {
     dispatcher.applySynchronous(
       at: boundary,
       operation: .commitAndPreedit(commit: "", preedit: "n", caret: 0, dummy: false)
-    ) { _ in
+    ) { _, _ in
       client.preedit = "n"
       client.events.append("sync:n")
     }
@@ -122,7 +222,7 @@ struct SessionOutputTests {
     dispatcher.applySynchronous(
       at: nextBoundary,
       operation: .commitAndPreedit(commit: "", preedit: "ne", caret: 0, dummy: false)
-    ) { _ in
+    ) { _, _ in
       client.preedit = "ne"
       client.events.append("sync:ne")
     }
@@ -130,7 +230,9 @@ struct SessionOutputTests {
 
     // Invalid JSON must release its boundary too, without calling a client.
     let invalidBoundary = queue.enqueueBoundary()
-    dispatcher.applySynchronous(at: invalidBoundary, operation: nil) { _ in preconditionFailure() }
+    dispatcher.applySynchronous(at: invalidBoundary, operation: nil) { _, _ in
+      preconditionFailure()
+    }
     precondition(registry.lookup(token) === controller)
 
     // Completion must release a borrowed client even when a later unpublished
@@ -141,12 +243,12 @@ struct SessionOutputTests {
     let borrowedBoundary = queue.enqueueBoundary()
     let laterBoundary = queue.enqueueBoundary()
     dispatcher.applySynchronous(at: borrowedBoundary, operation: .commit("borrowed")) {
-      [borrowed = borrowed!] _ in
+      [borrowed = borrowed!] _, _ in
       borrowed.client?.events.append("delivered")
     }
     borrowed = nil
     precondition(registry.lookup(borrowedRegistration) == nil)
-    dispatcher.applySynchronous(at: laterBoundary, operation: nil) { _ in preconditionFailure() }
+    dispatcher.applySynchronous(at: laterBoundary, operation: nil) { _, _ in preconditionFailure() }
 
     let discardedBoundary = queue.enqueueBoundary()
     queue.clear()
@@ -165,7 +267,7 @@ struct SessionOutputTests {
     let token = registry.activate(registration)!
     var synchronousTransition: (() -> Void)?
     let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
-      controller, operation in
+      controller, operation, _ in
       guard let client = controller.client else { preconditionFailure() }
       switch operation {
       case .commit(let text):
@@ -219,6 +321,16 @@ struct SessionOutputTests {
 
   @MainActor
   static func main() async {
+    for outerSynchronous in [false, true] {
+      for innerSynchronous in [false, true] {
+        for differentSession in [false, true] {
+          testPresentationReentry(
+            outerSynchronous: outerSynchronous, innerSynchronous: innerSynchronous,
+            differentSession: differentSession)
+        }
+      }
+    }
+    testPresentationLifetime()
     testSynchronousResponseReentry(earlierAsyncCommit: false, outputAfterInner: false)
     testSynchronousResponseReentry(earlierAsyncCommit: true, outputAfterInner: false)
     testSynchronousResponseReentry(earlierAsyncCommit: false, outputAfterInner: true)
@@ -229,7 +341,7 @@ struct SessionOutputTests {
     let registry = InputSessionRegistry<Controller>()
     let queue = InputSessionOutputQueue()
     let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
-      controller, operation in
+      controller, operation, _ in
       guard let client = controller.client else { return }
       switch operation {
       case .commit(let text):
@@ -357,7 +469,7 @@ struct SessionOutputTests {
     var nestedDrain: (() -> Void)?
     let reentrantDispatcher = InputSessionOutputDispatcher(
       registry: registry, queue: reentrantQueue
-    ) { controller, operation in
+    ) { controller, operation, _ in
       guard case .commit(let text) = operation else { preconditionFailure() }
       controller.client?.events.append(text)
       if text == "outer" {
