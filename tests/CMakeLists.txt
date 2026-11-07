@@ -69,3 +69,10 @@ add_executable(SessionSwift testsession.swift
     ${PROJECT_SOURCE_DIR}/macosfrontend/session.swift
 )
 add_test(NAME SessionSwift COMMAND SessionSwift)
+
+add_executable(SessionOutputSwift testsessionoutput.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session.swift
+    ${PROJECT_SOURCE_DIR}/macosfrontend/session-output.swift
+)
+add_test(NAME SessionOutputSwift COMMAND SessionOutputSwift)
+set_tests_properties(SessionOutputSwift PROPERTIES TIMEOUT 10)

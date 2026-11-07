@@ -18,6 +18,7 @@
 #include <fcitx/inputmethodentry.h>
 #include <fcitx/inputmethodmanager.h>
 #include <fcitx/inputpanel.h>
+#include <fcitx/userinterfacemanager.h>
 #include <nlohmann/json.hpp>
 
 #include "../deps/url-filter/src/url-filter.hpp"
@@ -283,6 +284,25 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
     delete ic;
 }
 
+void MacosFrontend::bindInputSession(const InputSessionIdentity &identity) {
+    if (auto *ic = findIC(identity.uuid)) {
+        ic->bindSession(identity);
+    }
+}
+
+void MacosFrontend::closeInputSession(const InputSessionIdentity &identity) {
+    if (auto *ic = findIC(identity.uuid); ic && ic->matchesSession(identity)) {
+        // Include deferred client updates from focus out before the close
+        // marker. No main-thread work is awaited from the fcitx thread.
+        instance_->userInterfaceManager().flush();
+        if (auto *current = findIC(identity.uuid);
+            current && current->matchesSession(identity)) {
+            current->closeSession();
+        }
+    }
+    SwiftFrontend::closeInputSessionAsync(identity);
+}
+
 void MacosFrontend::useAppDefaultIM(const std::string &appId) {
     auto it = appDefaultIMCache_.find(appId);
     if (it != appDefaultIMCache_.end()) {
@@ -394,7 +414,9 @@ void MacosInputContext::commitStringImpl(const std::string &text) {
     if (!isSyncEvent) {
         // When changing this, test Messages.app by clicking a candidate.
         // Previously buggy behavior is that preedit is appended after commit.
-        SwiftFrontend::commitAsync(state_.commit);
+        if (sessionIdentity_) {
+            SwiftFrontend::commitAsync(*sessionIdentity_, state_.commit);
+        }
         resetState();
     }
 }
@@ -438,8 +460,11 @@ std::string MacosInputContext::popState(bool accepted, const Key &key) {
 void MacosInputContext::commitAndSetPreeditAsync() {
     auto state = state_;
     resetState();
-    SwiftFrontend::commitAndSetPreeditAsync(state.commit, state.preedit,
-                                            state.caretPos, state.dummyPreedit);
+    if (sessionIdentity_) {
+        SwiftFrontend::commitAndSetPreeditAsync(*sessionIdentity_, state.commit,
+                                                state.preedit, state.caretPos,
+                                                state.dummyPreedit);
+    }
 }
 
 std::tuple<double, double, double>
@@ -495,6 +520,16 @@ void destroy_input_context(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) {
         return fcitx.frontend()->destroyInputContext(uuid);
     });
+}
+
+void bind_input_session(InputSessionIdentity identity) noexcept {
+    with_fcitx(
+        [=](Fcitx &fcitx) { fcitx.frontend()->bindInputSession(identity); });
+}
+
+void close_input_session(InputSessionIdentity identity) noexcept {
+    with_fcitx(
+        [=](Fcitx &fcitx) { fcitx.frontend()->closeInputSession(identity); });
 }
 
 void focus_in(ICUUID uuid, bool isPassword) noexcept {

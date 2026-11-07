@@ -73,6 +73,7 @@ class FcitxInputController: IMKInputController {
     guard let client = client() else {
       return
     }
+    MainActor.assumeIsolated { finishInputSessionTransition() }
     let res = String(commit_composition(uuid))
     // Maybe commit and clear preedit synchronously if user switches to ABC by Ctrl+Space.
     // For Rime with CapsLock, the result will depend on ascii_composer/switch_key/Caps_Lock instead of fcitx5-rime config.
@@ -80,6 +81,8 @@ class FcitxInputController: IMKInputController {
   }
 
   func processRes(_ client: IMKTextInput, _ res: String) -> Bool {
+    // Output produced after the core returns must follow this sync result.
+    defer { MainActor.assumeIsolated { finishInputSessionTransition() } }
     guard let response = decodeJSON(res, nil as SyncResponse?) else {
       return false
     }
@@ -121,6 +124,9 @@ class FcitxInputController: IMKInputController {
   func processKey(_ unicode: UInt32, _ modsVal: UInt32, _ code: UInt16, _ isRelease: Bool) -> Bool {
     guard let client = client() else {
       return false
+    }
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated { _ = activateInputSession(registration) }
     }
     // It can change within an IMKInputController (e.g. sudo in Terminal), so must reevaluate before each key sent to IM.
     let isPassword = getSecureInputInfo(isOnFocus: false)
@@ -181,10 +187,6 @@ class FcitxInputController: IMKInputController {
     // the same purpose here.
     setController(self)
 
-    if let registration = sessionRegistration {
-      MainActor.assumeIsolated { _ = activateInputSession(registration) }
-    }
-
     let code = event.keyCode
     let mods = event.modifierFlags
     let modsVal = UInt32(mods.rawValue)
@@ -221,15 +223,16 @@ class FcitxInputController: IMKInputController {
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
     focus_in(uuid, isPassword)
+    MainActor.assumeIsolated { finishInputSessionTransition() }
     overrideKeyboardLayout()
   }
 
   override func deactivateServer(_ client: Any!) {
-    focus_out(uuid)
     if let registration = sessionRegistration {
-      // Keep the session active while the core handles focus out.
       MainActor.assumeIsolated { deactivateInputSession(registration) }
     }
+    focus_out(uuid)
+    MainActor.assumeIsolated { finishInputSessionTransition() }
   }
 
   override func menu() -> NSMenu! {

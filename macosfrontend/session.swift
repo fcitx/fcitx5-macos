@@ -34,6 +34,9 @@ final class InputSessionRegistry<Controller: AnyObject> {
   private var activationGeneration: UInt64 = 0
   private var isRunning = false
   private var selected: InputSessionToken?
+  private var closing: Set<InputSessionToken> = []
+
+  var closingTokens: Set<InputSessionToken> { closing }
 
   var activeToken: InputSessionToken? {
     guard let selected, lookup(selected) != nil else { return nil }
@@ -49,6 +52,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
   func endRuntime() {
     isRunning = false
     selected = nil
+    closing.removeAll()
     entries.removeAll()
   }
 
@@ -77,10 +81,20 @@ final class InputSessionRegistry<Controller: AnyObject> {
     return lookup(token.registration)
   }
 
+  func lookupForOutput(_ token: InputSessionToken) -> Controller? {
+    guard selected == token || closing.contains(token) else { return nil }
+    return lookup(token.registration)
+  }
+
+  func finishClosing(_ token: InputSessionToken) {
+    closing.remove(token)
+  }
+
   @discardableResult
   func activate(_ registration: InputSessionRegistration) -> InputSessionToken? {
     guard lookup(registration) != nil else { return nil }
     if let selected, selected.registration == registration { return selected }
+    if let selected { closing.insert(selected) }
     activationGeneration += 1
     let token = InputSessionToken(
       registration: registration, activationGeneration: activationGeneration)
@@ -90,6 +104,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
 
   func deactivate(_ registration: InputSessionRegistration) {
     guard selected?.registration == registration else { return }
+    if let selected { closing.insert(selected) }
     selected = nil
   }
 
@@ -98,6 +113,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
     guard isRunning, entries[registration.key]?.registration == registration else { return false }
     entries.removeValue(forKey: registration.key)
     deactivate(registration)
+    closing = closing.filter { $0.registration != registration }
     return true
   }
 }

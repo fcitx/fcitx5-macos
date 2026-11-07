@@ -13,8 +13,58 @@ extension InputSessionRegistration {
   }
 }
 
+extension InputSessionToken {
+  init(_ identity: InputSessionIdentity) {
+    let uuid = identity.uuid
+    self.init(
+      registration: InputSessionRegistration(
+        key: InputSessionKey((0..<16).map { uuid[$0] }),
+        runtimeEpoch: identity.runtimeEpoch, generation: identity.registrationGeneration),
+      activationGeneration: identity.activationGeneration)
+  }
+
+  func toIdentity() -> InputSessionIdentity {
+    var identity = InputSessionIdentity()
+    identity.uuid = registration.toICUUID()
+    identity.runtimeEpoch = registration.runtimeEpoch
+    identity.registrationGeneration = registration.generation
+    identity.activationGeneration = activationGeneration
+    return identity
+  }
+}
+
 @MainActor
 private let inputSessions = InputSessionRegistry<IMKInputController>()
+
+private let inputSessionOutputQueue = InputSessionOutputQueue()
+
+@MainActor
+private let inputSessionOutputs = InputSessionOutputDispatcher(
+  registry: inputSessions, queue: inputSessionOutputQueue
+) { controller, operation in
+  guard let client = controller.client() else { return }
+  switch operation {
+  case .commit(let commit):
+    commitString(client, commit)
+  case .commitAndPreedit(let commit, let preedit, let caret, let dummy):
+    commitAndSetPreedit(client, controller, commit, preedit, caret, dummy)
+  case .close:
+    break
+  }
+}
+
+private func enqueueInputSessionOutput(
+  _ identity: InputSessionIdentity, _ operation: InputSessionOutput.Operation
+) {
+  let output = InputSessionOutput(token: InputSessionToken(identity), operation: operation)
+  if inputSessionOutputQueue.enqueue(output) {
+    // Share the main queue with the candidate window, preserving the existing
+    // requirement that client preedit is updated before the window is shown.
+    DispatchQueue.main.async {
+      inputSessionOutputs.drain()
+    }
+  }
+}
 
 @MainActor
 public func beginInputSessionRuntime() {
@@ -24,6 +74,7 @@ public func beginInputSessionRuntime() {
 @MainActor
 public func endInputSessionRuntime() {
   inputSessions.endRuntime()
+  inputSessionOutputQueue.clear()
 }
 
 public func registerInputSession(
@@ -48,12 +99,29 @@ public func registerInputSession(
 public func activateInputSession(
   _ registration: InputSessionRegistration
 ) -> InputSessionToken? {
-  return inputSessions.activate(registration)
+  finishInputSessionTransition()
+  let previous = inputSessions.activeToken
+  guard let token = inputSessions.activate(registration) else { return nil }
+  if token != previous {
+    bind_input_session(token.toIdentity())
+  }
+  return token
 }
 
 @MainActor
 public func deactivateInputSession(_ registration: InputSessionRegistration) {
+  inputSessionOutputs.drain()
   inputSessions.deactivate(registration)
+}
+
+@MainActor
+public func finishInputSessionTransition() {
+  // Each synchronous close includes the core's deferred client updates and
+  // appends a FIFO marker. Deliver those outputs before retiring the token.
+  for token in inputSessions.closingTokens {
+    close_input_session(token.toIdentity())
+  }
+  inputSessionOutputs.drain()
 }
 
 @MainActor
@@ -139,7 +207,10 @@ private func commitString(_ client: IMKTextInput, _ string: String) {
   currentPreedit = ""
 }
 
-private func setPreedit(_ client: IMKTextInput, _ preedit: String, _ caretPosUtf8: Int) {
+private func setPreedit(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ preedit: String, _ caretPosUtf8: Int
+) {
   currentPreedit = preedit
   // The caretPos argument is specified in UTF-8 bytes.
   // Convert it to UTF-16.
@@ -154,7 +225,7 @@ private func setPreedit(_ client: IMKTextInput, _ preedit: String, _ caretPosUtf
   }
   // Make underline as thin as macOS pinyin.
   let attrs =
-    controller?.mark(forStyle: kTSMHiliteConvertedText, at: NSMakeRange(NSNotFound, 0))
+    sourceController?.mark(forStyle: kTSMHiliteConvertedText, at: NSMakeRange(NSNotFound, 0))
     as? [NSAttributedString.Key: Any]
   client.setMarkedText(
     NSMutableAttributedString(string: preedit, attributes: attrs),
@@ -166,6 +237,13 @@ private func setPreedit(_ client: IMKTextInput, _ preedit: String, _ caretPosUtf
 public func commitAndSetPreeditSync(
   _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
   _ dummyPreedit: Bool
+) {
+  commitAndSetPreedit(client, controller, commit, preedit, caretPos, dummyPreedit)
+}
+
+private func commitAndSetPreedit(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool
 ) {
   if !commit.isEmpty {
     commitString(client, commit)
@@ -193,33 +271,30 @@ public func commitAndSetPreeditSync(
     if (length > 0 && length - currentPreedit.count == NSMaxRange(selectedRange))
       || isJetBrains(app)
     {
-      setPreedit(client, " ", 0)
+      setPreedit(client, sourceController, " ", 0)
     } else {
-      setPreedit(client, zeroWidthSpace, 0)
+      setPreedit(client, sourceController, zeroWidthSpace, 0)
     }
   } else {
-    setPreedit(client, preedit, caretPos)
+    setPreedit(client, sourceController, preedit, caretPos)
   }
 }
 
 public func commitAndSetPreeditAsync(
-  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool
+  _ identity: InputSessionIdentity, _ commit: String, _ preedit: String,
+  _ caretPos: Int, _ dummyPreedit: Bool
 ) {
-  Task { @MainActor in
-    guard let client = controller?.client() else {
-      return
-    }
-    commitAndSetPreeditSync(client, commit, preedit, caretPos, dummyPreedit)
-  }
+  enqueueInputSessionOutput(
+    identity,
+    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit))
 }
 
-public func commitAsync(_ commit: String) {
-  Task { @MainActor in
-    guard let client = controller?.client() else {
-      return
-    }
-    commitString(client, commit)
-  }
+public func commitAsync(_ identity: InputSessionIdentity, _ commit: String) {
+  enqueueInputSessionOutput(identity, .commit(commit))
+}
+
+public func closeInputSessionAsync(_ identity: InputSessionIdentity) {
+  enqueueInputSessionOutput(identity, .close)
 }
 
 // UTF-16 units of surrounding text read on each side of the cursor. This runs
