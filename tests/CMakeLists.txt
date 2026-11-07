@@ -26,6 +26,11 @@ target_link_libraries(key-release-cpp Fcitx5Objs SwiftFrontend)
 add_test(NAME key-release-cpp COMMAND key-release-cpp)
 set_tests_properties(key-release-cpp PROPERTIES TIMEOUT 10)
 
+add_executable(input-response-cpp testinputresponse.cpp)
+target_link_libraries(input-response-cpp Fcitx5Objs SwiftFrontend)
+add_test(NAME input-response-cpp COMMAND input-response-cpp)
+set_tests_properties(input-response-cpp PROPERTIES TIMEOUT 10)
+
 add_executable(layout-cpp testlayout.cpp)
 target_link_libraries(layout-cpp Fcitx5Objs)
 add_test(NAME layout-cpp COMMAND layout-cpp)

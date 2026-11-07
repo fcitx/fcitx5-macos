@@ -74,20 +74,23 @@ class FcitxInputController: IMKInputController {
       return
     }
     MainActor.assumeIsolated { finishInputSessionTransition() }
-    let res = String(commit_composition(uuid))
+    let res = commit_composition_ordered(uuid)
     // Maybe commit and clear preedit synchronously if user switches to ABC by Ctrl+Space.
     // For Rime with CapsLock, the result will depend on ascii_composer/switch_key/Caps_Lock instead of fcitx5-rime config.
     let _ = processRes(client, res)
   }
 
-  func processRes(_ client: IMKTextInput, _ res: String) -> Bool {
+  func processRes(_ client: IMKTextInput, _ res: OrderedInputResponse) -> Bool {
     // Output produced after the core returns must follow this sync result.
     defer { MainActor.assumeIsolated { finishInputSessionTransition() } }
-    guard let response = decodeJSON(res, nil as SyncResponse?) else {
+    let boundary = res.outputBoundary
+    guard let response = decodeJSON(String(res.response), nil as SyncResponse?) else {
+      MainActor.assumeIsolated { discardSynchronousInput(boundary) }
       return false
     }
     commitAndSetPreeditSync(
-      client, response.commit, response.preedit, response.caretPos, response.dummyPreedit)
+      client, response.commit, response.preedit, response.caretPos, response.dummyPreedit,
+      outputBoundary: boundary, sourceController: self)
     return response.accepted
   }
 
@@ -161,9 +164,8 @@ class FcitxInputController: IMKInputController {
       }
     }
     lastEventIsShiftPress = isShiftPress
-    let res = String(
-      process_key(
-        uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor))
+    let res = process_key_ordered(
+      uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor)
     return processRes(client, res)
   }
 

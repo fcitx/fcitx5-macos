@@ -23,6 +23,20 @@ struct InputSessionIdentity {
 void bind_input_session(InputSessionIdentity identity) noexcept;
 void close_input_session(InputSessionIdentity identity) noexcept;
 
+// The JSON and its FIFO position are captured in the same core-thread call.
+struct OrderedInputResponse {
+    std::string response;
+    uint64_t outputBoundary = 0;
+};
+
+OrderedInputResponse process_key_ordered(ICUUID uuid, uint32_t unicode,
+                                         uint32_t osxModifiers,
+                                         uint16_t osxKeycode, bool isRelease,
+                                         bool isPassword, const char *text,
+                                         unsigned int cursor,
+                                         unsigned int anchor) noexcept;
+OrderedInputResponse commit_composition_ordered(ICUUID uuid) noexcept;
+
 // Though being UInt, 32b is enough for modifiers
 std::string process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
                         uint16_t osxKeycode, bool isRelease, bool isPassword,

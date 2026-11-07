@@ -100,8 +100,13 @@ public:
     std::string keyEvent(ICUUID, const Key &key, bool isRelease,
                          bool isPassword, const char *text, unsigned int cursor,
                          unsigned int anchor);
+    OrderedInputResponse keyEventOrdered(ICUUID, const Key &key, bool isRelease,
+                                         bool isPassword, const char *text,
+                                         unsigned int cursor,
+                                         unsigned int anchor);
     void focusIn(ICUUID, bool isPassword);
     std::string commitComposition(ICUUID uuid);
+    OrderedInputResponse commitCompositionOrdered(ICUUID uuid);
     void focusOut(ICUUID);
 
 private:

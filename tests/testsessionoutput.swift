@@ -12,6 +12,148 @@ private final class Controller {
 @main
 struct SessionOutputTests {
   @MainActor
+  static func testSynchronousResponseReentry(earlierAsyncCommit: Bool, outputAfterInner: Bool) {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let client = Client()
+    let controller = Controller(client)
+    registry.beginRuntime()
+    let registration = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
+    let token = registry.activate(registration)!
+    var nestedTransition: (() -> Void)?
+    let deliver: (InputSessionOutput.Operation) -> Void = { operation in
+      switch operation {
+      case .commit(let text):
+        client.events.append("commit:\(text)")
+        if text == "outer" { nestedTransition?() }
+      case .commitAndPreedit(let commit, let preedit, _, _):
+        precondition(commit.isEmpty)
+        client.preedit = preedit
+        client.events.append("preedit:\(preedit)")
+      case .close:
+        preconditionFailure()
+      }
+    }
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      _, operation in
+      deliver(operation)
+    }
+    nestedTransition = {
+      dispatcher.drain()
+      let innerBoundary = queue.enqueueBoundary()
+      if outputAfterInner {
+        _ = queue.enqueue(
+          InputSessionOutput(
+            token: token,
+            operation: .commitAndPreedit(commit: "", preedit: "after", caret: 0, dummy: false)))
+      }
+      dispatcher.applySynchronous(
+        at: innerBoundary,
+        operation: .commitAndPreedit(commit: "", preedit: "new", caret: 0, dummy: false),
+        deliver: deliver)
+    }
+    if earlierAsyncCommit {
+      _ = queue.enqueue(InputSessionOutput(token: token, operation: .commit("outer")))
+    }
+    let outerBoundary = queue.enqueueBoundary()
+    _ = queue.enqueue(
+      InputSessionOutput(
+        token: token,
+        operation: .commitAndPreedit(commit: "", preedit: "queued-new", caret: 0, dummy: false)))
+    withExtendedLifetime(controller) {
+      dispatcher.applySynchronous(
+        at: outerBoundary,
+        operation: .commitAndPreedit(
+          commit: earlierAsyncCommit ? "" : "outer", preedit: "old", caret: 0, dummy: false),
+        deliver: deliver)
+    }
+    nestedTransition = nil
+    precondition(client.preedit == (outputAfterInner ? "after" : "new"))
+    precondition(
+      client.events == ["commit:outer", "preedit:old", "preedit:queued-new", "preedit:new"]
+        + (outputAfterInner ? ["preedit:after"] : []))
+  }
+
+  @MainActor
+  static func testCoreBoundary() async {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let client = Client()
+    let controller = Controller(client)
+    registry.beginRuntime()
+    let registration = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
+    let token = registry.activate(registration)!
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      _, operation in
+      guard case .commitAndPreedit(_, let preedit, _, _) = operation else { preconditionFailure() }
+      client.preedit = preedit
+      client.events.append("async:\(preedit)")
+    }
+    dispatcher.drain()
+    // The core emits older output after the main thread's initial drain, then
+    // returns the Backspace response together with its FIFO position.
+    let boundary = await Task.detached {
+      _ = queue.enqueue(
+        InputSessionOutput(
+          token: token,
+          operation: .commitAndPreedit(commit: "", preedit: "ni", caret: 0, dummy: false)))
+      return queue.enqueueBoundary()
+    }.value
+    dispatcher.applySynchronous(
+      at: boundary,
+      operation: .commitAndPreedit(commit: "", preedit: "n", caret: 0, dummy: false)
+    ) { _ in
+      client.preedit = "n"
+      client.events.append("sync:n")
+    }
+    precondition(client.preedit == "n")
+    precondition(client.events == ["async:ni", "sync:n"])
+
+    let nextBoundary = queue.enqueueBoundary()
+    _ = queue.enqueue(
+      InputSessionOutput(
+        token: token,
+        operation: .commitAndPreedit(commit: "", preedit: "next", caret: 0, dummy: false)))
+    // A scheduled drain cannot pass a result that the caller has not published.
+    dispatcher.drain()
+    precondition(client.preedit == "n")
+    dispatcher.applySynchronous(
+      at: nextBoundary,
+      operation: .commitAndPreedit(commit: "", preedit: "ne", caret: 0, dummy: false)
+    ) { _ in
+      client.preedit = "ne"
+      client.events.append("sync:ne")
+    }
+    precondition(client.events == ["async:ni", "sync:n", "sync:ne", "async:next"])
+
+    // Invalid JSON must release its boundary too, without calling a client.
+    let invalidBoundary = queue.enqueueBoundary()
+    dispatcher.applySynchronous(at: invalidBoundary, operation: nil) { _ in preconditionFailure() }
+    precondition(registry.lookup(token) === controller)
+
+    // Completion must release a borrowed client even when a later unpublished
+    // marker keeps the consumed ArraySlice storage alive.
+    var borrowed: Controller? = Controller(Client())
+    let borrowedRegistration = registry.register(
+      InputSessionKey(Array(repeating: 1, count: 16)), controller: borrowed!)!
+    let borrowedBoundary = queue.enqueueBoundary()
+    let laterBoundary = queue.enqueueBoundary()
+    dispatcher.applySynchronous(at: borrowedBoundary, operation: .commit("borrowed")) {
+      [borrowed = borrowed!] _ in
+      borrowed.client?.events.append("delivered")
+    }
+    borrowed = nil
+    precondition(registry.lookup(borrowedRegistration) == nil)
+    dispatcher.applySynchronous(at: laterBoundary, operation: nil) { _ in preconditionFailure() }
+
+    let discardedBoundary = queue.enqueueBoundary()
+    queue.clear()
+    precondition(queue.enqueueBoundary() > discardedBoundary)
+  }
+
+  @MainActor
   static func testSynchronousReentry(combined: Bool, outputAfterSync: Bool = false) {
     let registry = InputSessionRegistry<Controller>()
     let queue = InputSessionOutputQueue()
@@ -77,6 +219,10 @@ struct SessionOutputTests {
 
   @MainActor
   static func main() async {
+    testSynchronousResponseReentry(earlierAsyncCommit: false, outputAfterInner: false)
+    testSynchronousResponseReentry(earlierAsyncCommit: true, outputAfterInner: false)
+    testSynchronousResponseReentry(earlierAsyncCommit: false, outputAfterInner: true)
+    await testCoreBoundary()
     testSynchronousReentry(combined: false)
     testSynchronousReentry(combined: true)
     testSynchronousReentry(combined: true, outputAfterSync: true)

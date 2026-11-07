@@ -43,11 +43,18 @@ private let inputSessionOutputs = InputSessionOutputDispatcher(
   registry: inputSessions, queue: inputSessionOutputQueue
 ) { controller, operation in
   guard let client = controller.client() else { return }
+  deliverClientOutput(client, controller, operation)
+}
+
+private func deliverClientOutput(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ operation: InputSessionOutput.Operation
+) {
   switch operation {
   case .commit(let commit):
     commitString(client, commit)
   case .commitAndPreedit(let commit, let preedit, let caret, let dummy):
-    commitAndSetPreedit(client, controller, commit, preedit, caret, dummy)
+    commitAndSetPreedit(client, sourceController, commit, preedit, caret, dummy)
   case .close:
     break
   }
@@ -239,7 +246,43 @@ public func commitAndSetPreeditSync(
   _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
   _ dummyPreedit: Bool
 ) {
-  commitAndSetPreedit(client, controller, commit, preedit, caretPos, dummyPreedit)
+  applySynchronousInput(
+    client, controller,
+    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit),
+    at: inputSessionOutputBoundary())
+}
+
+public func commitAndSetPreeditSync(
+  _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
+  _ dummyPreedit: Bool, outputBoundary: UInt64, sourceController: IMKInputController
+) {
+  applySynchronousInput(
+    client, sourceController,
+    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit),
+    at: outputBoundary)
+}
+
+private func applySynchronousInput(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ operation: InputSessionOutput.Operation, at boundary: UInt64
+) {
+  dispatchPrecondition(condition: .onQueue(.main))
+  // IMK callbacks are imported nonisolated. These references are borrowed only
+  // for this synchronous MainActor call, never queued across threads.
+  nonisolated(unsafe) let mainClient = client
+  nonisolated(unsafe) let mainController = sourceController
+  MainActor.assumeIsolated {
+    inputSessionOutputs.applySynchronous(at: boundary, operation: operation) { step in
+      deliverClientOutput(mainClient, mainController, step)
+    }
+  }
+}
+
+@MainActor
+public func discardSynchronousInput(_ boundary: UInt64) {
+  inputSessionOutputs.applySynchronous(at: boundary, operation: nil) { _ in
+    preconditionFailure("Discarded synchronous response must not be delivered")
+  }
 }
 
 private func commitAndSetPreedit(
@@ -296,6 +339,11 @@ public func commitAsync(_ identity: InputSessionIdentity, _ commit: String) {
 
 public func closeInputSessionAsync(_ identity: InputSessionIdentity) {
   enqueueInputSessionOutput(identity, .close)
+}
+
+// Ordered C++ adapters mark this position before leaving the core thread.
+public func inputSessionOutputBoundary() -> UInt64 {
+  return inputSessionOutputQueue.enqueueBoundary()
 }
 
 // UTF-16 units of surrounding text read on each side of the cursor. This runs
