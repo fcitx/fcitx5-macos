@@ -2,7 +2,6 @@
 #include <memory>
 #include <fcitx-utils/log.h>
 #include <fcitx-utils/testing.h>
-#include <nlohmann/json.hpp>
 #include "../macosfrontend/macosfrontend.h"
 
 using namespace fcitx;
@@ -52,9 +51,10 @@ void test_key_release(BeforeRelease beforeRelease) {
     };
     auto *ic = makeContext();
     const auto uuid = ic->uuid();
-    const auto response = nlohmann::json::parse(
-        frontend.keyEvent(uuid, Key(FcitxKey_a), false, false, "", 0, 0));
-    FCITX_ASSERT(response["accepted"].get<bool>());
+    const auto response =
+        frontend.keyEvent(uuid, Key(FcitxKey_a), false, false, "", 0, 0);
+    FCITX_ASSERT(response.valid);
+    FCITX_ASSERT(response.accepted);
 
     std::unique_ptr<MacosInputContext> other;
     switch (beforeRelease) {

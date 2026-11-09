@@ -169,12 +169,13 @@ void MacosFrontend::save() {
     safeSaveAsIni(config_, ConfPath);
 }
 
-std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
-                                    bool isPassword, const char *text,
-                                    unsigned int cursor, unsigned int anchor) {
+InputResponse MacosFrontend::keyEvent(ICUUID uuid, const Key &key,
+                                      bool isRelease, bool isPassword,
+                                      const char *text, unsigned int cursor,
+                                      unsigned int anchor) {
     auto *ic = this->findIC(uuid);
     if (!ic) {
-        return "{}";
+        return {.outputBoundary = SwiftFrontend::inputSessionOutputBoundary()};
     }
     ic->setPassword(isPassword);
     ic->focusIn();
@@ -243,16 +244,9 @@ std::string MacosFrontend::keyEvent(ICUUID uuid, const Key &key, bool isRelease,
     if (!keepVimPreedit) {
         ic->setVimPreedit(false);
     }
-    return ic->popState(keyEvent.accepted(), key);
-}
-
-OrderedInputResponse
-MacosFrontend::keyEventOrdered(ICUUID uuid, const Key &key, bool isRelease,
-                               bool isPassword, const char *text,
-                               unsigned int cursor, unsigned int anchor) {
-    auto response =
-        keyEvent(uuid, key, isRelease, isPassword, text, cursor, anchor);
-    return {std::move(response), SwiftFrontend::inputSessionOutputBoundary()};
+    auto response = ic->popState(keyEvent.accepted(), key);
+    response.outputBoundary = SwiftFrontend::inputSessionOutputBoundary();
+    return response;
 }
 
 MacosInputContext *MacosFrontend::findIC(ICUUID uuid) {
@@ -350,10 +344,10 @@ void MacosFrontend::focusIn(ICUUID uuid, bool isPassword) {
     lastFocusedApp_ = program;
 }
 
-std::string MacosFrontend::commitComposition(ICUUID uuid) {
+InputResponse MacosFrontend::commitComposition(ICUUID uuid) {
     auto *ic = findIC(uuid);
     if (!ic)
-        return "{}";
+        return {.outputBoundary = SwiftFrontend::inputSessionOutputBoundary()};
 
     // Fake a switch input method event to call engine's deactivate method and
     // maybe commit and clear preedit synchronously.
@@ -368,15 +362,11 @@ std::string MacosFrontend::commitComposition(ICUUID uuid) {
     // At this stage panel is still shown. If removed, a following backspace
     // will commit a BS character in VSCode.
     ic->setDummyPreedit(false);
-    auto state = ic->popState(false);
+    auto response = ic->popState(false);
     ic->isSyncEvent = false;
 
-    return state;
-}
-
-OrderedInputResponse MacosFrontend::commitCompositionOrdered(ICUUID uuid) {
-    auto response = commitComposition(uuid);
-    return {std::move(response), SwiftFrontend::inputSessionOutputBoundary()};
+    response.outputBoundary = SwiftFrontend::inputSessionOutputBoundary();
+    return response;
 }
 
 void MacosFrontend::focusOut(ICUUID uuid) {
@@ -442,8 +432,9 @@ void MacosInputContext::updatePreeditImpl() {
     state_.caretPos = preedit.cursor();
 }
 
-std::string MacosInputContext::popState(bool accepted, const Key &key) {
-    nlohmann::json j;
+InputResponse MacosInputContext::popState(bool accepted, const Key &key) {
+    InputResponse response;
+    response.valid = true;
 
     // We translated Chinese punctuations to ASCII in
     // osx_unicode_to_fcitx_keysym, but there is functionality of "use ASCII
@@ -457,18 +448,18 @@ std::string MacosInputContext::popState(bool accepted, const Key &key) {
         utf8.size() == 1 && std::ispunct(static_cast<unsigned char>(utf8[0]));
     if (::pinyinKeyboard && !accepted && state_.commit.empty() &&
         noModExceptShift && isPunct) {
-        j["commit"] = std::move(utf8);
-        j["accepted"] = true;
+        response.commit = std::move(utf8);
+        response.accepted = true;
     } else {
-        j["commit"] = state_.commit;
-        j["accepted"] = accepted;
+        response.commit = std::move(state_.commit);
+        response.accepted = accepted;
     }
 
-    j["preedit"] = state_.preedit;
-    j["caretPos"] = state_.caretPos;
-    j["dummyPreedit"] = state_.dummyPreedit || state_.vimPreedit;
+    response.preedit = state_.preedit;
+    response.caretPos = state_.caretPos;
+    response.dummyPreedit = state_.dummyPreedit || state_.vimPreedit;
     resetState();
-    return j.dump();
+    return response;
 }
 
 void MacosInputContext::commitAndSetPreeditAsync() {
@@ -510,30 +501,15 @@ void MacosInputContext::setPassword(bool isPassword) {
 
 FCITX_ADDON_FACTORY_V2(macosfrontend, fcitx::MacosFrontendFactory);
 
-std::string process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
-                        uint16_t osxKeycode, bool isRelease, bool isPassword,
-                        const char *text, unsigned int cursor,
-                        unsigned int anchor) noexcept {
+InputResponse process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
+                          uint16_t osxKeycode, bool isRelease, bool isPassword,
+                          const char *text, unsigned int cursor,
+                          unsigned int anchor) noexcept {
     const fcitx::Key parsedKey =
         osx_key_to_fcitx_key(unicode, osxModifiers, osxKeycode);
     return with_fcitx([=](Fcitx &fcitx) {
-        auto that = dynamic_cast<fcitx::MacosFrontend *>(fcitx.frontend());
-        return that->keyEvent(uuid, parsedKey, isRelease, isPassword, text,
-                              cursor, anchor);
-    });
-}
-
-OrderedInputResponse process_key_ordered(ICUUID uuid, uint32_t unicode,
-                                         uint32_t osxModifiers,
-                                         uint16_t osxKeycode, bool isRelease,
-                                         bool isPassword, const char *text,
-                                         unsigned int cursor,
-                                         unsigned int anchor) noexcept {
-    const fcitx::Key parsedKey =
-        osx_key_to_fcitx_key(unicode, osxModifiers, osxKeycode);
-    return with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.frontend()->keyEventOrdered(
-            uuid, parsedKey, isRelease, isPassword, text, cursor, anchor);
+        return fcitx.frontend()->keyEvent(uuid, parsedKey, isRelease,
+                                          isPassword, text, cursor, anchor);
     });
 }
 
@@ -566,19 +542,13 @@ void focus_in(ICUUID uuid, bool isPassword) noexcept {
     });
 }
 
-std::string commit_composition(ICUUID uuid) noexcept {
-    return with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.frontend()->commitComposition(uuid);
-    });
-}
-
 void focus_out(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
 }
 
-OrderedInputResponse commit_composition_ordered(ICUUID uuid) noexcept {
+InputResponse commit_composition(ICUUID uuid) noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.frontend()->commitCompositionOrdered(uuid);
+        return fcitx.frontend()->commitComposition(uuid);
     });
 }
 

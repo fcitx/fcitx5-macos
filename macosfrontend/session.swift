@@ -34,8 +34,7 @@ final class InputSessionPresentation {
   // this registration supersedes that in-flight presentation.
   private var revision: UInt64 = 0
 
-  func beginUpdate(while isValid: @escaping () -> Bool = { true }) -> InputSessionPresentationUpdate
-  {
+  func beginUpdate(while isValid: @escaping () -> Bool) -> InputSessionPresentationUpdate {
     revision += 1
     let current = revision
     return InputSessionPresentationUpdate { [self] in revision == current && isValid() }

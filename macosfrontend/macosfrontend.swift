@@ -250,18 +250,8 @@ private func setPreedit(
 
 public func commitAndSetPreeditSync(
   _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
-  _ dummyPreedit: Bool
-) {
-  applySynchronousInput(
-    client, controller,
-    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit),
-    at: inputSessionOutputBoundary())
-}
-
-public func commitAndSetPreeditSync(
-  _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
   _ dummyPreedit: Bool, outputBoundary: UInt64, sourceController: IMKInputController,
-  sourceSession: InputSessionRegistration? = nil
+  sourceSession: InputSessionRegistration?
 ) {
   applySynchronousInput(
     client, sourceController,
@@ -272,7 +262,7 @@ public func commitAndSetPreeditSync(
 private func applySynchronousInput(
   _ client: IMKTextInput, _ sourceController: IMKInputController?,
   _ operation: InputSessionOutput.Operation, at boundary: UInt64,
-  registration: InputSessionRegistration? = nil
+  registration: InputSessionRegistration?
 ) {
   dispatchPrecondition(condition: .onQueue(.main))
   // IMK callbacks are imported nonisolated. These references are borrowed only
@@ -290,7 +280,7 @@ private func applySynchronousInput(
 
 @MainActor
 public func discardSynchronousInput(_ boundary: UInt64) {
-  inputSessionOutputs.applySynchronous(at: boundary, operation: nil) { _, _ in
+  inputSessionOutputs.applySynchronous(at: boundary, registration: nil, operation: nil) { _, _ in
     preconditionFailure("Discarded synchronous response must not be delivered")
   }
 }
@@ -356,7 +346,7 @@ public func closeInputSessionAsync(_ identity: InputSessionIdentity) {
   enqueueInputSessionOutput(identity, .close)
 }
 
-// Ordered C++ adapters mark this position before leaving the core thread.
+// C++ input adapters mark this position before leaving the core thread.
 public func inputSessionOutputBoundary() -> UInt64 {
   return inputSessionOutputQueue.enqueueBoundary()
 }

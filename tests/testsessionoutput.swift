@@ -122,7 +122,8 @@ struct SessionOutputTests {
     let token = registry.activate(registration)!
     var nestedTransition: (() -> Void)?
     let deliver: (InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void = {
-      operation, _ in
+      operation, update in
+      guard update.isCurrent else { return }
       switch operation {
       case .commit(let text):
         client.events.append("commit:\(text)")
@@ -149,7 +150,7 @@ struct SessionOutputTests {
             operation: .commitAndPreedit(commit: "", preedit: "after", caret: 0, dummy: false)))
       }
       dispatcher.applySynchronous(
-        at: innerBoundary,
+        at: innerBoundary, registration: registration,
         operation: .commitAndPreedit(commit: "", preedit: "new", caret: 0, dummy: false),
         deliver: deliver)
     }
@@ -163,7 +164,7 @@ struct SessionOutputTests {
         operation: .commitAndPreedit(commit: "", preedit: "queued-new", caret: 0, dummy: false)))
     withExtendedLifetime(controller) {
       dispatcher.applySynchronous(
-        at: outerBoundary,
+        at: outerBoundary, registration: registration,
         operation: .commitAndPreedit(
           commit: earlierAsyncCommit ? "" : "outer", preedit: "old", caret: 0, dummy: false),
         deliver: deliver)
@@ -202,7 +203,7 @@ struct SessionOutputTests {
       return queue.enqueueBoundary()
     }.value
     dispatcher.applySynchronous(
-      at: boundary,
+      at: boundary, registration: registration,
       operation: .commitAndPreedit(commit: "", preedit: "n", caret: 0, dummy: false)
     ) { _, _ in
       client.preedit = "n"
@@ -220,7 +221,7 @@ struct SessionOutputTests {
     dispatcher.drain()
     precondition(client.preedit == "n")
     dispatcher.applySynchronous(
-      at: nextBoundary,
+      at: nextBoundary, registration: registration,
       operation: .commitAndPreedit(commit: "", preedit: "ne", caret: 0, dummy: false)
     ) { _, _ in
       client.preedit = "ne"
@@ -228,11 +229,18 @@ struct SessionOutputTests {
     }
     precondition(client.events == ["async:ni", "sync:n", "sync:ne", "async:next"])
 
-    // Invalid JSON must release its boundary too, without calling a client.
+    // Discarding a response (invalid context or a side-effect-only key) must
+    // release its boundary and allow later output through.
     let invalidBoundary = queue.enqueueBoundary()
-    dispatcher.applySynchronous(at: invalidBoundary, operation: nil) { _, _ in
+    _ = queue.enqueue(
+      InputSessionOutput(
+        token: token,
+        operation: .commitAndPreedit(commit: "", preedit: "after-discard", caret: 0, dummy: false)))
+    dispatcher.applySynchronous(at: invalidBoundary, registration: nil, operation: nil) { _, _ in
       preconditionFailure()
     }
+    precondition(client.preedit == "after-discard")
+    precondition(client.events.last == "async:after-discard")
     precondition(registry.lookup(token) === controller)
 
     // Completion must release a borrowed client even when a later unpublished
@@ -242,13 +250,17 @@ struct SessionOutputTests {
       InputSessionKey(Array(repeating: 1, count: 16)), controller: borrowed!)!
     let borrowedBoundary = queue.enqueueBoundary()
     let laterBoundary = queue.enqueueBoundary()
-    dispatcher.applySynchronous(at: borrowedBoundary, operation: .commit("borrowed")) {
+    dispatcher.applySynchronous(
+      at: borrowedBoundary, registration: borrowedRegistration, operation: .commit("borrowed")
+    ) {
       [borrowed = borrowed!] _, _ in
       borrowed.client?.events.append("delivered")
     }
     borrowed = nil
     precondition(registry.lookup(borrowedRegistration) == nil)
-    dispatcher.applySynchronous(at: laterBoundary, operation: nil) { _, _ in preconditionFailure() }
+    dispatcher.applySynchronous(at: laterBoundary, registration: nil, operation: nil) { _, _ in
+      preconditionFailure()
+    }
 
     let discardedBoundary = queue.enqueueBoundary()
     queue.clear()

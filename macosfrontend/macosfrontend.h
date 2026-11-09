@@ -97,16 +97,11 @@ public:
     void destroyInputContext(ICUUID);
     void bindInputSession(const InputSessionIdentity &identity);
     void closeInputSession(const InputSessionIdentity &identity);
-    std::string keyEvent(ICUUID, const Key &key, bool isRelease,
-                         bool isPassword, const char *text, unsigned int cursor,
-                         unsigned int anchor);
-    OrderedInputResponse keyEventOrdered(ICUUID, const Key &key, bool isRelease,
-                                         bool isPassword, const char *text,
-                                         unsigned int cursor,
-                                         unsigned int anchor);
+    InputResponse keyEvent(ICUUID, const Key &key, bool isRelease,
+                           bool isPassword, const char *text,
+                           unsigned int cursor, unsigned int anchor);
     void focusIn(ICUUID, bool isPassword);
-    std::string commitComposition(ICUUID uuid);
-    OrderedInputResponse commitCompositionOrdered(ICUUID uuid);
+    InputResponse commitComposition(ICUUID uuid);
     void focusOut(ICUUID);
 
 private:
@@ -169,7 +164,7 @@ public:
         state_.dummyPreedit = dummyPreedit;
     }
     void setVimPreedit(bool vimPreedit) { state_.vimPreedit = vimPreedit; }
-    std::string popState(bool accepted, const Key &key = Key());
+    InputResponse popState(bool accepted, const Key &key = Key());
     // Shows whether we are processing a sync event (mainly key down) that needs
     // to return a bool to indicate if it's handled. In this case, commit and
     // preedit need to be set in batch synchronously before returning. Otherwise

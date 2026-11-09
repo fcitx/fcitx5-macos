@@ -5,14 +5,6 @@ import InputMethodKit
 import Logging
 import SwiftFrontend
 
-struct SyncResponse: Codable {
-  let commit: String
-  let preedit: String
-  let caretPos: Int
-  let dummyPreedit: Bool
-  let accepted: Bool
-}
-
 let capsLock = NSEvent.ModifierFlags.capsLock.rawValue
 let shift = NSEvent.ModifierFlags.shift.rawValue
 
@@ -74,24 +66,24 @@ class FcitxInputController: IMKInputController {
       return
     }
     MainActor.assumeIsolated { finishInputSessionTransition() }
-    let res = commit_composition_ordered(uuid)
+    let res = commit_composition(uuid)
     // Maybe commit and clear preedit synchronously if user switches to ABC by Ctrl+Space.
     // For Rime with CapsLock, the result will depend on ascii_composer/switch_key/Caps_Lock instead of fcitx5-rime config.
     let _ = processRes(client, res)
   }
 
-  func processRes(_ client: IMKTextInput, _ res: OrderedInputResponse) -> Bool {
+  func processRes(_ client: IMKTextInput, _ res: InputResponse) -> Bool {
     // Output produced after the core returns must follow this sync result.
     defer { MainActor.assumeIsolated { finishInputSessionTransition() } }
     let boundary = res.outputBoundary
-    guard let response = decodeJSON(String(res.response), nil as SyncResponse?) else {
+    guard res.valid else {
       MainActor.assumeIsolated { discardSynchronousInput(boundary) }
       return false
     }
     commitAndSetPreeditSync(
-      client, response.commit, response.preedit, response.caretPos, response.dummyPreedit,
+      client, String(res.commit), String(res.preedit), Int(res.caretPos), res.dummyPreedit,
       outputBoundary: boundary, sourceController: self, sourceSession: sessionRegistration)
-    return response.accepted
+    return res.accepted
   }
 
   // Normal apps like Chrome calls EnableSecureEventInput when its password input is focused,
@@ -157,14 +149,19 @@ class FcitxInputController: IMKInputController {
         // Shift release following press when text selection is changed.
         // Send a no-op key event to fcitx so that Shift+Click doesn't trigger im toggle.
         // Code should not be 0 as it's macOS's kVK_ANSI_A.
-        process_key(uuid, 0, 0, 0xff, false, isPassword, surroundingText, cursor, anchor)
+        let response = process_key(
+          uuid, 0, 0, 0xff, false, isPassword, surroundingText, cursor, anchor)
+        // Only the key's side effect is needed. Consume its output boundary
+        // without applying the synchronous result.
+        let boundary = response.outputBoundary
+        MainActor.assumeIsolated { discardSynchronousInput(boundary) }
       }
       Task { @MainActor in
         ModifierState.shared.shift = isShiftPress
       }
     }
     lastEventIsShiftPress = isShiftPress
-    let res = process_key_ordered(
+    let res = process_key(
       uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor)
     return processRes(client, res)
   }

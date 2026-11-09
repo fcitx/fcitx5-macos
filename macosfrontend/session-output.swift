@@ -93,8 +93,6 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   private let queue: InputSessionOutputQueue
   private let deliver:
     (Controller, InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void
-  // Preserve the legacy synchronous helper, whose callers have no registration.
-  private let legacyPresentation = InputSessionPresentation()
   // Keep the unconsumed steps visible to reentrant synchronous transitions.
   private var pending: ArraySlice<Step> = []
   private var synchronousResponses: [UInt64: SynchronousResponse] = [:]
@@ -111,7 +109,7 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   }
 
   func applySynchronous(
-    at boundary: UInt64, registration: InputSessionRegistration? = nil,
+    at boundary: UInt64, registration: InputSessionRegistration?,
     operation: InputSessionOutput.Operation?,
     deliver: @escaping (InputSessionOutput.Operation, InputSessionPresentationUpdate) -> Void
   ) {
@@ -184,14 +182,12 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
             + [.completion(response)] + pending)
       case .synchronous(let response, let operation):
         let update: InputSessionPresentationUpdate
-        if let registration = response.registration {
-          if let presentation = registry.presentation(registration) {
-            update = presentation.beginUpdate { [registry] in registry.lookup(registration) != nil }
-          } else {
-            update = InputSessionPresentationUpdate { false }
-          }
+        if let registration = response.registration,
+          let presentation = registry.presentation(registration)
+        {
+          update = presentation.beginUpdate { [registry] in registry.lookup(registration) != nil }
         } else {
-          update = legacyPresentation.beginUpdate()
+          update = InputSessionPresentationUpdate { false }
         }
         response.deliver?(operation, update)
       case .completion(let response):
