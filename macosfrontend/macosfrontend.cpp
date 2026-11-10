@@ -542,14 +542,14 @@ void focus_in(ICUUID uuid, bool isPassword) noexcept {
     });
 }
 
-void focus_out(ICUUID uuid) noexcept {
-    with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
-}
-
 InputResponse commit_composition(ICUUID uuid) noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
         return fcitx.frontend()->commitComposition(uuid);
     });
+}
+
+void focus_out(ICUUID uuid) noexcept {
+    with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
 }
 
 std::string get_current_group_layout() noexcept {
