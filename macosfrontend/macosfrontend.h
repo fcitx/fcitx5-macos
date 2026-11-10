@@ -95,14 +95,12 @@ public:
     ICUUID createInputContext(const std::string &appId,
                               const std::string &accentColor);
     void destroyInputContext(ICUUID);
-    void bindInputSession(const InputSessionIdentity &identity);
-    void closeInputSession(const InputSessionIdentity &identity);
+    void focusIn(const InputSessionIdentity &identity, bool isPassword);
+    void focusOut(const InputSessionIdentity &identity);
     InputResponse keyEvent(ICUUID, const Key &key, bool isRelease,
                            bool isPassword, const char *text,
                            unsigned int cursor, unsigned int anchor);
-    void focusIn(ICUUID, bool isPassword);
     InputResponse commitComposition(ICUUID uuid);
-    void focusOut(ICUUID);
 
 private:
     Instance *instance_;
@@ -172,8 +170,10 @@ public:
     bool isSyncEvent = false;
     void commitAndSetPreeditAsync();
 
-    void bindSession(const InputSessionIdentity &identity) {
+    void bindSession(const InputSessionIdentity &identity, bool isPassword) {
         sessionIdentity_ = identity;
+        setPassword(isPassword);
+        focusIn();
     }
     bool matchesSession(const InputSessionIdentity &identity) const {
         return sessionIdentity_ && *sessionIdentity_ == identity;

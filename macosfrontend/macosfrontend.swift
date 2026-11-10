@@ -106,13 +106,16 @@ public func registerInputSession(
 @MainActor
 @discardableResult
 public func activateInputSession(
-  _ registration: InputSessionRegistration
+  _ registration: InputSessionRegistration, isPassword: Bool, refreshFocus: Bool = false
 ) -> InputSessionToken? {
   finishInputSessionTransition()
   let previous = inputSessions.activeToken
   guard let token = inputSessions.activate(registration) else { return nil }
-  if token != previous {
-    bind_input_session(token.toIdentity())
+  if token != previous || refreshFocus {
+    if let sourceController = inputSessions.lookup(token) {
+      setController(sourceController)
+    }
+    focus_in(token.toIdentity(), isPassword)
   }
   return token
 }
@@ -128,7 +131,7 @@ public func finishInputSessionTransition() {
   // Each synchronous close includes the core's deferred client updates and
   // appends a FIFO marker. Deliver those outputs before retiring the token.
   for token in inputSessions.closingTokens {
-    close_input_session(token.toIdentity())
+    focus_out(token.toIdentity())
   }
   inputSessionOutputs.drain()
 }

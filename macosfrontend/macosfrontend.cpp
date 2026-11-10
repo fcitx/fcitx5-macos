@@ -287,14 +287,12 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
     delete ic;
 }
 
-void MacosFrontend::bindInputSession(const InputSessionIdentity &identity) {
-    if (auto *ic = findIC(identity.uuid)) {
-        ic->bindSession(identity);
-    }
-}
-
-void MacosFrontend::closeInputSession(const InputSessionIdentity &identity) {
+void MacosFrontend::focusOut(const InputSessionIdentity &identity) {
     if (auto *ic = findIC(identity.uuid); ic && ic->matchesSession(identity)) {
+        // Keep the identity bound while focus-out handlers produce final
+        // output.
+        FCITX_INFO() << "Focus out " << ic->program();
+        ic->focusOut();
         // Include deferred client updates from focus out before the close
         // marker. No main-thread work is awaited from the fcitx thread.
         instance_->userInterfaceManager().flush();
@@ -319,13 +317,13 @@ void MacosFrontend::useVimMode(const std::string &appId,
     ic->setVimMode(std::ranges::find(vimMode, appId) != vimMode.end());
 }
 
-void MacosFrontend::focusIn(ICUUID uuid, bool isPassword) {
-    auto *ic = findIC(uuid);
+void MacosFrontend::focusIn(const InputSessionIdentity &identity,
+                            bool isPassword) {
+    auto *ic = findIC(identity.uuid);
     if (!ic)
         return;
     webpanel_->applyAppAccentColor(ic->getAccentColor()); // app-specific
-    ic->setPassword(isPassword);
-    ic->focusIn();
+    ic->bindSession(identity, isPassword);
     auto program = ic->program();
     FCITX_INFO() << "Focus in " << program;
     if (!program.empty()) {
@@ -367,14 +365,6 @@ InputResponse MacosFrontend::commitComposition(ICUUID uuid) {
 
     response.outputBoundary = SwiftFrontend::inputSessionOutputBoundary();
     return response;
-}
-
-void MacosFrontend::focusOut(ICUUID uuid) {
-    auto *ic = findIC(uuid);
-    if (!ic)
-        return;
-    FCITX_INFO() << "Focus out " << ic->program();
-    ic->focusOut();
 }
 
 void MacosInputContext::setSurroundingText(const std::string &text,
@@ -526,30 +516,19 @@ void destroy_input_context(ICUUID uuid) noexcept {
     });
 }
 
-void bind_input_session(InputSessionIdentity identity) noexcept {
+void focus_in(InputSessionIdentity identity, bool isPassword) noexcept {
     with_fcitx(
-        [=](Fcitx &fcitx) { fcitx.frontend()->bindInputSession(identity); });
+        [=](Fcitx &fcitx) { fcitx.frontend()->focusIn(identity, isPassword); });
 }
 
-void close_input_session(InputSessionIdentity identity) noexcept {
-    with_fcitx(
-        [=](Fcitx &fcitx) { fcitx.frontend()->closeInputSession(identity); });
-}
-
-void focus_in(ICUUID uuid, bool isPassword) noexcept {
-    with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.frontend()->focusIn(uuid, isPassword);
-    });
+void focus_out(InputSessionIdentity identity) noexcept {
+    with_fcitx([=](Fcitx &fcitx) { fcitx.frontend()->focusOut(identity); });
 }
 
 InputResponse commit_composition(ICUUID uuid) noexcept {
     return with_fcitx([=](Fcitx &fcitx) {
         return fcitx.frontend()->commitComposition(uuid);
     });
-}
-
-void focus_out(ICUUID uuid) noexcept {
-    with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
 }
 
 std::string get_current_group_layout() noexcept {

@@ -120,11 +120,13 @@ class FcitxInputController: IMKInputController {
     guard let client = client() else {
       return false
     }
-    if let registration = sessionRegistration {
-      MainActor.assumeIsolated { _ = activateInputSession(registration) }
-    }
     // It can change within an IMKInputController (e.g. sudo in Terminal), so must reevaluate before each key sent to IM.
     let isPassword = getSecureInputInfo(isOnFocus: false)
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated {
+        _ = activateInputSession(registration, isPassword: isPassword)
+      }
+    }
     let newSelection = client.selectedRange()
 
     var surroundingText = ""
@@ -215,13 +217,15 @@ class FcitxInputController: IMKInputController {
 
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
-    if let registration = sessionRegistration {
-      MainActor.assumeIsolated { _ = activateInputSession(registration) }
-    }
-    setController(self)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
-    focus_in(uuid, isPassword)
+    if let registration = sessionRegistration {
+      MainActor.assumeIsolated {
+        // An explicit IMK activation still refreshes app policy when the same
+        // session was already activated by an earlier key event.
+        _ = activateInputSession(registration, isPassword: isPassword, refreshFocus: true)
+      }
+    }
     MainActor.assumeIsolated { finishInputSessionTransition() }
     overrideKeyboardLayout()
   }
@@ -230,7 +234,6 @@ class FcitxInputController: IMKInputController {
     if let registration = sessionRegistration {
       MainActor.assumeIsolated { deactivateInputSession(registration) }
     }
-    focus_out(uuid)
     MainActor.assumeIsolated { finishInputSessionTransition() }
   }
 

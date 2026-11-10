@@ -31,6 +31,11 @@ target_link_libraries(input-response-cpp Fcitx5Objs SwiftFrontend)
 add_test(NAME input-response-cpp COMMAND input-response-cpp)
 set_tests_properties(input-response-cpp PROPERTIES TIMEOUT 10)
 
+add_executable(session-focus-cpp testsessionfocus.cpp)
+target_link_libraries(session-focus-cpp Fcitx5Objs SwiftFrontend)
+add_test(NAME session-focus-cpp COMMAND session-focus-cpp)
+set_tests_properties(session-focus-cpp PROPERTIES TIMEOUT 10)
+
 add_executable(layout-cpp testlayout.cpp)
 target_link_libraries(layout-cpp Fcitx5Objs)
 add_test(NAME layout-cpp COMMAND layout-cpp)

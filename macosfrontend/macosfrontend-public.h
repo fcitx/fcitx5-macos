@@ -20,8 +20,8 @@ struct InputSessionIdentity {
     }
 };
 
-void bind_input_session(InputSessionIdentity identity) noexcept;
-void close_input_session(InputSessionIdentity identity) noexcept;
+void focus_in(InputSessionIdentity identity, bool isPassword) noexcept;
+void focus_out(InputSessionIdentity identity) noexcept;
 
 // The input result and its FIFO position are captured in the same core-thread
 // call.
@@ -46,6 +46,4 @@ InputResponse commit_composition(ICUUID uuid) noexcept;
 ICUUID create_input_context(const char *appId,
                             const char *accentColor) noexcept;
 void destroy_input_context(ICUUID uuid) noexcept;
-void focus_in(ICUUID uuid, bool isPassword) noexcept;
-void focus_out(ICUUID uuid) noexcept;
 std::string get_current_group_layout() noexcept;
