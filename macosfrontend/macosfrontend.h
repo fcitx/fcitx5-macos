@@ -178,7 +178,6 @@ public:
     }
     void closeSession();
 
-    void setPassword(bool isPassword);
     void setVimMode(bool vimMode) { vimMode_ = vimMode; }
     bool vimMode() const { return vimMode_; }
 
@@ -186,6 +185,8 @@ public:
                             unsigned int anchor);
 
 private:
+    void setPassword(bool isPassword);
+
     MacosFrontend *frontend_;
     InputContextState state_;
     std::optional<InputSessionIdentity> sessionIdentity_;
