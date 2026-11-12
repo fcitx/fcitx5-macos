@@ -296,10 +296,7 @@ void MacosFrontend::focusOut(const InputSessionIdentity &identity) {
         // Include deferred client updates from focus out before the close
         // marker. No main-thread work is awaited from the fcitx thread.
         instance_->userInterfaceManager().flush();
-        if (auto *current = findIC(identity.uuid);
-            current && current->matchesSession(identity)) {
-            current->closeSession();
-        }
+        ic->closeSession();
     }
     SwiftFrontend::closeInputSessionAsync(identity);
 }
