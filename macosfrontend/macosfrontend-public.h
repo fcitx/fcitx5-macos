@@ -39,9 +39,8 @@ struct InputResponse {
 };
 
 InputResponse process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
-                          uint16_t osxKeycode, bool isRelease, bool isPassword,
-                          const char *text, unsigned int cursor,
-                          unsigned int anchor) noexcept;
+                          uint16_t osxKeycode, bool isRelease, const char *text,
+                          unsigned int cursor, unsigned int anchor) noexcept;
 InputResponse commit_composition(ICUUID uuid) noexcept;
 
 ICUUID create_input_context(const char *appId,

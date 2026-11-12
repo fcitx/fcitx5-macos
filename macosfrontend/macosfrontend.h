@@ -100,8 +100,8 @@ public:
     void focusOut(const InputSessionIdentity &identity);
     // The caller activates the source session before each key.
     InputResponse keyEvent(ICUUID, const Key &key, bool isRelease,
-                           bool isPassword, const char *text,
-                           unsigned int cursor, unsigned int anchor);
+                           const char *text, unsigned int cursor,
+                           unsigned int anchor);
     InputResponse commitComposition(ICUUID uuid);
 
 private:

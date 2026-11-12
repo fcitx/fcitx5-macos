@@ -152,7 +152,7 @@ class FcitxInputController: IMKInputController {
         // Send a no-op key event to fcitx so that Shift+Click doesn't trigger im toggle.
         // Code should not be 0 as it's macOS's kVK_ANSI_A.
         let response = process_key(
-          uuid, 0, 0, 0xff, false, isPassword, surroundingText, cursor, anchor)
+          uuid, 0, 0, 0xff, false, surroundingText, cursor, anchor)
         // Only the key's side effect is needed. Consume its output boundary
         // without applying the synchronous result.
         let boundary = response.outputBoundary
@@ -164,7 +164,7 @@ class FcitxInputController: IMKInputController {
     }
     lastEventIsShiftPress = isShiftPress
     let res = process_key(
-      uuid, unicode, modsVal, code, isRelease, isPassword, surroundingText, cursor, anchor)
+      uuid, unicode, modsVal, code, isRelease, surroundingText, cursor, anchor)
     return processRes(client, res)
   }
 

@@ -1,6 +1,7 @@
 #include <fcitx-utils/log.h>
 #include <fcitx-utils/testing.h>
 #include <fcitx/inputpanel.h>
+#include <fcitx/surroundingtext.h>
 #include "../keycode/keycode.h"
 #include "../macosfrontend/macosfrontend.h"
 
@@ -30,7 +31,7 @@ int main() {
         });
 
     auto response =
-        frontend.keyEvent(uuid, Key(FcitxKey_a), false, false, "", 0, 0);
+        frontend.keyEvent(uuid, Key(FcitxKey_a), false, "before", 6, 6);
     FCITX_ASSERT(response.valid);
     FCITX_ASSERT(response.outputBoundary > 0);
     FCITX_ASSERT(response.commit == "你");
@@ -38,6 +39,7 @@ int main() {
     FCITX_ASSERT(response.caretPos == 3);
     FCITX_ASSERT(!response.dummyPreedit);
     FCITX_ASSERT(response.accepted);
+    FCITX_ASSERT(ic->surroundingText().text() == "before");
 
     auto compositionResponse = frontend.commitComposition(uuid);
     FCITX_ASSERT(compositionResponse.valid);
@@ -47,6 +49,21 @@ int main() {
     FCITX_ASSERT(!compositionResponse.dummyPreedit);
     FCITX_ASSERT(!compositionResponse.accepted);
     FCITX_ASSERT(compositionResponse.outputBoundary > response.outputBoundary);
+
+    // The bound IC capabilities control surrounding text, including password
+    // changes within the same session (e.g. entering and leaving sudo).
+    frontend.focusIn({uuid, 1, 1, 1}, true, false);
+    auto passwordResponse =
+        frontend.keyEvent(uuid, Key(FcitxKey_a), false, "secret", 6, 6);
+    FCITX_ASSERT(passwordResponse.valid && passwordResponse.accepted);
+    FCITX_ASSERT(ic->surroundingText().text() == "before");
+    frontend.focusIn({uuid, 1, 1, 1}, false, false);
+    auto afterPassword =
+        frontend.keyEvent(uuid, Key(FcitxKey_a), false, "after", 5, 5);
+    FCITX_ASSERT(afterPassword.valid && afterPassword.accepted);
+    FCITX_ASSERT(ic->surroundingText().text() == "after");
+    FCITX_ASSERT(ic->surroundingText().cursor() == 5);
+    FCITX_ASSERT(ic->surroundingText().anchor() == 5);
 
     // Popping clears commit while retaining preedit, caret and dummy flags.
     ic->setDummyPreedit(true);
@@ -66,8 +83,7 @@ int main() {
     FCITX_ASSERT(ic->popState(false).commit.empty());
 
     frontend.destroyInputContext(uuid);
-    auto missing =
-        frontend.keyEvent(uuid, Key(FcitxKey_a), false, false, "", 0, 0);
+    auto missing = frontend.keyEvent(uuid, Key(FcitxKey_a), false, "", 0, 0);
     FCITX_ASSERT(!missing.valid);
     FCITX_ASSERT(!missing.accepted);
     FCITX_ASSERT(missing.outputBoundary > compositionResponse.outputBoundary);

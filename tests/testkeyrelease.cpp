@@ -53,7 +53,7 @@ void test_key_release(BeforeRelease beforeRelease) {
     const auto uuid = ic->uuid();
     frontend.focusIn({uuid, 1, 1, 1}, false, false);
     const auto response =
-        frontend.keyEvent(uuid, Key(FcitxKey_a), false, false, "", 0, 0);
+        frontend.keyEvent(uuid, Key(FcitxKey_a), false, "", 0, 0);
     FCITX_ASSERT(response.valid);
     FCITX_ASSERT(response.accepted);
 

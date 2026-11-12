@@ -170,8 +170,8 @@ void MacosFrontend::save() {
 }
 
 InputResponse MacosFrontend::keyEvent(ICUUID uuid, const Key &key,
-                                      bool isRelease, bool isPassword,
-                                      const char *text, unsigned int cursor,
+                                      bool isRelease, const char *text,
+                                      unsigned int cursor,
                                       unsigned int anchor) {
     auto *ic = this->findIC(uuid);
     if (!ic) {
@@ -179,7 +179,7 @@ InputResponse MacosFrontend::keyEvent(ICUUID uuid, const Key &key,
     }
     KeyEvent keyEvent(ic, key, isRelease);
     ic->isSyncEvent = true;
-    if (!isPassword) {
+    if (ic->capabilityFlags().test(CapabilityFlag::SurroundingText)) {
         ic->setSurroundingText(text, cursor, anchor);
     }
     ic->keyEvent(keyEvent);
@@ -501,14 +501,13 @@ void MacosInputContext::setPassword(bool isPassword) {
 FCITX_ADDON_FACTORY_V2(macosfrontend, fcitx::MacosFrontendFactory);
 
 InputResponse process_key(ICUUID uuid, uint32_t unicode, uint32_t osxModifiers,
-                          uint16_t osxKeycode, bool isRelease, bool isPassword,
-                          const char *text, unsigned int cursor,
-                          unsigned int anchor) noexcept {
+                          uint16_t osxKeycode, bool isRelease, const char *text,
+                          unsigned int cursor, unsigned int anchor) noexcept {
     const fcitx::Key parsedKey =
         osx_key_to_fcitx_key(unicode, osxModifiers, osxKeycode);
     return with_fcitx([=](Fcitx &fcitx) {
-        return fcitx.frontend()->keyEvent(uuid, parsedKey, isRelease,
-                                          isPassword, text, cursor, anchor);
+        return fcitx.frontend()->keyEvent(uuid, parsedKey, isRelease, text,
+                                          cursor, anchor);
     });
 }
 
