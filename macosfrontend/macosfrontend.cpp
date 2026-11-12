@@ -287,20 +287,6 @@ void MacosFrontend::destroyInputContext(ICUUID uuid) {
     delete ic;
 }
 
-void MacosFrontend::focusOut(const InputSessionIdentity &identity) {
-    if (auto *ic = findIC(identity.uuid); ic && ic->matchesSession(identity)) {
-        // Keep the identity bound while focus-out handlers produce final
-        // output.
-        FCITX_INFO() << "Focus out " << ic->program();
-        ic->focusOut();
-        // Include deferred client updates from focus out before the close
-        // marker. No main-thread work is awaited from the fcitx thread.
-        instance_->userInterfaceManager().flush();
-        ic->closeSession();
-    }
-    SwiftFrontend::closeInputSessionAsync(identity);
-}
-
 void MacosFrontend::useAppDefaultIM(const std::string &appId) {
     auto it = appDefaultIMCache_.find(appId);
     if (it != appDefaultIMCache_.end()) {
@@ -364,6 +350,14 @@ InputResponse MacosFrontend::commitComposition(ICUUID uuid) {
     return response;
 }
 
+void MacosFrontend::focusOut(const InputSessionIdentity &identity) {
+    if (auto *ic = findIC(identity.uuid); ic && ic->matchesSession(identity)) {
+        FCITX_INFO() << "Focus out " << ic->program();
+        ic->closeSession();
+    }
+    SwiftFrontend::closeInputSessionAsync(identity);
+}
+
 void MacosInputContext::setSurroundingText(const std::string &text,
                                            unsigned int cursor,
                                            unsigned int anchor) {
@@ -396,6 +390,21 @@ MacosInputContext::MacosInputContext(MacosFrontend *frontend,
 }
 
 MacosInputContext::~MacosInputContext() { destroy(); }
+
+void MacosInputContext::bindSession(const InputSessionIdentity &identity,
+                                    bool isPassword) {
+    sessionIdentity_ = identity;
+    setPassword(isPassword);
+    focusIn();
+}
+
+void MacosInputContext::closeSession() {
+    // Keep the identity bound through focus-out handlers and deferred client
+    // updates. The frontend appends the close marker after this flush.
+    focusOut();
+    frontend_->instance()->userInterfaceManager().flush();
+    sessionIdentity_.reset();
+}
 
 void MacosInputContext::commitStringImpl(const std::string &text) {
     state_.commit += text;

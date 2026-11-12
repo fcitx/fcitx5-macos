@@ -170,15 +170,11 @@ public:
     bool isSyncEvent = false;
     void commitAndSetPreeditAsync();
 
-    void bindSession(const InputSessionIdentity &identity, bool isPassword) {
-        sessionIdentity_ = identity;
-        setPassword(isPassword);
-        focusIn();
-    }
+    void bindSession(const InputSessionIdentity &identity, bool isPassword);
     bool matchesSession(const InputSessionIdentity &identity) const {
         return sessionIdentity_ && *sessionIdentity_ == identity;
     }
-    void closeSession() { sessionIdentity_.reset(); }
+    void closeSession();
 
     void setPassword(bool isPassword);
     void setVimMode(bool vimMode) { vimMode_ = vimMode; }
