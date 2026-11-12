@@ -185,7 +185,7 @@ class FcitxInputController: IMKInputController {
     // Fortunately handle is called regardless of activateServer call. IMK being IMK.
     // Before 7244f30 the client was stored in C++ side, thus calling ic->focusIn inside
     // MacosFrontend::keyEvent let the correct client be used by getCaretCoordinates, which served
-    // the same purpose here.
+    // the same purpose here. Session activation now performs that focus-in.
     setController(self)
 
     let code = event.keyCode

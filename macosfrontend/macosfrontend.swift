@@ -111,12 +111,10 @@ public func activateInputSession(
   finishInputSessionTransition()
   let previous = inputSessions.activeToken
   guard let token = inputSessions.activate(registration) else { return nil }
-  if token != previous || refreshFocus {
-    if let sourceController = inputSessions.lookup(token) {
-      setController(sourceController)
-    }
-    focus_in(token.toIdentity(), isPassword)
+  if let sourceController = inputSessions.lookup(token) {
+    setController(sourceController)
   }
+  focus_in(token.toIdentity(), isPassword, token != previous || refreshFocus)
   return token
 }
 

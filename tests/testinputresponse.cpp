@@ -17,6 +17,7 @@ int main() {
     auto uuid = frontend.createInputContext("test", "");
     auto *ic = static_cast<MacosInputContext *>(
         instance.inputContextManager().findByUUID(uuid));
+    frontend.focusIn({uuid, 1, 1, 1}, false, false);
     auto handler = instance.watchEvent(
         fcitx::EventType::InputContextKeyEvent,
         EventWatcherPhase::PreInputMethod, [&](Event &event) {

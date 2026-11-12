@@ -55,12 +55,15 @@ int main() {
             ic->commitStringImpl("tail");
         });
 
-    // Exercise the IC operation used by frontend.focusIn without starting a
-    // candidate-window host. Identity and password state precede focus events.
-    a->bindSession(firstA, true);
+    // Exercise core focus and binding without refreshing candidate-window or
+    // app policy. A stable identity must still update password capabilities
+    // when Terminal enters and leaves sudo password input.
+    frontend.focusIn(firstA, false, false);
     FCITX_ASSERT(a->hasFocus());
+    FCITX_ASSERT(!a->capabilityFlags().test(CapabilityFlag::Password));
+    frontend.focusIn(firstA, true, false);
     FCITX_ASSERT(a->capabilityFlags().test(CapabilityFlag::Password));
-    a->bindSession(firstA, false);
+    frontend.focusIn(firstA, false, false);
     FCITX_ASSERT(!a->capabilityFlags().test(CapabilityFlag::Password));
     FCITX_ASSERT(events == std::vector<std::string>{"in:A"});
 
@@ -72,20 +75,20 @@ int main() {
     FCITX_ASSERT(events.size() == afterClose);
 
     expectedA = secondA;
-    a->bindSession(secondA, false);
+    frontend.focusIn(secondA, false, false);
     frontend.focusOut(firstA);
     FCITX_ASSERT(a->hasFocus() && a->matchesSession(secondA));
 
     // B's focus-in already focuses A out. Closing A must flush its tail
     // without focusing B out or emitting a second focus-out event for A.
-    b->bindSession(firstB, false);
+    frontend.focusIn(firstB, false, false);
     FCITX_ASSERT(!a->hasFocus() && b->hasFocus());
     frontend.focusOut(secondA);
     FCITX_ASSERT(!a->matchesSession(secondA));
     FCITX_ASSERT(b->hasFocus() && b->matchesSession(firstB));
 
     expectedA = thirdA;
-    a->bindSession(thirdA, false);
+    frontend.focusIn(thirdA, false, false);
     frontend.focusOut(secondA);
     FCITX_ASSERT(a->hasFocus() && a->matchesSession(thirdA));
     frontend.focusOut(firstB);

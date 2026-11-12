@@ -20,7 +20,8 @@ struct InputSessionIdentity {
     }
 };
 
-void focus_in(InputSessionIdentity identity, bool isPassword) noexcept;
+void focus_in(InputSessionIdentity identity, bool isPassword,
+              bool refreshAppPolicy) noexcept;
 void focus_out(InputSessionIdentity identity) noexcept;
 
 // The input result and its FIFO position are captured in the same core-thread

@@ -177,8 +177,6 @@ InputResponse MacosFrontend::keyEvent(ICUUID uuid, const Key &key,
     if (!ic) {
         return {.outputBoundary = SwiftFrontend::inputSessionOutputBoundary()};
     }
-    ic->setPassword(isPassword);
-    ic->focusIn();
     KeyEvent keyEvent(ic, key, isRelease);
     ic->isSyncEvent = true;
     if (!isPassword) {
@@ -301,12 +299,17 @@ void MacosFrontend::useVimMode(const std::string &appId,
 }
 
 void MacosFrontend::focusIn(const InputSessionIdentity &identity,
-                            bool isPassword) {
+                            bool isPassword, bool refreshAppPolicy) {
     auto *ic = findIC(identity.uuid);
     if (!ic)
         return;
-    webpanel_->applyAppAccentColor(ic->getAccentColor()); // app-specific
     ic->bindSession(identity, isPassword);
+    // Every key refreshes password capabilities and focus. App policy is
+    // reapplied only for a new activation or an explicit IMK activation.
+    if (!refreshAppPolicy) {
+        return;
+    }
+    webpanel_->applyAppAccentColor(ic->getAccentColor()); // app-specific
     auto program = ic->program();
     FCITX_INFO() << "Focus in " << program;
     if (!program.empty()) {
@@ -522,9 +525,11 @@ void destroy_input_context(ICUUID uuid) noexcept {
     });
 }
 
-void focus_in(InputSessionIdentity identity, bool isPassword) noexcept {
-    with_fcitx(
-        [=](Fcitx &fcitx) { fcitx.frontend()->focusIn(identity, isPassword); });
+void focus_in(InputSessionIdentity identity, bool isPassword,
+              bool refreshAppPolicy) noexcept {
+    with_fcitx([=](Fcitx &fcitx) {
+        fcitx.frontend()->focusIn(identity, isPassword, refreshAppPolicy);
+    });
 }
 
 void focus_out(InputSessionIdentity identity) noexcept {

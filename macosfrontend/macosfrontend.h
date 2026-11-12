@@ -95,8 +95,10 @@ public:
     ICUUID createInputContext(const std::string &appId,
                               const std::string &accentColor);
     void destroyInputContext(ICUUID);
-    void focusIn(const InputSessionIdentity &identity, bool isPassword);
+    void focusIn(const InputSessionIdentity &identity, bool isPassword,
+                 bool refreshAppPolicy);
     void focusOut(const InputSessionIdentity &identity);
+    // The caller activates the source session before each key.
     InputResponse keyEvent(ICUUID, const Key &key, bool isRelease,
                            bool isPassword, const char *text,
                            unsigned int cursor, unsigned int anchor);
