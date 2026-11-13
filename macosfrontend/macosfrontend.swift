@@ -3,6 +3,135 @@ import CxxFrontend
 import InputMethodKit
 import Logging
 
+extension InputSessionRegistration {
+  public func toICUUID() -> ICUUID {
+    var uuid = ICUUID()
+    for index in 0..<16 {
+      uuid[index] = key.bytes[index]
+    }
+    return uuid
+  }
+}
+
+extension InputSessionToken {
+  init(_ identity: InputSessionIdentity) {
+    let uuid = identity.uuid
+    self.init(
+      registration: InputSessionRegistration(
+        key: InputSessionKey((0..<16).map { uuid[$0] }), generation: identity.registrationGeneration
+      ),
+      activationGeneration: identity.activationGeneration)
+  }
+
+  func toIdentity() -> InputSessionIdentity {
+    var identity = InputSessionIdentity()
+    identity.uuid = registration.toICUUID()
+    identity.registrationGeneration = registration.generation
+    identity.activationGeneration = activationGeneration
+    return identity
+  }
+}
+
+@MainActor
+private let inputSessions = InputSessionRegistry<IMKInputController>()
+
+private let inputSessionOutputQueue = InputSessionOutputQueue()
+
+@MainActor
+private let inputSessionOutputs = InputSessionOutputDispatcher(
+  registry: inputSessions, queue: inputSessionOutputQueue
+) { controller, operation, update in
+  guard let client = controller.client(), update.isCurrent else { return }
+  deliverClientOutput(client, controller, operation, update)
+}
+
+@MainActor
+private func deliverClientOutput(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ operation: InputSessionOutput.Operation, _ update: InputSessionPresentationUpdate
+) {
+  guard update.isCurrent else { return }
+  switch operation {
+  case .commit(let commit):
+    commitString(client, commit)
+  case .commitAndPreedit(let commit, let preedit, let caret, let dummy):
+    commitAndSetPreedit(client, sourceController, commit, preedit, caret, dummy, update)
+  case .close:
+    break
+  }
+}
+
+private func enqueueInputSessionOutput(
+  _ identity: InputSessionIdentity, _ operation: InputSessionOutput.Operation
+) {
+  let output = InputSessionOutput(token: InputSessionToken(identity), operation: operation)
+  if inputSessionOutputQueue.enqueue(output) {
+    // Share the main queue with the candidate window, preserving the existing
+    // requirement that client preedit is updated before the window is shown.
+    DispatchQueue.main.async {
+      inputSessionOutputs.drain()
+    }
+  }
+}
+
+public func registerInputSession(
+  _ uuid: ICUUID, _ controller: IMKInputController
+) -> InputSessionRegistration? {
+  // IMK's initializer is imported as nonisolated. Check its executor before
+  // borrowing the controller inside MainActor; no object crosses a queue.
+  dispatchPrecondition(condition: .onQueue(.main))
+  nonisolated(unsafe) let mainController = controller
+  let key = InputSessionKey((0..<16).map { uuid[$0] })
+  return MainActor.assumeIsolated {
+    let registration = inputSessions.register(key, controller: mainController)
+    if registration == nil {
+      FCITX_ERROR("Cannot register input session")
+    }
+    return registration
+  }
+}
+
+@MainActor
+@discardableResult
+public func activateInputSession(
+  _ registration: InputSessionRegistration, isPassword: Bool, refreshFocus: Bool = false
+) -> InputSessionToken? {
+  finishInputSessionTransition()
+  let previous = inputSessions.activeToken
+  guard let token = inputSessions.activate(registration) else { return nil }
+  if let sourceController = inputSessions.lookup(token) {
+    setController(sourceController)
+  }
+  focus_in(token.toIdentity(), isPassword, token != previous || refreshFocus)
+  return token
+}
+
+@MainActor
+public func deactivateInputSession(_ registration: InputSessionRegistration) {
+  inputSessionOutputs.drain()
+  inputSessions.deactivate(registration)
+}
+
+@MainActor
+public func finishInputSessionTransition() {
+  // Each synchronous close includes the core's deferred client updates and
+  // appends a FIFO marker. Deliver those outputs before retiring the token.
+  for token in inputSessions.closingTokens {
+    focus_out(token.toIdentity())
+  }
+  inputSessionOutputs.drain()
+}
+
+@MainActor
+public func inputSessionController(_ token: InputSessionToken) -> IMKInputController? {
+  return inputSessions.lookup(token)
+}
+
+@MainActor
+public func unregisterInputSession(_ registration: InputSessionRegistration) -> Bool {
+  return inputSessions.unregister(registration)
+}
+
 nonisolated(unsafe) private var u16pos = 0
 nonisolated(unsafe) private var currentPreedit = ""
 
@@ -71,43 +200,91 @@ public func setStatusItemMode(_ mode: Int32) {
 }
 
 private func commitString(_ client: IMKTextInput, _ string: String) {
-  client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-  // Without it currentPreedit.count in commitAndSetPreeditSync will be wrong with pinyin prediction.
+  // Clear before insertText so a reentrant preedit update is not erased when
+  // it returns. Prediction's dummy-preedit calculation also needs this reset.
   currentPreedit = ""
+  client.insertText(string, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
 }
 
-private func setPreedit(_ client: IMKTextInput, _ preedit: String, _ caretPosUtf8: Int) {
-  currentPreedit = preedit
+@MainActor
+private func setPreedit(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ preedit: String, _ caretPosUtf8: Int, _ update: InputSessionPresentationUpdate
+) {
   // The caretPos argument is specified in UTF-8 bytes.
   // Convert it to UTF-16.
   var u8pos = 0
-  u16pos = 0
+  var caretPosUtf16 = 0
   for ch in preedit {
     if u8pos == caretPosUtf8 {
       break
     }
     u8pos += ch.utf8.count
-    u16pos += ch.utf16.count  // Usually 1 but can be more, e.g. emoji.
+    caretPosUtf16 += ch.utf16.count  // Usually 1 but can be more, e.g. emoji.
   }
   // Make underline as thin as macOS pinyin.
   let attrs =
-    controller?.mark(forStyle: kTSMHiliteConvertedText, at: NSMakeRange(NSNotFound, 0))
+    sourceController?.mark(forStyle: kTSMHiliteConvertedText, at: NSMakeRange(NSNotFound, 0))
     as? [NSAttributedString.Key: Any]
+  guard update.isCurrent else { return }
+  // Publish cache and marked text together, after all reentrant queries.
+  currentPreedit = preedit
+  u16pos = caretPosUtf16
   client.setMarkedText(
     NSMutableAttributedString(string: preedit, attributes: attrs),
-    selectionRange: NSRange(location: u16pos, length: 0),
+    selectionRange: NSRange(location: caretPosUtf16, length: 0),
     replacementRange: NSRange(location: NSNotFound, length: 0)
   )
 }
 
 public func commitAndSetPreeditSync(
   _ client: IMKTextInput, _ commit: String, _ preedit: String, _ caretPos: Int,
-  _ dummyPreedit: Bool
+  _ dummyPreedit: Bool, outputBoundary: UInt64, sourceController: IMKInputController,
+  sourceSession: InputSessionRegistration?
+) {
+  applySynchronousInput(
+    client, sourceController,
+    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit),
+    at: outputBoundary, registration: sourceSession)
+}
+
+private func applySynchronousInput(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ operation: InputSessionOutput.Operation, at boundary: UInt64,
+  registration: InputSessionRegistration?
+) {
+  dispatchPrecondition(condition: .onQueue(.main))
+  // IMK callbacks are imported nonisolated. These references are borrowed only
+  // for this synchronous MainActor call, never queued across threads.
+  nonisolated(unsafe) let mainClient = client
+  nonisolated(unsafe) let mainController = sourceController
+  MainActor.assumeIsolated {
+    inputSessionOutputs.applySynchronous(
+      at: boundary, registration: registration, operation: operation
+    ) { step, update in
+      deliverClientOutput(mainClient, mainController, step, update)
+    }
+  }
+}
+
+@MainActor
+public func discardSynchronousInput(_ boundary: UInt64) {
+  inputSessionOutputs.applySynchronous(at: boundary, registration: nil, operation: nil) { _, _ in
+    preconditionFailure("Discarded synchronous response must not be delivered")
+  }
+}
+
+@MainActor
+private func commitAndSetPreedit(
+  _ client: IMKTextInput, _ sourceController: IMKInputController?,
+  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool,
+  _ update: InputSessionPresentationUpdate
 ) {
   if !commit.isEmpty {
     commitString(client, commit)
   }
   let app = client.bundleIdentifier() ?? ""
+  guard update.isCurrent else { return }
   // Without client preedit, Backspace bypasses IM in Terminal, every key is both
   // processed by IM and passed to client in iTerm, JetBrains and VSCode terminal,
   // Backspace is double-processed in Chrome address bar/VSCode editor/Bruno URL input,
@@ -121,7 +298,9 @@ public func commitAndSetPreeditSync(
       return
     }
     let length = client.length()
+    guard update.isCurrent else { return }
     let selectedRange = client.selectedRange()
+    guard update.isCurrent else { return }
     // We prefer ZWS to avoid text layout shift after caret, e.g. VSCode.
     // For SwiftUI TextField, there is a bug that if caret is at the end of text, zero-width space preedit
     // spreads from the start to the end, making the whole text underlined. Fortunately, SwiftUI's length
@@ -130,33 +309,35 @@ public func commitAndSetPreeditSync(
     if (length > 0 && length - currentPreedit.count == NSMaxRange(selectedRange))
       || isJetBrains(app)
     {
-      setPreedit(client, " ", 0)
+      setPreedit(client, sourceController, " ", 0, update)
     } else {
-      setPreedit(client, zeroWidthSpace, 0)
+      setPreedit(client, sourceController, zeroWidthSpace, 0, update)
     }
   } else {
-    setPreedit(client, preedit, caretPos)
+    setPreedit(client, sourceController, preedit, caretPos, update)
   }
 }
 
 public func commitAndSetPreeditAsync(
-  _ commit: String, _ preedit: String, _ caretPos: Int, _ dummyPreedit: Bool
+  _ identity: InputSessionIdentity, _ commit: String, _ preedit: String,
+  _ caretPos: Int, _ dummyPreedit: Bool
 ) {
-  Task { @MainActor in
-    guard let client = controller?.client() else {
-      return
-    }
-    commitAndSetPreeditSync(client, commit, preedit, caretPos, dummyPreedit)
-  }
+  enqueueInputSessionOutput(
+    identity,
+    .commitAndPreedit(commit: commit, preedit: preedit, caret: caretPos, dummy: dummyPreedit))
 }
 
-public func commitAsync(_ commit: String) {
-  Task { @MainActor in
-    guard let client = controller?.client() else {
-      return
-    }
-    commitString(client, commit)
-  }
+public func commitAsync(_ identity: InputSessionIdentity, _ commit: String) {
+  enqueueInputSessionOutput(identity, .commit(commit))
+}
+
+public func closeInputSessionAsync(_ identity: InputSessionIdentity) {
+  enqueueInputSessionOutput(identity, .close)
+}
+
+// C++ input adapters mark this position before leaving the core thread.
+public func inputSessionOutputBoundary() -> UInt64 {
+  return inputSessionOutputQueue.enqueueBoundary()
 }
 
 // UTF-16 units of surrounding text read on each side of the cursor. This runs

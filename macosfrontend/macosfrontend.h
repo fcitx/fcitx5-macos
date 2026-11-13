@@ -8,6 +8,7 @@
 #ifndef _FCITX5_MACOS_MACOSFRONTEND_H_
 #define _FCITX5_MACOS_MACOSFRONTEND_H_
 
+#include <optional>
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/iniparser.h>
 #include <fcitx-utils/event.h>
@@ -94,12 +95,14 @@ public:
     ICUUID createInputContext(const std::string &appId,
                               const std::string &accentColor);
     void destroyInputContext(ICUUID);
-    std::string keyEvent(ICUUID, const Key &key, bool isRelease,
-                         bool isPassword, const char *text, unsigned int cursor,
-                         unsigned int anchor);
-    void focusIn(ICUUID, bool isPassword);
-    std::string commitComposition(ICUUID uuid);
-    void focusOut(ICUUID);
+    void focusIn(const InputSessionIdentity &identity, bool isPassword,
+                 bool refreshAppPolicy);
+    void focusOut(const InputSessionIdentity &identity);
+    // The caller activates the source session before each key.
+    InputResponse keyEvent(ICUUID, const Key &key, bool isRelease,
+                           const char *text, unsigned int cursor,
+                           unsigned int anchor);
+    InputResponse commitComposition(ICUUID uuid);
 
 private:
     Instance *instance_;
@@ -161,7 +164,7 @@ public:
         state_.dummyPreedit = dummyPreedit;
     }
     void setVimPreedit(bool vimPreedit) { state_.vimPreedit = vimPreedit; }
-    std::string popState(bool accepted, const Key &key = Key());
+    InputResponse popState(bool accepted, const Key &key = Key());
     // Shows whether we are processing a sync event (mainly key down) that needs
     // to return a bool to indicate if it's handled. In this case, commit and
     // preedit need to be set in batch synchronously before returning. Otherwise
@@ -169,7 +172,12 @@ public:
     bool isSyncEvent = false;
     void commitAndSetPreeditAsync();
 
-    void setPassword(bool isPassword);
+    void bindSession(const InputSessionIdentity &identity, bool isPassword);
+    bool matchesSession(const InputSessionIdentity &identity) const {
+        return sessionIdentity_ && *sessionIdentity_ == identity;
+    }
+    void closeSession();
+
     void setVimMode(bool vimMode) { vimMode_ = vimMode; }
     bool vimMode() const { return vimMode_; }
 
@@ -177,8 +185,11 @@ public:
                             unsigned int anchor);
 
 private:
+    void setPassword(bool isPassword);
+
     MacosFrontend *frontend_;
     InputContextState state_;
+    std::optional<InputSessionIdentity> sessionIdentity_;
     std::string accentColor_;
     bool vimMode_ = false;
 
