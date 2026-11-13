@@ -53,7 +53,6 @@ final class InputSessionRegistry<Controller: AnyObject> {
   private var entries: [InputSessionKey: Entry] = [:]
   private var registrationGeneration: UInt64 = 0
   private var activationGeneration: UInt64 = 0
-  private var isRunning = false
   private var selected: InputSessionToken?
   private var closing: Set<InputSessionToken> = []
 
@@ -64,19 +63,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
     return selected
   }
 
-  func beginRuntime() {
-    isRunning = true
-  }
-
-  func endRuntime() {
-    isRunning = false
-    selected = nil
-    closing.removeAll()
-    entries.removeAll()
-  }
-
   func register(_ key: InputSessionKey, controller: Controller) -> InputSessionRegistration? {
-    guard isRunning else { return nil }
     if let entry = entries[key], let existing = entry.controller {
       // A duplicate must not silently replace another live controller.
       return existing === controller ? entry.registration : nil
@@ -89,8 +76,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
   }
 
   func lookup(_ registration: InputSessionRegistration) -> Controller? {
-    guard isRunning,
-      let entry = entries[registration.key], entry.registration == registration
+    guard let entry = entries[registration.key], entry.registration == registration
     else { return nil }
     return entry.controller
   }
@@ -134,7 +120,7 @@ final class InputSessionRegistry<Controller: AnyObject> {
 
   @discardableResult
   func unregister(_ registration: InputSessionRegistration) -> Bool {
-    guard isRunning, entries[registration.key]?.registration == registration else { return false }
+    guard entries[registration.key]?.registration == registration else { return false }
     entries.removeValue(forKey: registration.key)
     deactivate(registration)
     closing = closing.filter { $0.registration != registration }

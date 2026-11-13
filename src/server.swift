@@ -171,7 +171,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     let locale = getLocale()
     start_fcitx_thread(locale)
-    beginInputSessionRuntime()
   }
 
   func applicationWillTerminate(_ notification: Notification) {
@@ -179,7 +178,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     if let observer = positionObserver {
       NotificationCenter.default.removeObserver(observer)
     }
-    endInputSessionRuntime()
     stop_fcitx_thread()
   }
 

@@ -54,13 +54,6 @@ final class InputSessionOutputQueue: Sendable {
       return pending
     }
   }
-
-  func clear() {
-    state.withLock {
-      $0.pending.removeAll()
-      $0.drainScheduled = false
-    }
-  }
 }
 
 @MainActor
@@ -151,7 +144,7 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
             }
           })
       }
-      // A scheduled drain may run before the caller has decoded the JSON.
+      // A scheduled drain may run before the caller has published its response.
       // Leave the marker in place until its synchronous response is published.
       if let first = pending.first, case .boundary(let id) = first,
         synchronousResponses[id] == nil

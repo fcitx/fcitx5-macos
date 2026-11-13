@@ -55,8 +55,8 @@ class FcitxInputController: IMKInputController {
 
   @MainActor
   private static func destroyInputContext(_ registration: InputSessionRegistration) {
-    // A stale cleanup must neither remove a newer registration nor enter a
-    // stopped runtime. Shutdown and this cleanup are serialized on MainActor.
+    // A stale cleanup must not remove a newer registration. Registration and
+    // this cleanup are serialized on MainActor.
     guard unregisterInputSession(registration) else { return }
     destroy_input_context(registration.toICUUID())
   }

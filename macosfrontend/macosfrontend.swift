@@ -74,17 +74,6 @@ private func enqueueInputSessionOutput(
   }
 }
 
-@MainActor
-public func beginInputSessionRuntime() {
-  inputSessions.beginRuntime()
-}
-
-@MainActor
-public func endInputSessionRuntime() {
-  inputSessions.endRuntime()
-  inputSessionOutputQueue.clear()
-}
-
 public func registerInputSession(
   _ uuid: ICUUID, _ controller: IMKInputController
 ) -> InputSessionRegistration? {

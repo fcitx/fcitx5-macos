@@ -21,7 +21,6 @@ struct SessionOutputTests {
     let otherClient = Client()
     let controller = Controller(client)
     let otherController = Controller(otherClient)
-    registry.beginRuntime()
     let registration = registry.register(
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let otherRegistration = registry.register(
@@ -84,7 +83,6 @@ struct SessionOutputTests {
   static func testPresentationLifetime() {
     let registry = InputSessionRegistry<Controller>()
     let controller = Controller(Client())
-    registry.beginRuntime()
     let key = InputSessionKey(Array(repeating: 0, count: 16))
     let registration = registry.register(key, controller: controller)!
     let token = registry.activate(registration)!
@@ -102,12 +100,6 @@ struct SessionOutputTests {
     let replacement = registry.register(key, controller: controller)!
     precondition(replacement != registration)
     precondition(!synchronousUpdate.isCurrent)
-    let replacementUpdate = registry.presentation(replacement)!.beginUpdate {
-      registry.lookup(replacement) != nil
-    }
-    precondition(replacementUpdate.isCurrent)
-    registry.endRuntime()
-    precondition(!replacementUpdate.isCurrent)
   }
 
   @MainActor
@@ -116,7 +108,6 @@ struct SessionOutputTests {
     let queue = InputSessionOutputQueue()
     let client = Client()
     let controller = Controller(client)
-    registry.beginRuntime()
     let registration = registry.register(
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let token = registry.activate(registration)!
@@ -182,7 +173,6 @@ struct SessionOutputTests {
     let queue = InputSessionOutputQueue()
     let client = Client()
     let controller = Controller(client)
-    registry.beginRuntime()
     let registration = registry.register(
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let token = registry.activate(registration)!
@@ -261,10 +251,6 @@ struct SessionOutputTests {
     dispatcher.applySynchronous(at: laterBoundary, registration: nil, operation: nil) { _, _ in
       preconditionFailure()
     }
-
-    let discardedBoundary = queue.enqueueBoundary()
-    queue.clear()
-    precondition(queue.enqueueBoundary() > discardedBoundary)
   }
 
   @MainActor
@@ -273,7 +259,6 @@ struct SessionOutputTests {
     let queue = InputSessionOutputQueue()
     let client = Client()
     let controller = Controller(client)
-    registry.beginRuntime()
     let registration = registry.register(
       InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
     let token = registry.activate(registration)!
@@ -372,11 +357,11 @@ struct SessionOutputTests {
       return InputSessionKey(Array(repeating: value, count: 16))
     }
 
-    registry.beginRuntime()
     let clientA = Client()
     let clientB = Client()
     let a = Controller(clientA)
     let b = Controller(clientB)
+    defer { withExtendedLifetime((a, b)) {} }
     let registrationA = registry.register(key(0), controller: a)!
     let registrationB = registry.register(key(1), controller: b)!
     let firstA = registry.activate(registrationA)!
@@ -442,16 +427,7 @@ struct SessionOutputTests {
     dispatcher.drain()
     precondition(clientB.events == ["commit:B"])
 
-    enqueue(secondA, .commit("stopped"))
-    registry.endRuntime()
-    registry.beginRuntime()
-    let restarted = registry.register(key(0), controller: a)!
-    let restartedToken = registry.activate(restarted)!
-    enqueue(secondA, .close)
-    enqueue(restartedToken, .commit("restarted"))
-    dispatcher.drain()
-    precondition(clientA.events.last == "commit:restarted")
-    precondition(!clientA.events.contains("commit:stopped"))
+    let activeToken = registry.activate(registrationA)!
 
     // The ingress is callable from background producers. No payload is lost,
     // and each producer's order is preserved when the main actor drains it.
@@ -460,7 +436,7 @@ struct SessionOutputTests {
         group.addTask {
           for index in 0..<100 {
             _ = queue.enqueue(
-              InputSessionOutput(token: restartedToken, operation: .commit("\(producer)-\(index)")))
+              InputSessionOutput(token: activeToken, operation: .commit("\(producer)-\(index)")))
           }
         }
       }
@@ -486,23 +462,19 @@ struct SessionOutputTests {
       controller.client?.events.append(text)
       if text == "outer" {
         _ = reentrantQueue.enqueue(
-          InputSessionOutput(token: restartedToken, operation: .commit("nested")))
+          InputSessionOutput(token: activeToken, operation: .commit("nested")))
         nestedDrain?()
       }
     }
     nestedDrain = { reentrantDispatcher.drain() }
     _ = reentrantQueue.enqueue(
-      InputSessionOutput(token: restartedToken, operation: .commit("outer")))
+      InputSessionOutput(token: activeToken, operation: .commit("outer")))
     _ = reentrantQueue.enqueue(
-      InputSessionOutput(token: restartedToken, operation: .commit("tail")))
+      InputSessionOutput(token: activeToken, operation: .commit("tail")))
     reentrantDispatcher.drain()
     nestedDrain = nil
     precondition(clientA.events.suffix(3) == ["outer", "tail", "nested"])
 
-    enqueue(restartedToken, .commit("cleared"))
-    registry.endRuntime()
-    queue.clear()
-    dispatcher.drain()
     precondition(clientA.events.count == beforeConcurrentDelivery + 203)
   }
 }

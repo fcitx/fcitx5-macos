@@ -14,10 +14,7 @@ struct SessionTests {
     let a = Controller()
     let b = Controller()
 
-    precondition(registry.register(keyA, controller: a) == nil)
-    registry.beginRuntime()
     let registrationA = registry.register(keyA, controller: a)!
-    registry.beginRuntime()
     precondition(registry.register(keyA, controller: a) == registrationA)
     precondition(registry.register(keyA, controller: b) == nil)
     precondition(registry.lookup(registrationA) === a)
@@ -70,27 +67,22 @@ struct SessionTests {
     // token is a value; the task does not keep the controller alive.
     let queuedToken = registry.activate(afterDeinit)!
     let lateLookup = Task { @MainActor in registry.lookup(queuedToken) != nil }
-    registry.endRuntime()
-    let foundAfterTeardown = await lateLookup.value
-    precondition(!foundAfterTeardown)
-    registry.endRuntime()
+    precondition(registry.unregister(afterDeinit))
+    let foundAfterRemoval = await lateLookup.value
+    precondition(!foundAfterRemoval)
     precondition(registry.activeToken == nil)
-    precondition(registry.lookup(registrationB) == nil)
     precondition(!registry.unregister(afterDeinit))
-    precondition(registry.register(keyA, controller: a) == nil)
 
-    registry.beginRuntime()
-    let restarted = registry.register(keyA, controller: a)!
-    precondition(restarted.generation > afterDeinit.generation)
+    let newRegistration = registry.register(keyA, controller: a)!
+    precondition(newRegistration.generation > afterDeinit.generation)
     precondition(registry.lookup(queuedToken) == nil)
     precondition(!registry.unregister(afterDeinit))
-    precondition(registry.lookup(restarted) === a)
+    precondition(registry.lookup(newRegistration) === a)
 
     // Registration credentials can cross threads without transferring an IMK
     // object. Cleanup still runs on MainActor and checks the registration generation.
-    let returned = await Task.detached { restarted }.value
-    precondition(returned == restarted)
+    let returned = await Task.detached { newRegistration }.value
+    precondition(returned == newRegistration)
     precondition(registry.unregister(returned))
-    registry.endRuntime()
   }
 }
