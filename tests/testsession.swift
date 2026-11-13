@@ -81,13 +81,13 @@ struct SessionTests {
 
     registry.beginRuntime()
     let restarted = registry.register(keyA, controller: a)!
-    precondition(restarted.runtimeEpoch != afterDeinit.runtimeEpoch)
+    precondition(restarted.generation > afterDeinit.generation)
     precondition(registry.lookup(queuedToken) == nil)
     precondition(!registry.unregister(afterDeinit))
     precondition(registry.lookup(restarted) === a)
 
     // Registration credentials can cross threads without transferring an IMK
-    // object. Cleanup still runs on MainActor and checks the runtime epoch.
+    // object. Cleanup still runs on MainActor and checks the registration generation.
     let returned = await Task.detached { restarted }.value
     precondition(returned == restarted)
     precondition(registry.unregister(returned))

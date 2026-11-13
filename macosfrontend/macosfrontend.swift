@@ -18,15 +18,14 @@ extension InputSessionToken {
     let uuid = identity.uuid
     self.init(
       registration: InputSessionRegistration(
-        key: InputSessionKey((0..<16).map { uuid[$0] }),
-        runtimeEpoch: identity.runtimeEpoch, generation: identity.registrationGeneration),
+        key: InputSessionKey((0..<16).map { uuid[$0] }), generation: identity.registrationGeneration
+      ),
       activationGeneration: identity.activationGeneration)
   }
 
   func toIdentity() -> InputSessionIdentity {
     var identity = InputSessionIdentity()
     identity.uuid = registration.toICUUID()
-    identity.runtimeEpoch = registration.runtimeEpoch
     identity.registrationGeneration = registration.generation
     identity.activationGeneration = activationGeneration
     return identity

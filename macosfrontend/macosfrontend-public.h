@@ -9,12 +9,11 @@ typedef std::array<uint8_t, 16> ICUUID;
 
 struct InputSessionIdentity {
     ICUUID uuid{};
-    uint64_t runtimeEpoch = 0;
     uint64_t registrationGeneration = 0;
     uint64_t activationGeneration = 0;
 
     bool operator==(const InputSessionIdentity &other) const {
-        return uuid == other.uuid && runtimeEpoch == other.runtimeEpoch &&
+        return uuid == other.uuid &&
                registrationGeneration == other.registrationGeneration &&
                activationGeneration == other.activationGeneration;
     }

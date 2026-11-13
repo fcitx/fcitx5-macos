@@ -18,7 +18,7 @@ int main() {
     auto uuid = frontend.createInputContext("test", "");
     auto *ic = static_cast<MacosInputContext *>(
         instance.inputContextManager().findByUUID(uuid));
-    frontend.focusIn({uuid, 1, 1, 1}, false, false);
+    frontend.focusIn({uuid, 1, 1}, false, false);
     auto handler = instance.watchEvent(
         fcitx::EventType::InputContextKeyEvent,
         EventWatcherPhase::PreInputMethod, [&](Event &event) {
@@ -52,12 +52,12 @@ int main() {
 
     // The bound IC capabilities control surrounding text, including password
     // changes within the same session (e.g. entering and leaving sudo).
-    frontend.focusIn({uuid, 1, 1, 1}, true, false);
+    frontend.focusIn({uuid, 1, 1}, true, false);
     auto passwordResponse =
         frontend.keyEvent(uuid, Key(FcitxKey_a), false, "secret", 6, 6);
     FCITX_ASSERT(passwordResponse.valid && passwordResponse.accepted);
     FCITX_ASSERT(ic->surroundingText().text() == "before");
-    frontend.focusIn({uuid, 1, 1, 1}, false, false);
+    frontend.focusIn({uuid, 1, 1}, false, false);
     auto afterPassword =
         frontend.keyEvent(uuid, Key(FcitxKey_a), false, "after", 5, 5);
     FCITX_ASSERT(afterPassword.valid && afterPassword.accepted);

@@ -10,7 +10,6 @@ public struct InputSessionKey: Hashable, Sendable {
 
 public struct InputSessionRegistration: Hashable, Sendable {
   public let key: InputSessionKey
-  public let runtimeEpoch: UInt64
   public let generation: UInt64
 }
 
@@ -52,7 +51,6 @@ final class InputSessionRegistry<Controller: AnyObject> {
   }
 
   private var entries: [InputSessionKey: Entry] = [:]
-  private var runtimeEpoch: UInt64 = 0
   private var registrationGeneration: UInt64 = 0
   private var activationGeneration: UInt64 = 0
   private var isRunning = false
@@ -67,8 +65,6 @@ final class InputSessionRegistry<Controller: AnyObject> {
   }
 
   func beginRuntime() {
-    guard !isRunning else { return }
-    runtimeEpoch += 1
     isRunning = true
   }
 
@@ -86,15 +82,14 @@ final class InputSessionRegistry<Controller: AnyObject> {
       return existing === controller ? entry.registration : nil
     }
     registrationGeneration += 1
-    let registration = InputSessionRegistration(
-      key: key, runtimeEpoch: runtimeEpoch, generation: registrationGeneration)
+    let registration = InputSessionRegistration(key: key, generation: registrationGeneration)
     entries[key] = Entry(
       controller: controller, registration: registration, presentation: InputSessionPresentation())
     return registration
   }
 
   func lookup(_ registration: InputSessionRegistration) -> Controller? {
-    guard isRunning, registration.runtimeEpoch == runtimeEpoch,
+    guard isRunning,
       let entry = entries[registration.key], entry.registration == registration
     else { return nil }
     return entry.controller

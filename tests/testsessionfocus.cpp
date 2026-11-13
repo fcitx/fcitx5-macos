@@ -20,10 +20,10 @@ int main() {
     auto &manager = instance.inputContextManager();
     auto *a = static_cast<MacosInputContext *>(manager.findByUUID(uuidA));
     auto *b = static_cast<MacosInputContext *>(manager.findByUUID(uuidB));
-    InputSessionIdentity firstA{uuidA, 1, 1, 1};
-    InputSessionIdentity secondA{uuidA, 1, 1, 2};
-    InputSessionIdentity thirdA{uuidA, 1, 1, 3};
-    InputSessionIdentity firstB{uuidB, 1, 2, 1};
+    InputSessionIdentity firstA{uuidA, 1, 1};
+    InputSessionIdentity secondA{uuidA, 1, 2};
+    InputSessionIdentity thirdA{uuidA, 1, 3};
+    InputSessionIdentity firstB{uuidB, 2, 1};
     auto expectedA = firstA;
     std::vector<std::string> events;
     auto checkIdentity = [&](Event &event) {
