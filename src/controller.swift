@@ -231,10 +231,12 @@ class FcitxInputController: IMKInputController {
   }
 
   override func deactivateServer(_ client: Any!) {
-    if let registration = sessionRegistration {
-      MainActor.assumeIsolated { deactivateInputSession(registration) }
+    MainActor.assumeIsolated { [registration = sessionRegistration] in
+      if let registration {
+        deactivateInputSession(registration)
+      }
+      finishInputSessionTransition()
     }
-    MainActor.assumeIsolated { finishInputSessionTransition() }
   }
 
   override func menu() -> NSMenu! {
