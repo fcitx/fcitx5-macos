@@ -219,14 +219,14 @@ class FcitxInputController: IMKInputController {
   override func activateServer(_ client: Any!) {
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
-    if let registration = sessionRegistration {
-      MainActor.assumeIsolated {
+    MainActor.assumeIsolated { [registration = sessionRegistration] in
+      if let registration {
         // An explicit IMK activation still refreshes app policy when the same
         // session was already activated by an earlier key event.
         _ = activateInputSession(registration, isPassword: isPassword, refreshFocus: true)
       }
+      finishInputSessionTransition()
     }
-    MainActor.assumeIsolated { finishInputSessionTransition() }
     overrideKeyboardLayout()
   }
 
