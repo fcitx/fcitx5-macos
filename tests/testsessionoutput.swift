@@ -12,6 +12,97 @@ private final class Controller {
 @main
 struct SessionOutputTests {
   @MainActor
+  static func testDeferredFocusDelivery() {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let clientA = Client()
+    let clientB = Client()
+    let a = Controller(clientA)
+    let b = Controller(clientB)
+    defer { withExtendedLifetime((a, b)) {} }
+    let registrationA = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: a)!
+    let registrationB = registry.register(
+      InputSessionKey(Array(repeating: 1, count: 16)), controller: b)!
+    let tokenA = registry.activate(registrationA)!
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      controller, operation, update in
+      precondition(update.isCurrent)
+      switch operation {
+      case .commit(let text):
+        controller.client!.events.append("commit:\(text)")
+      case .commitAndPreedit(_, let preedit, _, _):
+        controller.client!.events.append("preedit:\(preedit)")
+      case .close:
+        preconditionFailure()
+      }
+    }
+    // Model deactivateServer and an activateServer reentered by the layout
+    // override's nested RunLoop. Even a scheduled drain cannot write to a
+    // client or retire the closing token before the outer handshake returns.
+    dispatcher.withDeferredDelivery {
+      _ = queue.enqueue(InputSessionOutput(token: tokenA, operation: .commit("tail")))
+      registry.deactivate(registrationA)
+      _ = queue.enqueue(
+        InputSessionOutput(
+          token: tokenA,
+          operation: .commitAndPreedit(commit: "", preedit: "", caret: 0, dummy: false)))
+      _ = queue.enqueue(InputSessionOutput(token: tokenA, operation: .close))
+      dispatcher.drain()
+      precondition(clientA.events.isEmpty)
+      dispatcher.withDeferredDelivery {
+        let tokenB = registry.activate(registrationB)!
+        _ = queue.enqueue(InputSessionOutput(token: tokenB, operation: .commit("B")))
+        dispatcher.drain()
+        precondition(clientA.events.isEmpty && clientB.events.isEmpty)
+      }
+      dispatcher.drain()
+      precondition(clientA.events.isEmpty && clientB.events.isEmpty)
+      precondition(registry.lookupForOutput(tokenA) === a)
+    }
+    precondition(clientA.events.isEmpty && clientB.events.isEmpty)
+    dispatcher.drain()
+    precondition(clientA.events == ["commit:tail", "preedit:"])
+    precondition(clientB.events == ["commit:B"])
+    precondition(registry.lookupForOutput(tokenA) == nil)
+  }
+
+  @MainActor
+  static func testSynchronousInputDuringFocus() {
+    let registry = InputSessionRegistry<Controller>()
+    let queue = InputSessionOutputQueue()
+    let client = Client()
+    let controller = Controller(client)
+    defer { withExtendedLifetime(controller) {} }
+    let registration = registry.register(
+      InputSessionKey(Array(repeating: 0, count: 16)), controller: controller)!
+    let token = registry.activate(registration)!
+    let dispatcher = InputSessionOutputDispatcher(registry: registry, queue: queue) {
+      _, operation, _ in
+      guard case .commit(let text) = operation else { preconditionFailure() }
+      client.events.append(text)
+    }
+    _ = queue.enqueue(InputSessionOutput(token: token, operation: .commit("before")))
+    let boundary = queue.enqueueBoundary()
+    _ = queue.enqueue(InputSessionOutput(token: token, operation: .commit("after")))
+    dispatcher.withDeferredDelivery {
+      dispatcher.applySynchronous(
+        at: boundary, registration: registration, operation: .commit("key")
+      ) { _, update in
+        precondition(update.isCurrent)
+        client.events.append("key")
+      }
+      // Explicit synchronous input still completes with its older output in
+      // order. Later async output stays deferred even after a nested drain.
+      precondition(client.events == ["before", "key"])
+      dispatcher.drain()
+      precondition(client.events == ["before", "key"])
+    }
+    dispatcher.drain()
+    precondition(client.events == ["before", "key", "after"])
+  }
+
+  @MainActor
   static func testPresentationReentry(
     outerSynchronous: Bool, innerSynchronous: Bool, differentSession: Bool
   ) {
@@ -318,6 +409,8 @@ struct SessionOutputTests {
 
   @MainActor
   static func main() async {
+    testDeferredFocusDelivery()
+    testSynchronousInputDuringFocus()
     for outerSynchronous in [false, true] {
       for innerSynchronous in [false, true] {
         for differentSession in [false, true] {

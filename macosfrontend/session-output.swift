@@ -89,6 +89,15 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   // Keep the unconsumed steps visible to reentrant synchronous transitions.
   private var pending: ArraySlice<Step> = []
   private var synchronousResponses: [UInt64: SynchronousResponse] = [:]
+  private var deliveryDeferralDepth = 0
+
+  var isDeliveryDeferred: Bool { deliveryDeferralDepth > 0 }
+
+  func withDeferredDelivery(_ body: () -> Void) {
+    deliveryDeferralDepth += 1
+    defer { deliveryDeferralDepth -= 1 }
+    body()
+  }
 
   init(
     registry: InputSessionRegistry<Controller>, queue: InputSessionOutputQueue,
@@ -113,7 +122,9 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
     // client. A nested transition must see the outer response's preedit too.
     synchronousResponses[boundary] = response
     defer { synchronousResponses.removeValue(forKey: boundary) }
-    drain()
+    // Key responses still complete synchronously, including during IMK
+    // reentry. In a focus handshake, leave later async output for its return.
+    drainPending(until: isDeliveryDeferred ? response : nil)
     precondition(response.completed, "Synchronous output boundary was not reached")
   }
 
@@ -130,7 +141,13 @@ final class InputSessionOutputDispatcher<Controller: AnyObject> {
   }
 
   func drain() {
+    guard !isDeliveryDeferred else { return }
+    drainPending()
+  }
+
+  private func drainPending(until response: SynchronousResponse? = nil) {
     while true {
+      if response?.completed == true { return }
       if pending.isEmpty {
         pending = ArraySlice(
           queue.takePending().flatMap { entry -> [Step] in

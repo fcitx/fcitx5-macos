@@ -74,6 +74,18 @@ private func enqueueInputSessionOutput(
   }
 }
 
+@MainActor
+public func withDeferredInputSessionOutput(_ body: () -> Void) {
+  // IMK XPC calls can run a nested RunLoop. MainActor isolation alone does
+  // not keep a scheduled drain out of an unfinished focus handshake.
+  inputSessionOutputs.withDeferredDelivery(body)
+  if !inputSessionOutputs.isDeliveryDeferred {
+    DispatchQueue.main.async {
+      inputSessionOutputs.drain()
+    }
+  }
+}
+
 public func registerInputSession(
   _ uuid: ICUUID, _ controller: IMKInputController
 ) -> InputSessionRegistration? {
@@ -108,7 +120,6 @@ public func activateInputSession(
 
 @MainActor
 public func deactivateInputSession(_ registration: InputSessionRegistration) {
-  inputSessionOutputs.drain()
   inputSessions.deactivate(registration)
 }
 
