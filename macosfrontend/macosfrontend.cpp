@@ -513,6 +513,20 @@ void focus_out(ICUUID uuid) noexcept {
     with_fcitx([=](Fcitx &fcitx) { return fcitx.frontend()->focusOut(uuid); });
 }
 
+bool update_app_appearance(const char *appId, const char *appearance,
+                           int theme, bool vibrancy, bool contrast) noexcept {
+    return with_fcitx([=](Fcitx &) {
+        if (!webpanel_) {
+            return false;
+        }
+        webpanel_->applyAppAppearance({
+            appId, appearance,
+            static_cast<candidate_window::theme_t>(theme), vibrancy,
+            contrast});
+        return true;
+    });
+}
+
 std::string get_current_group_layout() noexcept {
     return with_fcitx([=](Fcitx &fcitx) -> std::string {
         auto &group = fcitx.instance()->inputMethodManager().currentGroup();

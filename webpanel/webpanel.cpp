@@ -650,6 +650,14 @@ void WebPanel::applyAppAccentColor(const std::string &accentColor) {
     });
 }
 
+void WebPanel::applyAppAppearance(
+    const candidate_window::AppAppearance &appearance) {
+    auto captured = appearance;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      window_->apply_app_appearance(captured);
+    });
+}
+
 } // namespace fcitx
 
 FCITX_ADDON_FACTORY_V2(webpanel, fcitx::WebPanelFactory);

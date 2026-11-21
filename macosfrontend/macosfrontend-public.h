@@ -18,4 +18,6 @@ void destroy_input_context(ICUUID uuid) noexcept;
 void focus_in(ICUUID uuid, bool isPassword) noexcept;
 std::string commit_composition(ICUUID uuid) noexcept;
 void focus_out(ICUUID uuid) noexcept;
+bool update_app_appearance(const char *appId, const char *appearance,
+                           int theme, bool vibrancy, bool contrast) noexcept;
 std::string get_current_group_layout() noexcept;

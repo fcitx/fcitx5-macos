@@ -160,6 +160,7 @@ class FcitxInputController: IMKInputController {
     // MacosFrontend::keyEvent let the correct client be used by getCaretCoordinates, which served
     // the same purpose here.
     setController(self)
+    updateAppAppearance(sender)
 
     let code = event.keyCode
     let mods = event.modifierFlags
@@ -191,6 +192,7 @@ class FcitxInputController: IMKInputController {
   // activateServer is called when app is in foreground but not necessarily a text field is selected.
   override func activateServer(_ client: Any!) {
     setController(self)
+    updateAppAppearance(client)
     // Make sure status bar is updated on click password input, before first key event.
     let isPassword = getSecureInputInfo(isOnFocus: true)
     focus_in(uuid, isPassword)
@@ -370,4 +372,71 @@ struct FcitxAction: Codable {
 
 func toggleInputMethod() {
   Fcitx.toggleInputMethod()
+}
+
+private struct AppAppearance: Equatable {
+  // Keep raw values aligned with candidate_window::theme_t.
+  enum Theme: Int32 {
+    case system = 0
+    case light = 1
+    case dark = 2
+  }
+
+  let appId: String
+  var appearance = ""
+  var theme: Theme = .system
+  var vibrancy = false
+  var contrast = false
+
+  init(appId: String, client: IMKTextInput?) {
+    self.appId = appId
+    let selector = NSSelectorFromString("windowEffectiveAppearance")
+    guard let object = client as? NSObjectProtocol,
+      object.responds(to: selector),
+      let appearance = object.perform(selector)?
+        .takeUnretainedValue() as? NSAppearance
+    else {
+      return
+    }
+
+    let appearanceName = appearance.name
+    self.appearance = appearanceName.rawValue
+    if let match = appearance.bestMatch(from: [.darkAqua, .aqua]) {
+      theme = match == .darkAqua ? .dark : .light
+    }
+
+    switch appearanceName {
+    case .vibrantLight, .vibrantDark,
+      .accessibilityHighContrastVibrantLight, .accessibilityHighContrastVibrantDark:
+      vibrancy = true
+    default:
+      break
+    }
+
+    switch appearanceName {
+    case .accessibilityHighContrastAqua, .accessibilityHighContrastDarkAqua,
+      .accessibilityHighContrastVibrantLight, .accessibilityHighContrastVibrantDark:
+      contrast = true
+    default:
+      break
+    }
+  }
+}
+
+extension FcitxInputController {
+  nonisolated(unsafe) private static var lastAppAppearance: AppAppearance?
+
+  private func updateAppAppearance(_ sender: Any!) {
+    let inputClient = (sender as? IMKTextInput) ?? client()
+    let appearance = AppAppearance(appId: appId, client: inputClient)
+    guard appearance != Self.lastAppAppearance else {
+      return
+    }
+    if update_app_appearance(
+      appearance.appId, appearance.appearance, appearance.theme.rawValue,
+      appearance.vibrancy, appearance.contrast
+    ) {
+      Self.lastAppAppearance = appearance
+    }
+  }
 }
