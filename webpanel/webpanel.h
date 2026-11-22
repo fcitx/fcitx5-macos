@@ -423,6 +423,7 @@ public:
 private:
     Instance *instance_;
     std::unique_ptr<candidate_window::WebviewCandidateWindow> window_;
+    candidate_window::AppAppearance appAppearance_;
 
     static const inline std::string ConfPath = "conf/webpanel.conf";
     WebPanelConfig config_;
