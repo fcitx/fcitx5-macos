@@ -418,10 +418,12 @@ public:
     void updateInputPanel(const Text &preedit, const Text &auxUp,
                           const Text &auxDown);
     void applyAppAccentColor(const std::string &accentColor);
+    void applyAppAppearance(const candidate_window::AppAppearance &appearance);
 
 private:
     Instance *instance_;
     std::unique_ptr<candidate_window::WebviewCandidateWindow> window_;
+    candidate_window::AppAppearance appAppearance_;
 
     static const inline std::string ConfPath = "conf/webpanel.conf";
     WebPanelConfig config_;

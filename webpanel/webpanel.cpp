@@ -298,8 +298,10 @@ WebPanel::WebPanel(Instance *instance)
 
 void WebPanel::updateConfig() {
     setenv("BLUR", std::to_string(int(*config_.background->blur)).c_str(), 1);
+    const auto appearance = appAppearance_;
     dispatch_async(dispatch_get_main_queue(), ^{
       window_->set_layout(config_.typography->layout.value());
+      window_->apply_app_appearance(appearance);
       window_->set_theme(config_.basic->theme.value());
       window_->set_native_blur(*config_.background->blur);
       // Keep CSS shadow as native may leave a ghost shadow of last frame when
@@ -647,6 +649,17 @@ void WebPanel::applyAppAccentColor(const std::string &accentColor) {
     auto captured = accentColor;
     dispatch_async(dispatch_get_main_queue(), ^{
       window_->apply_app_accent_color(captured);
+    });
+}
+
+void WebPanel::applyAppAppearance(
+    const candidate_window::AppAppearance &appearance) {
+    appAppearance_ = appearance;
+    const auto captured = appearance;
+    const auto theme = config_.basic->theme.value();
+    dispatch_async(dispatch_get_main_queue(), ^{
+      window_->apply_app_appearance(captured);
+      window_->set_theme(theme);
     });
 }
 
